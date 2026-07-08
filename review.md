@@ -9,3 +9,10 @@ Review priorities for this project:
 - Long operations need cancellation, progress, and error recovery.
 - Tests should use known tiny forensic images or generated fixtures, not uncontrolled real evidence.
 - UI convenience must not hide evidence integrity state, parsing errors, or unsupported filesystem/image features.
+
+## Current Review Queue
+
+- Review the future Stage 1 implementation for read-only evidence handling.
+- Verify segment discovery works without real evidence files.
+- Verify dependency-unavailable behavior is tested.
+- Confirm case-store schema records evidence provenance and audit events.

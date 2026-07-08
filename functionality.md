@@ -13,3 +13,16 @@ Initial feature groups to track:
 - Search and indexing: filename search, metadata search, keyword/full-text search, filters, saved queries.
 - Timeline: file MACB timestamps, sortable events, filters by source/path/type/time.
 - Reporting: bookmarks, tagged evidence, exportable report, chain-of-custody/audit information.
+
+## Stage 1 Feature Targets
+
+- E01 path validation.
+- Segment chain discovery.
+- Segment gap/missing-file reporting.
+- Reader adapter interface.
+- Dependency-unavailable fallback behavior.
+- Evidence metadata response.
+- Verification status field, even if verification is not implemented yet.
+- Read-only access guarantee.
+- Basic case/evidence/audit schema draft.
+- Automated tests for the above.

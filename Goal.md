@@ -52,6 +52,32 @@ Out of initial scope:
 7. Reporting/workflow: bookmarks, examiner notes, audit log, and report generation.
 8. Advanced features: carving, artifact parsers, archive expansion, shadow copies, encryption detection, OCR, and optional AI triage.
 
+## Stage 1 Detailed Targets
+
+Stage 1 goal: prove the app can safely recognize and describe an E01 evidence set before any full UI or filesystem browser is built.
+
+Targets:
+
+- Create a backend-first skeleton under `app/backend/`.
+- Implement segment discovery from a selected `.E01` path.
+- Report discovered sibling segments, expected sequence, gaps, and unsupported naming patterns.
+- Define a clean EWF reader adapter interface.
+- Add a real-reader target for libewf/pyewf if the dependency is available.
+- Add a stub/mock adapter so development and tests can continue without native forensic dependencies.
+- Return structured metadata as JSON or a Python object/dict with stable fields.
+- Add a minimal case-store schema or migration draft for cases, evidence sources, and audit events.
+- Add a command-line or local API entry point for the intake spike.
+- Add tests for segment discovery, unsupported inputs, missing dependencies, and metadata response shape.
+- Update project docs with setup commands, dependency notes, and known limitations.
+
+Stage 1 acceptance criteria:
+
+- The app has one documented command that performs an E01 intake check.
+- The command does not modify source evidence files.
+- Tests can run without large real forensic images.
+- Native dependency absence is handled with a useful message.
+- Review notes are captured in `review.md` before any push to GitHub.
+
 ## Recommended First Technical Direction
 
 Start with a narrow backend proof before building a polished UI:
@@ -89,4 +115,31 @@ Deliverable:
 - A runnable first skeleton with clear commands.
 - Tests that pass locally or a clear note explaining exactly why they cannot run yet.
 - Documentation updates in the existing Markdown files.
+```
+
+## VS Code Codex Familiarization Prompt
+
+```text
+You are joining the EncaseSubstituteTool project as the implementation agent. Before editing code, familiarize yourself with the project structure and goals.
+
+Read these files first:
+- readme.md for orientation.
+- Goal.md for product goal, MVP scope, Stage 1 targets, and the starter implementation prompt.
+- research.md for the research index.
+- research/01-encase-functionality.md through research/07-risks-assumptions.md for topic-specific research.
+- functionality.md for feature inventory.
+- plan.md for the working task plan.
+- progression.md for the development journal.
+- review.md for review priorities and findings.
+- workflow.md for how the implementation agent, research/review agent, and any subagents should coordinate.
+
+Current expected focus:
+- Stage 1 only: E01 intake spike.
+- Do not build a full EnCase replacement or a polished UI yet.
+- Work inside app/.
+- Keep evidence access read-only.
+- Make dependency failures clear.
+- Add tests that do not require real evidence.
+
+After reading, summarize your understanding briefly, list the first files you plan to create or modify, then begin implementation only if the plan matches Stage 1.
 ```
