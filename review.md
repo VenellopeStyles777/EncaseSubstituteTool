@@ -12,6 +12,61 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## S2-T04 Review Expectations
+
+- Filesystem adapter boundary should expose stable result/status/entry shapes.
+- Tests must pass without `pytsk3`, The Sleuth Kit, real filesystems, or evidence images.
+- Stub adapter should provide deterministic entries for later directory listing work.
+- Dependency-unavailable behavior should be structured, not an import crash.
+- S2-T04 should not add directory-listing CLI/workflow, preview rendering, export/recovery, or required native dependencies.
+
+## 2026-07-09 - S2-T04 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- `filesystem_adapter.py` defines stable JSON-friendly adapter, dependency, result, status, warning, and entry shapes.
+- `StubFilesystemAdapter` returns deterministic root entries for `/Documents` and `/hello.txt`.
+- `Pytsk3FilesystemAdapter` reports `dependency_unavailable` when `pytsk3` is missing and `real_parser_not_implemented` when a pytsk3 module is importable but real parsing is still deferred.
+- Tests do not require `pytsk3`, The Sleuth Kit, real filesystems, real evidence, or private fixtures.
+- S2-T04 stayed in scope and did not add directory-listing workflow, preview rendering, export/recovery, hashing, UI work, or required native dependencies.
+
+Tests:
+
+- `python -m pytest`: 44 passed.
+
+Residual notes:
+
+- Stub entry `/hello.txt` is metadata-only for now. S2-T05/S2-T06 should not assume file content exists until a listing/preview content boundary is explicitly added.
+
+## 2026-07-09 - S2-T04 Filesystem Adapter Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `FilesystemAdapter` protocol and JSON-friendly result/status/warning/dependency/entry structures.
+- `StubFilesystemAdapter` with deterministic root entries for `/Documents` and `/hello.txt`.
+- `Pytsk3FilesystemAdapter` skeleton that reports `dependency_unavailable` when `pytsk3` is missing and `real_parser_not_implemented` when injected/importable but still deferred.
+- Entry provenance fields for source path, volume id, volume offset/length, filesystem type, adapter name, read-only assertion, allocation/deleted state, timestamps, status, and warnings.
+- Tests for stub metadata/result shape, root entries, read-only provenance, pytsk3 dependency-unavailable behavior, JSON serialization, and importable-but-unimplemented pytsk3 status.
+
+Scope intentionally not implemented:
+
+- No directory-listing CLI/workflow.
+- No real filesystem parsing.
+- No preview rendering.
+- No export/recovery, hashing, or native dependency requirement.
+- No real evidence or filesystem images.
+
+Suggested review command:
+
+```powershell
+python -m pytest
+```
+
 ## S2-T03 Review Expectations
 
 - Volume discovery should produce structured JSON-friendly results with provenance.

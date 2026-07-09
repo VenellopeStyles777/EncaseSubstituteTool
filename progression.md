@@ -223,6 +223,12 @@ YYYY-MM-DD
 - Next: commit S2-T03 after user approval, then prepare S2-T04 filesystem adapter boundary.
 
 2026-07-09
+- Completed: confirmed S2-T03 was committed and pushed as `5cf007d stage 2: add volume discovery boundary`.
+- Learned: S2-T04 should define filesystem listing contracts and dependency status without requiring real pytsk3 parsing.
+- Blocked by: nothing for S2-T04 planning.
+- Next: hand S2-T04 to the Stage 2 VS Code agent.
+
+2026-07-09
 - Completed: implemented S2-T01 fixture/dependency strategy as documentation-only updates in the fixture policy, environment readiness notes, Stage 2 plan, and review handoff.
 - Learned: early Stage 2 can proceed with pure stubs for adapter/result boundaries and tiny generated files for byte/preview behavior, while real raw/EWF/TSK fixtures remain optional local-only integration inputs.
 - Blocked by: nothing for S2-T01; `pytsk3`, The Sleuth Kit, `pyewf`, and libewf remain optional and must not be required for default tests.
@@ -239,3 +245,15 @@ YYYY-MM-DD
 - Learned: the Stage 2 volume layer can consume `ImageByteStream.describe()` without parsing partition tables, while still preserving source path, stream type, source size, volume id/index, offsets, length, read-only assertion, status, and warnings.
 - Blocked by: nothing for S2-T03; no filesystem adapter, native dependency, or real evidence fixture was introduced.
 - Next: hand S2-T03 off for review before beginning S2-T04 filesystem adapter boundary work. Final test run: `python -m pytest` reported 38 passed.
+
+2026-07-09
+- Completed: implemented S2-T04 filesystem adapter boundary with JSON-friendly filesystem result/status/warning/entry structures, deterministic stub root entries, and pytsk3 dependency-safe skeleton behavior.
+- Learned: S2-T05 can consume stable entry metadata with source path, volume id, volume offset/length, filesystem type, adapter name, file id/path/name/type/size, allocation/deleted state, timestamps, read-only assertion, status, and warnings without requiring real filesystem parsing.
+- Blocked by: nothing for S2-T04; no directory-listing workflow, preview, native dependency, or real evidence fixture was introduced.
+- Next: hand S2-T04 off for review before beginning S2-T05 directory listing and file metadata view work. Final test run: `python -m pytest` reported 44 passed.
+
+2026-07-09
+- Completed: reviewed S2-T04 filesystem adapter boundary and marked it done.
+- Learned: the stub adapter now gives S2-T05 deterministic root entries while the pytsk3 skeleton keeps native dependency behavior explicit and non-blocking.
+- Blocked by: nothing for S2-T04.
+- Next: commit S2-T04 after user approval, then prepare S2-T05 directory listing and file metadata view.

@@ -8,7 +8,7 @@ Suggested first planning format:
 | --- | --- | --- | --- |
 | 0 | Decide stack and create app skeleton | Done | Python backend-first direction selected; planning docs and skeleton folders exist. |
 | 1 | Build E01 evidence intake spike | Done | S1-T01 through S1-T06 complete. Stage 1 is a backend intake foundation, not real EWF/filesystem parsing. |
-| 2 | Add volume/filesystem browsing MVP | In Progress | S2-T03 adds the volume discovery boundary after S2-T02 byte streams. Filesystem adapter boundary and one browsable fixture/stub tree remain upcoming. |
+| 2 | Add volume/filesystem browsing MVP | In Progress | S2-T04 filesystem adapter boundary is reviewed. S2-T05 directory listing workflow and S2-T06 preview foundation remain upcoming. |
 | 3 | Add export/recovery foundation | Planned | Export selected fixture/stub files with manifest, hashes, provenance, and audit hooks. Deleted recovery remains conditional. |
 | 4 | Add hashing and signature checks | Not started | Make this reproducible and testable after export/filesystem foundations exist. |
 

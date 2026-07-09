@@ -49,7 +49,7 @@ Initial feature groups to track:
 | Fixture/dependency strategy | 2 | Done | Untested | S2-T01; documentation/strategy only. |
 | Read-only image/byte-stream abstraction | 2 | Done | Untested | S2-T02; local file-backed read-only stream with tiny generated test files. |
 | Volume discovery boundary | 2 | Done | Untested | S2-T03; whole-image volume result for readable non-empty streams. |
-| Filesystem adapter boundary | 2 | Planned | Untested | S2-T04. |
+| Filesystem adapter boundary | 2 | Done | Untested | S2-T04; stub entries and pytsk3 dependency-safe skeleton. |
 | Directory listing and file metadata | 2 | Planned | Untested | S2-T05. |
 | Raw/text/hex preview foundation | 2 | Planned | Untested | S2-T06. |
 | Export manifest contract | 3 | Planned | Untested | S3-T01. |

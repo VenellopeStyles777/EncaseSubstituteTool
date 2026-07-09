@@ -86,3 +86,10 @@ git push -u origin main
 - User reported S2-T02 was pushed.
 - Remote-tracking branch visible in this shell before S2-T03 prep: `origin/stage-1-e01-intake` at `2dfd2b8`.
 - Working tree check before S2-T03 prep: clean.
+
+2026-07-09 S2-T03 checkpoint:
+
+- Branch: `stage-1-e01-intake`.
+- Commit visible locally and on remote branch: `5cf007d stage 2: add volume discovery boundary`.
+- Remote branch: `origin/stage-1-e01-intake`.
+- Working tree check before S2-T04 prep: clean.

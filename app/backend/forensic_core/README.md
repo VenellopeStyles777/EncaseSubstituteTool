@@ -80,3 +80,22 @@ Current behavior:
 - returns `partition_parsing_unsupported` for non-`whole_image` strategies so future real partition parsers have a documented boundary.
 
 S2-T03 does not parse real partition tables, parse filesystems, list directories, render previews, export files, hash evidence, or require `pytsk3`, The Sleuth Kit, `pyewf`, libewf, or real forensic images.
+
+## S2-T04 Filesystem Adapter Boundary
+
+`filesystem_adapter.py` defines the Stage 2 filesystem adapter boundary:
+
+- `FilesystemAdapter`: protocol for read-only filesystem metadata adapters.
+- `StubFilesystemAdapter`: dependency-free deterministic adapter for tests and later directory-listing integration.
+- `Pytsk3FilesystemAdapter`: optional pytsk3 skeleton that reports structured dependency status without requiring `pytsk3`.
+- `FilesystemResult`: source/volume-level result with adapter name, dependency status, source path, volume id, volume offset/length, filesystem type, read-only assertion, root path, entries, status, and warnings.
+- `FilesystemEntry`: file/directory metadata shape for later S2-T05 listing, including file id, path, name, type, size, allocation/deleted state, timestamps, source provenance, adapter name, read-only assertion, status, and warnings.
+
+Current behavior:
+
+- stub adapter returns deterministic root entries for `/Documents` and `/hello.txt`;
+- pytsk3 adapter returns `dependency_unavailable` when `pytsk3` is missing;
+- importable pytsk3 remains `real_parser_not_implemented` until a later ticket intentionally adds real parsing;
+- tests do not require real evidence, real filesystems, `pytsk3`, or The Sleuth Kit.
+
+S2-T04 does not add a directory-listing command/workflow, parse real filesystems, render previews, export files, hash evidence, or require native forensic dependencies.
