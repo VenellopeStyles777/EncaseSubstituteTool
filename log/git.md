@@ -45,3 +45,11 @@ git push -u origin main
 - User reported the S1-T02 work was pushed and merged.
 - Local working tree check before S1-T03 prep: clean.
 - Local `main` had not been refreshed in this session at the time of this note.
+
+2026-07-09 S1-T03 checkpoint:
+
+- Branch: `stage-1-e01-intake`.
+- Commit visible locally: `4166b02 stage 1: EWF reader adapter`.
+- Remote branch visible locally before S1-T04 prep: `origin/stage-1-e01-intake` at `5a5f90e`.
+- Working tree check before S1-T04 prep: clean.
+- Note: local view did not yet show S1-T03 pushed to the remote branch at the time of this note.

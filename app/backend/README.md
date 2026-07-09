@@ -41,3 +41,19 @@ Current S1-T01A verification on 2026-07-09:
 
 - `python -m pytest`: 2 passed, 1 warning.
 - Warning: pytest could not create/update a path under `.pytest_cache`; this is a non-blocking local cache issue when tests still pass.
+
+## Stage 1 Intake Command
+
+Run the current backend intake command from the repository root:
+
+```powershell
+python -m app.backend.api.intake path\to\sample.E01
+```
+
+The default adapter is dependency-safe: if `pyewf` is unavailable, the command returns JSON describing the unavailable dependency instead of crashing. For tests or synthetic smoke checks, use the stub adapter:
+
+```powershell
+python -m app.backend.api.intake path\to\sample.E01 --adapter stub
+```
+
+The command does not write to evidence files. It composes segment discovery with the EWF reader adapter boundary and prints JSON for later UI integration.
