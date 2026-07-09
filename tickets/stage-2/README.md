@@ -10,10 +10,10 @@ Stage 2 should stay backend-first. Do not build a polished UI in this stage.
 | --- | --- | --- |
 | S2-T01 | Done | Fixture and dependency strategy |
 | S2-T02 | Done | Image/byte-stream abstraction |
-| S2-T03 | Ready | Volume discovery boundary |
-| S2-T04 | Ready | Filesystem adapter boundary |
-| S2-T05 | Ready | Directory listing and file metadata view |
-| S2-T06 | Ready | Raw/text/hex preview foundation |
+| S2-T03 | Done | Volume discovery boundary |
+| S2-T04 | Done | Filesystem adapter boundary |
+| S2-T05 | Done | Directory listing and file metadata view |
+| S2-T06 | Done | Raw/text/hex preview foundation |
 | S2-T07 | Ready | Stage 2 docs and review handoff |
 
 ## Stage 2 Definition Of Done

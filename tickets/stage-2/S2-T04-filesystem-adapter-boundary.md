@@ -1,6 +1,6 @@
 # S2-T04 - Filesystem Adapter Boundary
 
-Status: Ready
+Status: Done
 
 Stage: Stage 2 - Volume and filesystem browsing MVP
 

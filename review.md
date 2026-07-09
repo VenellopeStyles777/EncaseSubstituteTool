@@ -12,6 +12,263 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## S2-T06 Review Expectations
+
+- Preview code should use bounded, read-only reads from a stub or tiny generated preview source.
+- Preview results should be JSON-friendly and preserve source, volume, file id/path, offset, requested length, returned length, mode, truncation, status, and warnings.
+- Text preview should handle decoding errors visibly and safely; hex preview should be deterministic.
+- Missing files, directories, invalid ranges, unsupported modes, and size-limit truncation should return structured statuses or warnings.
+- S2-T06 should not add export/recovery, hashing, UI work, real filesystem parsing, required native dependencies, persistence, or real evidence fixtures.
+
+## 2026-07-09 - S2-T06 Review
+
+Result: changes requested.
+
+Findings:
+
+- [P2] `app/backend/api/file_preview.py`: `preview_file()` reports `status.code == "ok"` when `offset` is beyond the available preview content and `length` is omitted. Example: `/hello.txt` has 13 stub bytes, but `preview_file(entry, mode="text", offset=99)` returns `ok`, zero bytes, empty text, and no truncation warning. A preview offset outside the content should be a structured non-ok status or warning, such as `preview_truncated`, `content_unavailable`, or a dedicated range status. This matters because a forensic preview boundary should not quietly report success for a range that cannot exist.
+
+Tests:
+
+- `python -m pytest`: 66 passed.
+
+Verified good behavior:
+
+- Text, hex, and raw preview outputs are JSON-friendly.
+- Stub preview content is clearly labeled as synthetic, not parsed evidence.
+- Negative offset/length, unsupported mode, directory entry, missing content, max-length truncation, content-size truncation with an explicit length, decode replacement, and provenance/read-only fields are covered.
+- S2-T06 stayed in scope and did not add export/recovery, hashing, UI, persistence, native dependency requirements, real parsing, S2-T07, or Stage 3 work.
+
+Required fix:
+
+- Add a regression test for `offset > source_content_size` with omitted `length`.
+- Return a structured non-ok status/warning for that case.
+- Keep the change inside S2-T06 and rerun `python -m pytest`.
+
+## 2026-07-09 - S2-T06 Review Fix Handoff
+
+Result: ready for re-review.
+
+Implemented:
+
+- `preview_file()` now returns structured `content_unavailable` status when the requested offset is beyond provider content size.
+- Added regression coverage for `offset > source_content_size` with omitted `length`, preserving provenance, read-only fields, zero returned bytes, and JSON-friendly shape.
+
+Tests:
+
+- `python -m pytest`: 67 passed.
+
+Scope intentionally not implemented:
+
+- No S2-T07 or Stage 3 work.
+- No export/recovery, hashing, UI, persistence, native dependency requirement, real filesystem parsing, or real evidence fixture.
+
+## 2026-07-09 - S2-T06 Re-Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- The previous offset-boundary finding is fixed: `preview_file(..., offset=99)` for the 13-byte stub file now returns structured `content_unavailable` instead of `ok`.
+- Regression coverage verifies non-ok status, zero returned bytes, no preview payload, preserved source size, read-only provenance, and a `content_unavailable` warning.
+- Existing text, hex, raw serialization, truncation, missing content, directory/non-file, unsupported mode, invalid range, decode replacement, and provenance tests still pass.
+- S2-T06 stayed in scope and did not add S2-T07, Stage 3, export/recovery, hashing, UI, persistence, native dependencies, real filesystem parsing, or real evidence fixtures.
+
+Tests:
+
+- `python -m pytest`: 67 passed.
+
+## 2026-07-09 - S2-T06 Preview Foundation Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `preview_file()` backend API callable for provider-backed raw/text/hex previews.
+- `preview_file_to_json()` serialization helper.
+- `StubPreviewProvider` with synthetic bytes for `stub-file-hello` (`/hello.txt`).
+- JSON-friendly preview result shape with source path, volume id/offset/length, file id/path/name/type, requested offset/length, returned bytes, source content size, truncation flag, read-only assertion, provider details, mode, status, preview data, and warnings.
+- Tests for text, hex, raw JSON serialization, bounded offset/length, max-length truncation, content-size truncation, missing content, directory entry rejection, unsupported mode, invalid ranges, decode replacement warning, and provenance/read-only fields.
+
+Scope intentionally not implemented:
+
+- No real filesystem byte extraction.
+- No real EWF, partition, or filesystem parsing.
+- No export/recovery or hashing.
+- No UI, persistence, background jobs, or case-store writes.
+- No required native dependency or real evidence fixture.
+
+Suggested review command:
+
+```powershell
+python -m pytest
+```
+
+## S2-T05 Review Expectations
+
+- Directory listing view should consume the filesystem adapter boundary instead of parsing real filesystems directly.
+- Root listing should return deterministic JSON-friendly entries from the stub adapter.
+- Unsupported, missing, file, or nested paths should return structured status/warning results unless explicitly supported.
+- Adapter dependency-unavailable or real-parser-not-implemented states should be visible in the listing response.
+- S2-T05 should not add raw/text/hex preview, export/recovery, hashing, UI work, real filesystem parsing, or required native dependencies.
+
+## 2026-07-09 - S2-T05 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- `list_directory()` consumes `FilesystemAdapter.inspect_volume()` and returns a JSON-friendly directory listing response without parsing real filesystems directly.
+- Stub root listing returns deterministic `/Documents` and `/hello.txt` metadata entries with source, volume, adapter, filesystem, status, timestamp, allocation/deleted, and read-only provenance preserved.
+- Unsupported nested paths, file paths, unknown paths, dependency-unavailable adapters, importable-but-not-implemented pytsk3, and defensive adapter exceptions are represented as structured statuses.
+- Tests do not require `pytsk3`, The Sleuth Kit, real filesystems, real evidence, private fixtures, or network access.
+- S2-T05 stayed in scope and did not add file-content preview, export/recovery, hashing, UI work, persistence, case-store writes, real filesystem parsing, or required native dependencies.
+
+Tests:
+
+- `python -m pytest`: 53 passed.
+
+Residual notes:
+
+- The default adapter path is dependency-safe but normally returns `filesystem_unavailable` until real pytsk3 parsing exists. For current smoke/manual checks, callers should pass `StubFilesystemAdapter`.
+
+## 2026-07-09 - S2-T05 Directory Listing Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `list_directory()` backend API callable over `FilesystemAdapter.inspect_volume()`.
+- `directory_listing_to_json()` serialization helper.
+- Root listing for `StubFilesystemAdapter` returning `/Documents` and `/hello.txt`.
+- Structured statuses for `ok`, `path_not_found`, `path_not_directory`, `path_unsupported`, `filesystem_unavailable`, and defensive `filesystem_error`.
+- Tests for root listing, JSON shape, provenance/read-only fields, unsupported nested path, file path, unknown path, path normalization, and pytsk3 dependency-unavailable/not-implemented states.
+
+Scope intentionally not implemented:
+
+- No file-content reads or raw/text/hex preview.
+- No export/recovery or hashing.
+- No UI, persistence, background jobs, or case-store writes.
+- No real filesystem parsing or required native dependency.
+- No real evidence or filesystem images.
+
+Suggested review command:
+
+```powershell
+python -m pytest
+```
+
+## S2-T04 Review Expectations
+
+- Filesystem adapter boundary should expose stable result/status/entry shapes.
+- Tests must pass without `pytsk3`, The Sleuth Kit, real filesystems, or evidence images.
+- Stub adapter should provide deterministic entries for later directory listing work.
+- Dependency-unavailable behavior should be structured, not an import crash.
+- S2-T04 should not add directory-listing CLI/workflow, preview rendering, export/recovery, or required native dependencies.
+
+## 2026-07-09 - S2-T04 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- `filesystem_adapter.py` defines stable JSON-friendly adapter, dependency, result, status, warning, and entry shapes.
+- `StubFilesystemAdapter` returns deterministic root entries for `/Documents` and `/hello.txt`.
+- `Pytsk3FilesystemAdapter` reports `dependency_unavailable` when `pytsk3` is missing and `real_parser_not_implemented` when a pytsk3 module is importable but real parsing is still deferred.
+- Tests do not require `pytsk3`, The Sleuth Kit, real filesystems, real evidence, or private fixtures.
+- S2-T04 stayed in scope and did not add directory-listing workflow, preview rendering, export/recovery, hashing, UI work, or required native dependencies.
+
+Tests:
+
+- `python -m pytest`: 44 passed.
+
+Residual notes:
+
+- Stub entry `/hello.txt` is metadata-only for now. S2-T05/S2-T06 should not assume file content exists until a listing/preview content boundary is explicitly added.
+
+## 2026-07-09 - S2-T04 Filesystem Adapter Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `FilesystemAdapter` protocol and JSON-friendly result/status/warning/dependency/entry structures.
+- `StubFilesystemAdapter` with deterministic root entries for `/Documents` and `/hello.txt`.
+- `Pytsk3FilesystemAdapter` skeleton that reports `dependency_unavailable` when `pytsk3` is missing and `real_parser_not_implemented` when injected/importable but still deferred.
+- Entry provenance fields for source path, volume id, volume offset/length, filesystem type, adapter name, read-only assertion, allocation/deleted state, timestamps, status, and warnings.
+- Tests for stub metadata/result shape, root entries, read-only provenance, pytsk3 dependency-unavailable behavior, JSON serialization, and importable-but-unimplemented pytsk3 status.
+
+Scope intentionally not implemented:
+
+- No directory-listing CLI/workflow.
+- No real filesystem parsing.
+- No preview rendering.
+- No export/recovery, hashing, or native dependency requirement.
+- No real evidence or filesystem images.
+
+Suggested review command:
+
+```powershell
+python -m pytest
+```
+
+## S2-T03 Review Expectations
+
+- Volume discovery should produce structured JSON-friendly results with provenance.
+- Whole-image/single-volume behavior is acceptable for S2-T03.
+- Missing, unreadable, or zero-byte sources should be handled predictably.
+- S2-T03 should not introduce filesystem parsing, pytsk3/TSK requirements, preview rendering, export/recovery, or real evidence fixtures.
+
+## 2026-07-09 - S2-T03 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- `discover_volumes()` defines a JSON-friendly volume discovery boundary over `ImageByteStream`.
+- Whole-image/single-volume behavior works for readable non-empty streams.
+- Missing/unavailable streams, zero-byte sources, and unsupported partition strategies return structured statuses and warnings.
+- Tests use tiny generated files and do not require real evidence or native forensic dependencies.
+- S2-T03 stayed in scope and did not add filesystem parsing, preview rendering, export/recovery, hashing, UI work, or real partition parsing.
+
+Tests:
+
+- `python -m pytest`: 38 passed.
+
+Residual notes:
+
+- Volume id is currently the stable placeholder `volume-0` for whole-image strategy. Future real partition parsing should define deterministic ids from source/evidence id plus partition metadata.
+
+## 2026-07-09 - S2-T03 Volume Discovery Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `discover_volumes()` volume discovery boundary over `ImageByteStream`.
+- Whole-image/single-volume behavior for readable non-empty streams.
+- Structured statuses for successful discovery, unavailable image stream, zero-byte image, and unsupported partition parsing strategies.
+- JSON-friendly result objects with source path, stream type, source size, read-only assertion, volume id/index, offset, length, type, description, status, and warnings.
+- Generated-file tests for non-empty local source, zero-byte source, missing source, serialization shape, read-only provenance, and unsupported partition strategy.
+
+Scope intentionally not implemented:
+
+- No real partition table parsing.
+- No filesystem adapter or directory listing.
+- No preview rendering.
+- No export/recovery, hashing, or native forensic dependencies.
+- No real evidence or binary forensic fixtures.
+
+Suggested review command:
+
+```powershell
+python -m pytest
+```
+
 ## S2-T02 Review Expectations
 
 - Byte stream implementation must be read-only and bounded by offset/length.

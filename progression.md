@@ -211,6 +211,24 @@ YYYY-MM-DD
 - Next: commit S2-T02 after user approval, then prepare S2-T03 volume discovery boundary.
 
 2026-07-09
+- Completed: confirmed S2-T02 is committed locally as `849a79c stage 2: read only image byte stream`; user reported it was pushed.
+- Learned: S2-T03 should build on `LocalFileImageStream` and produce structured volume results without filesystem parsing.
+- Blocked by: remote-tracking view in this shell had not refreshed to S2-T02 at the time of S2-T03 prep.
+- Next: hand S2-T03 to the Stage 2 VS Code agent.
+
+2026-07-09
+- Completed: reviewed S2-T03 volume discovery boundary and marked it done.
+- Learned: Stage 2 now has structured whole-image volume results that can feed the filesystem adapter boundary in S2-T04.
+- Blocked by: nothing for S2-T03.
+- Next: commit S2-T03 after user approval, then prepare S2-T04 filesystem adapter boundary.
+
+2026-07-09
+- Completed: confirmed S2-T03 was committed and pushed as `5cf007d stage 2: add volume discovery boundary`.
+- Learned: S2-T04 should define filesystem listing contracts and dependency status without requiring real pytsk3 parsing.
+- Blocked by: nothing for S2-T04 planning.
+- Next: hand S2-T04 to the Stage 2 VS Code agent.
+
+2026-07-09
 - Completed: implemented S2-T01 fixture/dependency strategy as documentation-only updates in the fixture policy, environment readiness notes, Stage 2 plan, and review handoff.
 - Learned: early Stage 2 can proceed with pure stubs for adapter/result boundaries and tiny generated files for byte/preview behavior, while real raw/EWF/TSK fixtures remain optional local-only integration inputs.
 - Blocked by: nothing for S2-T01; `pytsk3`, The Sleuth Kit, `pyewf`, and libewf remain optional and must not be required for default tests.
@@ -221,3 +239,69 @@ YYYY-MM-DD
 - Learned: local byte access can stay dependency-free by using explicit offset/length reads, read-only binary open mode, and structured statuses for missing paths, directories, invalid ranges, EOF truncation, and reads beyond EOF.
 - Blocked by: nothing for S2-T02; no native forensic dependencies or real evidence fixtures were introduced.
 - Next: hand S2-T02 off for review before beginning S2-T03 volume discovery boundary work. Final test run: `python -m pytest` reported 32 passed.
+
+2026-07-09
+- Completed: implemented S2-T03 volume discovery boundary with `discover_volumes()`, whole-image volume results, structured empty/unavailable/unsupported statuses, and generated-file tests.
+- Learned: the Stage 2 volume layer can consume `ImageByteStream.describe()` without parsing partition tables, while still preserving source path, stream type, source size, volume id/index, offsets, length, read-only assertion, status, and warnings.
+- Blocked by: nothing for S2-T03; no filesystem adapter, native dependency, or real evidence fixture was introduced.
+- Next: hand S2-T03 off for review before beginning S2-T04 filesystem adapter boundary work. Final test run: `python -m pytest` reported 38 passed.
+
+2026-07-09
+- Completed: implemented S2-T04 filesystem adapter boundary with JSON-friendly filesystem result/status/warning/entry structures, deterministic stub root entries, and pytsk3 dependency-safe skeleton behavior.
+- Learned: S2-T05 can consume stable entry metadata with source path, volume id, volume offset/length, filesystem type, adapter name, file id/path/name/type/size, allocation/deleted state, timestamps, read-only assertion, status, and warnings without requiring real filesystem parsing.
+- Blocked by: nothing for S2-T04; no directory-listing workflow, preview, native dependency, or real evidence fixture was introduced.
+- Next: hand S2-T04 off for review before beginning S2-T05 directory listing and file metadata view work. Final test run: `python -m pytest` reported 44 passed.
+
+2026-07-09
+- Completed: implemented S2-T05 backend directory listing and file metadata view with `list_directory()`, JSON serialization, root stub listing, path normalization, and structured non-root/file/unavailable statuses.
+- Learned: the API layer can consume S2-T04 `FilesystemEntry` data directly while preserving provenance and keeping file-content preview, export, hashing, persistence, UI, and real filesystem parsing out of scope.
+- Blocked by: nothing for S2-T05; no native dependency, real evidence fixture, or S2-T06 preview work was introduced.
+- Next: hand S2-T05 off for review before beginning S2-T06 raw/text/hex preview foundation work. Final test run: `python -m pytest` reported 53 passed.
+
+2026-07-09
+- Completed: reviewed S2-T04 filesystem adapter boundary and marked it done.
+- Learned: the stub adapter now gives S2-T05 deterministic root entries while the pytsk3 skeleton keeps native dependency behavior explicit and non-blocking.
+- Blocked by: nothing for S2-T04.
+- Next: commit S2-T04 after user approval, then prepare S2-T05 directory listing and file metadata view.
+
+2026-07-09
+- Completed: confirmed S2-T04 was committed and pushed as `c499b00 stage 2: add filesystem adapter boundary`.
+- Learned: S2-T05 should consume the filesystem adapter result as a listing/metadata view rather than adding parsing or preview content.
+- Blocked by: nothing for S2-T05 planning.
+- Next: hand S2-T05 to the Stage 2 VS Code agent.
+
+2026-07-09
+- Completed: reviewed S2-T05 backend directory listing and file metadata view and marked it done.
+- Learned: the listing API now provides the first Stage 2 examiner-facing metadata view while keeping file bytes and preview work properly deferred to S2-T06.
+- Blocked by: nothing for S2-T05.
+- Next: commit S2-T05 after user approval, then prepare S2-T06 raw/text/hex preview foundation.
+
+2026-07-09
+- Completed: confirmed S2-T05 was committed and pushed as `3f0ef10 stage 2: add directory metadata listing`.
+- Learned: S2-T06 should introduce bounded preview rendering through a stub/fixture content boundary, because the current filesystem entries do not yet expose real evidence byte offsets.
+- Blocked by: nothing for S2-T06 planning.
+- Next: hand S2-T06 to the Stage 2 VS Code agent.
+
+2026-07-09
+- Completed: implemented S2-T06 raw/text/hex preview foundation with `preview_file()`, `preview_file_to_json()`, and `StubPreviewProvider` for synthetic `/hello.txt` bytes.
+- Learned: preview can preserve entry and volume provenance while honestly separating stub preview content from real filesystem byte extraction, which remains unimplemented.
+- Blocked by: nothing for S2-T06; no export/recovery, hashing, UI, persistence, native dependency, real filesystem parsing, or real evidence fixture was introduced.
+- Next: hand S2-T06 off for review before beginning S2-T07 Stage 2 documentation and review handoff work. Final test run: `python -m pytest` reported 66 passed.
+
+2026-07-09
+- Completed: reviewed S2-T06 and requested a narrow offset-boundary fix.
+- Learned: `preview_file()` currently reports `ok` for omitted-length previews when the requested offset is beyond the available content size.
+- Blocked by: S2-T06 needs a regression test and structured non-ok status/warning for `offset > source_content_size`.
+- Next: give the Stage 2 VS Code agent the S2-T06 review-fix prompt before re-reviewing S2-T06.
+
+2026-07-09
+- Completed: fixed the S2-T06 offset-boundary review finding by returning structured `content_unavailable` status when a requested preview offset is beyond available provider content.
+- Learned: S2-T06 needs content-aware range handling after preview bytes are resolved, because syntax-only offset validation cannot know the provider's content size.
+- Blocked by: nothing for this S2-T06 review fix; no S2-T07 or Stage 3 work was introduced.
+- Next: hand the S2-T06 fix off for re-review. Final test run: `python -m pytest` reported 67 passed.
+
+2026-07-09
+- Completed: re-reviewed S2-T06 after the offset-boundary fix and marked it done.
+- Learned: the preview foundation now handles both syntactically invalid ranges and content-size-invalid offsets as structured statuses.
+- Blocked by: nothing for S2-T06.
+- Next: commit S2-T06 after user approval, then prepare S2-T07 Stage 2 documentation and review handoff.
