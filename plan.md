@@ -8,8 +8,8 @@ Suggested first planning format:
 | --- | --- | --- | --- |
 | 0 | Decide stack and create app skeleton | Done | Python backend-first direction selected; planning docs and skeleton folders exist. |
 | 1 | Build E01 evidence intake spike | Done | S1-T01 through S1-T06 complete. Stage 1 is a backend intake foundation, not real EWF/filesystem parsing. |
-| 2 | Add volume/filesystem browsing MVP | In Progress | S2-T06 adds a bounded raw/text/hex preview foundation over stub or tiny generated content. Stage 2 docs handoff remains upcoming. |
-| 3 | Add export/recovery foundation | Planned | Export selected fixture/stub files with manifest, hashes, provenance, and audit hooks. Deleted recovery remains conditional. |
+| 2 | Add volume/filesystem browsing MVP | Done | S2-T01 through S2-T07 complete. Stage 2 is a backend fixture/stub browsing foundation, not real EWF/partition/filesystem parsing. |
+| 3 | Add export/recovery foundation | Planned next | Export selected fixture/stub files with manifest, hashes, provenance, and audit hooks. Deleted recovery remains conditional. |
 | 4 | Add hashing and signature checks | Not started | Make this reproducible and testable after export/filesystem foundations exist. |
 
 ## Stage 1 Work Targets
@@ -74,7 +74,7 @@ S2-T01 fixture/dependency direction:
 - Default tests should use pure stubs for adapter boundaries and structured status/error shapes.
 - Tiny generated files under ignored workspace paths may be used for raw byte-stream and preview tests.
 - Real raw, EWF, or pytsk3/The Sleuth Kit integration fixtures must remain optional, local-only, and skipped unless explicitly configured.
-- `pytsk3`, The Sleuth Kit, `pyewf`, and libewf remain optional for early Stage 2; missing dependencies should produce structured unavailable status instead of failing default tests.
+- `pytsk3`, The Sleuth Kit, `pyewf`, and libewf remain optional for Stage 2; missing dependencies should produce structured unavailable status instead of failing default tests.
 
 Stage 2 definition of done:
 
@@ -83,6 +83,14 @@ Stage 2 definition of done:
 - Missing native dependencies are visible and structured.
 - No UI is required.
 - Docs honestly separate real fixture-backed behavior from stubbed behavior.
+
+Stage 2 handoff status:
+
+- Real local-file backed behavior: `LocalFileImageStream` describes and reads tiny local files in read-only mode with bounded offset/length handling.
+- Stubbed behavior: volume discovery currently supports whole-image volume results; filesystem metadata and directory listing use deterministic adapter entries unless a later real adapter is added.
+- Synthetic preview-provider behavior: raw/text/hex preview renders bytes supplied by an explicit provider, with the default stub provider serving synthetic `/hello.txt` content.
+- Deferred: real EWF byte streams, image verification, partition parsing, real filesystem parsing, real file extraction, export/recovery, hashing/signatures, search/timeline, reporting, UI, executable packaging, and automatic case-store persistence for Stage 2 API results.
+- Dependency policy: `pyewf`, libewf, `pytsk3`, and The Sleuth Kit remain optional; default tests must continue to pass without them.
 
 ## Stage 3 Ticket Outline
 
@@ -117,6 +125,6 @@ Recommended timing:
 
 Packaging guidance:
 
-- Do not prioritize `.exe` packaging during early Stage 2.
+- Do not prioritize `.exe` packaging during Stage 2.
 - Keep Stage 2 and Stage 3 as Python CLI/manual commands.
 - Revisit packaging after backend contracts stabilize and native dependency direction is clearer.

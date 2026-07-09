@@ -2,9 +2,13 @@
 
 Purpose: local command/API boundary between backend logic and the future UI.
 
-Stage 1 target:
+Current Stage 2 API surface:
 
-- Provide a minimal intake command or callable endpoint that returns structured evidence metadata.
+- E01 intake command/callable from Stage 1.
+- Directory listing/file metadata callable over the Stage 2 filesystem adapter boundary.
+- Raw/text/hex preview callable over explicit preview-provider bytes.
+
+These callables are backend-only and JSON-friendly. They do not provide UI, executable packaging, export/recovery, hashing, search, reporting, real EWF byte parsing, real partition parsing, real filesystem parsing, or automatic case-store persistence.
 
 ## S1-T04 Intake Command
 
@@ -96,6 +100,7 @@ Current S2-T06 behavior:
 
 - enforces bounded previews through `max_length`;
 - returns `preview_truncated` when the request exceeds the configured limit or available content;
+- returns `content_unavailable` when the requested offset is beyond available provider content;
 - returns structured statuses for missing content, non-file entries, unsupported modes, and invalid ranges;
 - uses UTF-8 text decoding with visible replacement warnings for undecodable bytes.
 

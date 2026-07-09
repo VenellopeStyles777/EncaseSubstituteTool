@@ -11,7 +11,7 @@ Subfolders:
 
 ## Python Package Skeleton
 
-Stage 1 ticket S1-T01 adds minimal Python package files so backend modules can be imported cleanly:
+The backend package can be imported cleanly:
 
 - `app.backend`
 - `app.backend.forensic_core`
@@ -19,7 +19,7 @@ Stage 1 ticket S1-T01 adds minimal Python package files so backend modules can b
 - `app.backend.analysis_workers`
 - `app.backend.api`
 
-No E01 parsing or evidence access is implemented in this ticket.
+Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. The project remains backend-first and has no UI/executable packaging yet.
 
 ## Tests
 
@@ -37,9 +37,9 @@ If `pytest` is not installed:
 python -m pip install pytest
 ```
 
-Current Stage 1 verification on 2026-07-09:
+Current Stage 2 verification on 2026-07-09:
 
-- `python -m pytest`: 22 passed.
+- `python -m pytest`: 67 passed.
 - The project config routes pytest temporary files to `.test-artifacts/pytest-temp` and disables pytest's optional cache provider.
 
 ## Stage 1 Intake Command
@@ -58,7 +58,7 @@ python -m app.backend.api.intake path\to\sample.E01 --adapter stub
 
 The command does not write to evidence files. It composes segment discovery with the EWF reader adapter boundary and prints JSON for later UI integration.
 
-## Stage 1 Capabilities And Limits
+## Stage 2 Capabilities And Limits
 
 Implemented:
 
@@ -66,9 +66,23 @@ Implemented:
 - EWF reader adapter contract, stub adapter, and pyewf dependency-unavailable result path.
 - JSON intake command/callable.
 - SQLite schema helpers for cases, evidence sources, and audit events.
+- Read-only `LocalFileImageStream` for tiny local files and bounded byte reads.
+- Whole-image volume discovery boundary for readable non-empty streams.
+- Filesystem adapter contract, deterministic stub adapter entries, and `pytsk3` dependency-safe skeleton behavior.
+- JSON-friendly directory listing/file metadata callable over adapter entries.
+- JSON-friendly raw/text/hex preview callable over explicit provider bytes.
+
+Current Stage 2 behavior categories:
+
+- Real local-file backed: local byte-stream metadata and bounded reads from tiny generated files.
+- Stubbed: filesystem entries and directory listing via `StubFilesystemAdapter`; `Pytsk3FilesystemAdapter` only reports dependency/unimplemented status.
+- Synthetic preview-provider content: `StubPreviewProvider` supplies bytes for `/hello.txt`; preview does not extract bytes from a real filesystem.
 
 Not implemented yet:
 
 - Real EWF byte parsing or image verification.
-- Filesystem, partition, export/recovery, hashing, signature, search, reporting, or UI workflows.
-- Automatic persistence from intake JSON into SQLite.
+- Real partition table parsing.
+- Real filesystem parsing or real file extraction.
+- Export/recovery, hashing, signature, search, reporting, UI, or executable packaging workflows.
+- Automatic persistence from intake JSON or Stage 2 API results into SQLite.
+- Required native forensic dependencies; `pyewf`, libewf, `pytsk3`, and The Sleuth Kit remain optional.

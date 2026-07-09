@@ -45,8 +45,8 @@ Out of initial scope:
 
 0. Foundation: initialize Git, choose stack, create skeleton, add test/lint commands, define docs structure. Status: complete.
 1. Evidence intake: prove segmented E01 discovery, adapter boundaries, JSON intake output, case-store schema, and dependency-safe behavior. Status: complete.
-2. Volume/filesystem view: establish image/byte-stream fixtures, detect partitions/volumes, and browse one filesystem with metadata. Status: planned next.
-3. Export/recovery: export selected files with provenance and lay groundwork for deleted-file recovery where supported. Status: planned.
+2. Volume/filesystem view: establish image/byte-stream fixtures, discover whole-image volumes, and browse a stubbed filesystem with metadata and bounded preview output. Status: complete as of S2-T07 final review.
+3. Export/recovery: export selected files with provenance and lay groundwork for deleted-file recovery where supported. Status: planned next.
 4. Hash/signature analysis: add file hashing, known-file matching, file type detection, and mismatch flags.
 5. Search/timeline: add filename search, metadata filters, full-text search, and timestamp timeline.
 6. Reporting/workflow: bookmarks, examiner notes, audit log, and report generation.
@@ -118,6 +118,29 @@ Stage 2 acceptance criteria:
 - Unsupported or missing native dependencies produce structured status, not raw crashes.
 - Tests run without private evidence.
 - Stage 2 docs clearly state which behavior is real fixture-backed and which remains stubbed.
+
+Stage 2 status: complete at the documentation/review-handoff level as of 2026-07-09.
+
+Implemented:
+
+- Fixture/dependency strategy for stubs, tiny generated files, and optional local-only forensic fixtures.
+- Read-only `LocalFileImageStream` for tiny local files and bounded byte reads.
+- Whole-image volume discovery boundary for readable non-empty image streams.
+- Filesystem adapter boundary with deterministic stub entries and dependency-safe `pytsk3` skeleton behavior.
+- Backend directory listing/file metadata callable over adapter entries.
+- Bounded raw/text/hex preview callable over explicit preview-provider bytes.
+
+Known Stage 2 limits:
+
+- No real EWF byte parsing or image verification.
+- No real partition table parsing.
+- No real filesystem parsing or real file extraction.
+- No UI or executable packaging.
+- No export/recovery, hashing/signature analysis, search/timeline, or reporting.
+- No automatic case-store persistence for Stage 2 API results.
+- `pyewf`, libewf, `pytsk3`, and The Sleuth Kit remain optional and are not required for default tests.
+
+Stage 3 is the next planned stage. It should start from the Stage 2 backend result shapes and add export/recovery foundations without assuming deleted-file recovery is available until a real filesystem adapter exposes it.
 
 ## Stage 3 Detailed Targets
 

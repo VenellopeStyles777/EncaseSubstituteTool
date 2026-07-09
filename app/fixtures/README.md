@@ -39,7 +39,7 @@ Optional local-only forensic fixtures are for developer experiments and later in
 - S2-T03 volume discovery boundary: use stubs for partitioned images; allow a whole-image/single-volume result for tiny raw fixtures.
 - S2-T04 filesystem adapter boundary: use stubs for filesystem trees and dependency statuses; `pytsk3` absence must produce structured unavailable status.
 - S2-T05 directory listing and metadata: use stubbed directory trees with stable provenance fields, file ids/paths, sizes, timestamps where meaningful, and allocation/deleted status where supported.
-- S2-T06 preview foundation: use tiny generated files or stubbed file content with known raw/text/hex output.
+- S2-T06 preview foundation: use explicit provider content with known raw/text/hex output. The default `StubPreviewProvider` content is synthetic and must not be described as real bytes extracted from the stub filesystem entry.
 
 ## Later Real-Fixture Handling
 

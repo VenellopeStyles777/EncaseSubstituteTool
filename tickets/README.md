@@ -53,8 +53,8 @@ For very small fixes during the same stage, keep using the same branch unless th
 Current ticket folders:
 
 - `stage-1/`: E01 intake spike. Status: complete.
-- `stage-2/`: volume/filesystem browsing MVP. Status: planned next.
-- `stage-3/`: export/recovery foundation. Status: planned.
+- `stage-2/`: volume/filesystem browsing MVP. Status: complete at Stage 2 handoff.
+- `stage-3/`: export/recovery foundation. Status: planned next.
 
 ## Approval Buffer
 
