@@ -15,16 +15,14 @@ Suggested first planning format:
 
 Specific implementation tasks:
 
-- Create backend package/module structure under `app/backend/forensic_core`.
-- Create segment discovery logic for E01 chains.
-- Create EWF reader adapter interface.
-- Add pyewf/libewf adapter if dependency is available.
-- Add stub/mock adapter for tests and dependency-free development.
-- Create structured metadata response model.
-- Create basic case-store schema draft under `app/backend/case_store`.
-- Add an intake command/API entry point.
-- Add tests under `app/tests`.
-- Update documentation after implementation.
+Stage 1 is now divided into tickets under `tickets/stage-1/`:
+
+- S1-T01: backend Python skeleton.
+- S1-T02: E01 segment discovery.
+- S1-T03: EWF reader adapter interface.
+- S1-T04: intake command JSON output.
+- S1-T05: minimal case-store schema.
+- S1-T06: documentation and review handoff.
 
 Definition of done:
 

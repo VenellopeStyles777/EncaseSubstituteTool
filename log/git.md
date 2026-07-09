@@ -27,3 +27,12 @@ git add .
 git commit -m "stage 0: expand planning and app skeleton"
 git push -u origin main
 ```
+
+2026-07-09 Stage 1 checkpoint:
+
+- Branch: `stage-1-e01-intake`.
+- Commit: `e224e21 stage 1-T01: add backend skeleton and ticket workflow`.
+- Remote branch: `origin/stage-1-e01-intake`.
+- Base branch visible locally: `main` at `421994e skeleton`.
+- Working tree check after push: clean.
+- Review result before commit: S1-T01/S1-T01A approved in `review.md`.

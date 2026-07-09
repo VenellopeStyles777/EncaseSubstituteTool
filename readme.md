@@ -8,6 +8,8 @@ Primary planning files:
 
 - [Goal.md](Goal.md): product vision, scope, development stages, and initial VS Code agent prompt.
 - [research.md](research.md): research notes, references, functionality map, architecture outline, and plugin/tooling recommendations.
+- [tickets/](tickets): ticketing workflow and stage-by-stage implementation tickets.
+- [prompts/](prompts): history of prompts sent to implementation agents.
 - [functionality.md](functionality.md): future feature checklist and acceptance criteria.
 - [plan.md](plan.md): future sprint-level implementation plan.
 - [progression.md](progression.md): future progress tracker.
