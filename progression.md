@@ -53,3 +53,39 @@ YYYY-MM-DD
 - Learned: the ticket-review-commit workflow is working as intended.
 - Blocked by: nothing for this commit.
 - Next: commit the reviewed S1-T01/S1-T01A work, then start a new branch or ticket handoff for S1-T02.
+
+2026-07-09
+- Completed: confirmed S1-T01/S1-T01A work was committed and pushed on branch `stage-1-e01-intake` at commit `e224e21`.
+- Learned: the branch workflow is active: implementation, review, commit, then separate push approval.
+- Blocked by: nothing for S1-T02 planning.
+- Next: hand S1-T02 to the VS Code agent for E01 segment discovery.
+
+2026-07-09
+- Completed: implemented S1-T02 E01 segment discovery with structured result objects and tests for single segments, ordered chains, missing middle segments, unsupported input, and case-insensitive extensions.
+- Learned: filename-level segment discovery can stay dependency-free and read-only by inspecting only directory entries, leaving EWF metadata parsing for S1-T03 and later. Tests pass with workspace-local dummy files because this shell cannot access pytest's default temp directory and Python-created `TemporaryDirectory` folders became permission-denied.
+- Blocked by: nothing for S1-T02 implementation.
+- Next: hand S1-T02 off for review before beginning S1-T03 adapter work. Final test run: `python -m pytest` reported 7 passed, 1 non-failing `.pytest_cache` warning.
+
+2026-07-09
+- Completed: mitigated local pytest temp/cache permission issues by configuring pytest to use `.test-artifacts/pytest-temp` and disabling pytest's optional cache provider.
+- Learned: Python itself is suitable for Stage 1; the problem was local temporary/cache directory permissions, not the segment discovery implementation.
+- Blocked by: old permission-denied scratch folders remain from failed temp-directory experiments, but they are ignored and do not block tests.
+- Next: optionally clean old scratch folders from Windows Explorer or after reboot; continue S1-T02 review with `python -m pytest` now reporting 7 passed.
+
+2026-07-09
+- Completed: reviewed S1-T02 segment discovery.
+- Learned: main behavior is good, but `.E00` is incorrectly accepted as segment number 0.
+- Blocked by: S1-T02 needs a small correction and regression test before approval.
+- Next: give the VS Code agent the S1-T02 review fix prompt for `.E00` handling.
+
+2026-07-09
+- Completed: fixed the S1-T02 review finding so `.E00` is treated as an unsupported sibling segment instead of discovered segment number 0.
+- Learned: with pytest cache disabled and tests using deterministic `.test-artifacts` scratch folders, `python -m pytest` now runs without the earlier cache warning in this environment.
+- Blocked by: nothing for the S1-T02 review fix.
+- Next: return S1-T02 for review before starting S1-T03 adapter work. Final test run: `python -m pytest` reported 8 passed.
+
+2026-07-09
+- Completed: re-reviewed S1-T02 after the `.E00` fix and approved it for commit.
+- Learned: the segment discovery behavior is now good enough for the later S1-T04 JSON intake command.
+- Blocked by: nothing for S1-T02.
+- Next: commit S1-T02 after user approval, then prepare the S1-T03 adapter-interface ticket.

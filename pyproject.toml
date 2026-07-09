@@ -1,3 +1,4 @@
 [tool.pytest.ini_options]
 testpaths = ["app/tests"]
 pythonpath = ["."]
+addopts = ["--basetemp=.test-artifacts/pytest-temp", "-p", "no:cacheprovider"]

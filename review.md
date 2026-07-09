@@ -12,9 +12,54 @@ Review priorities for this project:
 
 ## Current Review Queue
 
-- Review S1-T02 for segment discovery without real evidence files.
 - Review S1-T03 for dependency-unavailable behavior.
 - Confirm S1-T05 case-store schema records evidence provenance and audit events.
+
+## 2026-07-09 - S1-T02 Re-Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- The previous `.E00` issue is fixed: `.E00` is treated as an unsupported sibling segment and is not included in discovered segments.
+- Regression coverage was added for `.E00`.
+- Segment discovery remains dependency-free and read-only; it only inspects path names and directory entries.
+
+Tests:
+
+- `python -m pytest`: 8 passed.
+
+Residual notes:
+
+- Old ignored scratch/cache folders from earlier temp-directory experiments may remain locally, but they do not affect tests or Git-tracked files.
+
+## S1-T02 Review Expectations
+
+- Segment discovery must use temporary dummy files or mocks, not real E01 evidence.
+- The code should not parse EWF content yet; that belongs to S1-T03 and later.
+- Results should be structured and stable enough for the later intake JSON command.
+- Missing/gap behavior should be visible through warnings or a documented exception/result.
+- Tests should cover valid chains, invalid input, and gaps.
+
+## 2026-07-09 - S1-T02 Initial Review
+
+Result: changes requested.
+
+Findings:
+
+- [P2] `app/backend/forensic_core/segment_discovery.py`: `_parse_segment_number()` accepts `.E00` as segment number `0`. When `sample.E00` sits next to `sample.E01`, discovery includes `.E00` in `segments`, emits no warning, and marks the set complete. Stage 1 discovery should treat `.E00` as unsupported/invalid because the selected evidence chain starts at `.E01`.
+
+Tests:
+
+- `python -m pytest`: 7 passed.
+
+Good notes:
+
+- The implementation stays dependency-free and does not parse evidence bytes.
+- The result shape is clear and future JSON-friendly.
+- Tests use dummy workspace-local files, not real evidence.
+- The pytest temp/cache mitigation is working; the latest test run completed without warnings.
 
 ## 2026-07-09 - S1-T01/S1-T01A Review
 

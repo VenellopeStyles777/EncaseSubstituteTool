@@ -30,6 +30,7 @@ Python:
 - Pytest version observed: 9.1.1.
 - Warning observed: pytest could not create one cache path under `.pytest_cache`; tests still passed.
 - Follow-up check: the local `.pytest_cache` directory is permission-denied to the shell, which explains the warning. `.gitignore` covers `.pytest_cache/`, so this remains a non-blocking local cache artifact.
+- S1-T02 follow-up: pytest's default Windows temp path also produced permission issues for `tmp_path`/temporary-directory style tests. The project now configures pytest to use repo-local ignored path `.test-artifacts/pytest-temp` for temporary files and disables pytest's optional cache provider.
 
 Codex bundled runtime:
 
@@ -83,6 +84,8 @@ python -m pytest
 If PowerShell blocks venv activation, either run the activation command from a terminal that allows it or adjust execution policy for the current user.
 
 Current note: tests pass with the currently available global Python 3.14.6, but a project `.venv` is still recommended before adding dependencies beyond `pytest`.
+
+The project test configuration stores pytest temporary files under `.test-artifacts/pytest-temp` instead of the default Windows temp folder. It also disables pytest's optional cache provider for now. This keeps test scratch files inside the writable repository workspace and avoids the observed `C:\Users\cqi\AppData\Local\Temp\pytest-of-cqi` and pytest cache permission issues.
 
 ## Stage 1 Dependency Policy
 
