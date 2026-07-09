@@ -12,6 +12,60 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## S2-T03 Review Expectations
+
+- Volume discovery should produce structured JSON-friendly results with provenance.
+- Whole-image/single-volume behavior is acceptable for S2-T03.
+- Missing, unreadable, or zero-byte sources should be handled predictably.
+- S2-T03 should not introduce filesystem parsing, pytsk3/TSK requirements, preview rendering, export/recovery, or real evidence fixtures.
+
+## 2026-07-09 - S2-T03 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- `discover_volumes()` defines a JSON-friendly volume discovery boundary over `ImageByteStream`.
+- Whole-image/single-volume behavior works for readable non-empty streams.
+- Missing/unavailable streams, zero-byte sources, and unsupported partition strategies return structured statuses and warnings.
+- Tests use tiny generated files and do not require real evidence or native forensic dependencies.
+- S2-T03 stayed in scope and did not add filesystem parsing, preview rendering, export/recovery, hashing, UI work, or real partition parsing.
+
+Tests:
+
+- `python -m pytest`: 38 passed.
+
+Residual notes:
+
+- Volume id is currently the stable placeholder `volume-0` for whole-image strategy. Future real partition parsing should define deterministic ids from source/evidence id plus partition metadata.
+
+## 2026-07-09 - S2-T03 Volume Discovery Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `discover_volumes()` volume discovery boundary over `ImageByteStream`.
+- Whole-image/single-volume behavior for readable non-empty streams.
+- Structured statuses for successful discovery, unavailable image stream, zero-byte image, and unsupported partition parsing strategies.
+- JSON-friendly result objects with source path, stream type, source size, read-only assertion, volume id/index, offset, length, type, description, status, and warnings.
+- Generated-file tests for non-empty local source, zero-byte source, missing source, serialization shape, read-only provenance, and unsupported partition strategy.
+
+Scope intentionally not implemented:
+
+- No real partition table parsing.
+- No filesystem adapter or directory listing.
+- No preview rendering.
+- No export/recovery, hashing, or native forensic dependencies.
+- No real evidence or binary forensic fixtures.
+
+Suggested review command:
+
+```powershell
+python -m pytest
+```
+
 ## S2-T02 Review Expectations
 
 - Byte stream implementation must be read-only and bounded by offset/length.

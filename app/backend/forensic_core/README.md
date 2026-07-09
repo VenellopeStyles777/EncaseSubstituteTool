@@ -62,3 +62,21 @@ Current behavior:
 - uses tiny generated files in tests and does not require real evidence, EWF parsing, `pyewf`, libewf, `pytsk3`, or The Sleuth Kit.
 
 S2-T02 does not parse partitions, discover volumes, parse filesystems, list directories, render previews, export files, or hash evidence. Those remain later tickets.
+
+## S2-T03 Volume Discovery Boundary
+
+`volume_discovery.py` defines the first Stage 2 volume result boundary:
+
+- `discover_volumes(stream, strategy="whole_image")`: returns JSON-friendly volume discovery results for an `ImageByteStream`.
+- `VolumeDiscoveryResult`: source-level result with schema version, source path, stream type, source size, read-only assertion, strategy, status, volumes, and warnings.
+- `VolumeInfo`: one volume-like range with volume id, index, source provenance, offset, length, type, description, read-only assertion, status, and warnings.
+- `VolumeDiscoveryStatus` and `VolumeDiscoveryWarning`: structured status/warning objects for normal, unavailable, empty, and unsupported paths.
+
+Current behavior:
+
+- emits one `whole_image` volume for a readable non-empty local file stream;
+- returns `empty_image` with no volumes for a zero-byte source;
+- returns `image_stream_unavailable` with stream-status warning details for missing, directory, unreadable, or otherwise unavailable image streams;
+- returns `partition_parsing_unsupported` for non-`whole_image` strategies so future real partition parsers have a documented boundary.
+
+S2-T03 does not parse real partition tables, parse filesystems, list directories, render previews, export files, hash evidence, or require `pytsk3`, The Sleuth Kit, `pyewf`, libewf, or real forensic images.

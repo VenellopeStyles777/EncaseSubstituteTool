@@ -23,6 +23,14 @@ from app.backend.forensic_core.segment_discovery import (
     SegmentWarning,
     discover_e01_segments,
 )
+from app.backend.forensic_core.volume_discovery import (
+    VOLUME_DISCOVERY_SCHEMA_VERSION,
+    VolumeDiscoveryResult,
+    VolumeDiscoveryStatus,
+    VolumeDiscoveryWarning,
+    VolumeInfo,
+    discover_volumes,
+)
 
 __all__ = [
     "EwfMetadataResult",
@@ -40,6 +48,12 @@ __all__ = [
     "SegmentInfo",
     "SegmentWarning",
     "StubEwfReaderAdapter",
+    "VOLUME_DISCOVERY_SCHEMA_VERSION",
     "VerificationStatus",
+    "VolumeDiscoveryResult",
+    "VolumeDiscoveryStatus",
+    "VolumeDiscoveryWarning",
+    "VolumeInfo",
     "discover_e01_segments",
+    "discover_volumes",
 ]

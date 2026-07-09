@@ -1,6 +1,6 @@
 # S2-T03 - Volume Discovery Boundary
 
-Status: Ready
+Status: Done
 
 Stage: Stage 2 - Volume and filesystem browsing MVP
 
