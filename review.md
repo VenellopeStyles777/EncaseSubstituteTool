@@ -12,8 +12,36 @@ Review priorities for this project:
 
 ## Current Review Queue
 
-- Review S1-T03 for dependency-unavailable behavior.
 - Confirm S1-T05 case-store schema records evidence provenance and audit events.
+
+## 2026-07-09 - S1-T03 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- The adapter boundary is separate from segment discovery.
+- The stub adapter returns predictable synthetic metadata and verification shape for tests.
+- The pyewf adapter skeleton handles missing `pyewf` as structured dependency-unavailable data, not a raw import crash.
+- Tests do not require real evidence, pyewf, or libewf.
+
+Tests:
+
+- `python -m pytest`: 12 passed.
+
+Residual notes:
+
+- Real pyewf metadata extraction is intentionally deferred beyond S1-T03.
+- Result dataclasses contain normal dictionaries; this is acceptable for the current boundary, but later evidence-facing code should avoid mutating returned result objects in place.
+
+## S1-T03 Review Expectations
+
+- Adapter interface should be separate from segment discovery.
+- Tests must pass without `pyewf`, libewf, or real E01 evidence.
+- Stub adapter should return predictable metadata and verification status.
+- Missing dependency behavior should be structured and visible, not a raw import crash.
+- Real pyewf adapter code, if added, should be optional and read-only by design.
 
 ## 2026-07-09 - S1-T02 Re-Review
 

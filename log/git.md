@@ -36,3 +36,12 @@ git push -u origin main
 - Base branch visible locally: `main` at `421994e skeleton`.
 - Working tree check after push: clean.
 - Review result before commit: S1-T01/S1-T01A approved in `review.md`.
+
+2026-07-09 S1-T02 checkpoint:
+
+- Branch: `stage-1-e01-intake`.
+- Commit visible locally: `5a5f90e stage 1: E01 segment discovery`.
+- Remote branch visible locally: `origin/stage-1-e01-intake`.
+- User reported the S1-T02 work was pushed and merged.
+- Local working tree check before S1-T03 prep: clean.
+- Local `main` had not been refreshed in this session at the time of this note.

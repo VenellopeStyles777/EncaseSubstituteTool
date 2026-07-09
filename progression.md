@@ -89,3 +89,21 @@ YYYY-MM-DD
 - Learned: the segment discovery behavior is now good enough for the later S1-T04 JSON intake command.
 - Blocked by: nothing for S1-T02.
 - Next: commit S1-T02 after user approval, then prepare the S1-T03 adapter-interface ticket.
+
+2026-07-09
+- Completed: implemented and reviewed S1-T03 EWF reader adapter boundary with stub metadata, verification status shape, and structured pyewf dependency-unavailable behavior.
+- Learned: the project now has a clean split between segment discovery and metadata-reader adapters, which sets up S1-T04's intake JSON command.
+- Blocked by: nothing for S1-T03.
+- Next: commit S1-T03 after user approval, then prepare S1-T04 intake command JSON output.
+
+2026-07-09
+- Completed: confirmed S1-T02 commit `5a5f90e stage 1: E01 segment discovery` is visible locally on `stage-1-e01-intake`; user reported it was pushed and merged.
+- Learned: the branch remains clean and ready for the next ticket handoff.
+- Blocked by: nothing for S1-T03 planning.
+- Next: hand S1-T03 to the VS Code agent for EWF reader adapter interface and stub behavior.
+
+2026-07-09
+- Completed: implemented S1-T03 EWF reader adapter boundary with structured dependency, metadata, warning, and verification result objects; added a dependency-free stub adapter and pyewf-unavailable adapter path.
+- Learned: the reader adapter can remain separate from segment discovery and tests can cover metadata shape without real E01 evidence or native libraries.
+- Blocked by: nothing for S1-T03 implementation.
+- Next: hand S1-T03 off for review before beginning S1-T04 intake JSON command work. Final test run: `python -m pytest` reported 12 passed.

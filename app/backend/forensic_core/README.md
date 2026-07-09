@@ -23,3 +23,15 @@ Current behavior:
 - only inspects path names and directory entries, and does not open or parse evidence content.
 
 The result object includes `is_valid_input`, `is_complete`, `read_only`, ordered `segments`, and structured `warnings`. Real EWF metadata reading belongs to a later adapter ticket.
+
+## S1-T03 EWF Reader Adapter
+
+`ewf_reader.py` defines the read-only adapter boundary for EWF metadata and verification:
+
+- `EwfReaderAdapter`: protocol for dependency status, metadata, and verification calls.
+- `EwfMetadataResult`: stable metadata result shape with adapter availability, read-only assertion, source paths, metadata, dependency status, verification status, and warnings.
+- `VerificationStatus`: stable verification shape using statuses such as `not_supported` and `not_run`.
+- `StubEwfReaderAdapter`: dependency-free adapter that returns predictable synthetic metadata for tests.
+- `PyewfEwfReaderAdapter`: optional pyewf/libewf adapter skeleton that reports structured dependency-unavailable results when `pyewf` is not installed.
+
+The adapter layer is intentionally separate from segment discovery. S1-T03 does not parse real EWF bytes and does not require real evidence files or native forensic libraries for tests.
