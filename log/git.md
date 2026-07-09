@@ -53,3 +53,11 @@ git push -u origin main
 - Remote branch visible locally before S1-T04 prep: `origin/stage-1-e01-intake` at `5a5f90e`.
 - Working tree check before S1-T04 prep: clean.
 - Note: local view did not yet show S1-T03 pushed to the remote branch at the time of this note.
+
+2026-07-09 S1-T04 checkpoint:
+
+- Branch: `stage-1-e01-intake`.
+- Commit visible locally and on remote branch: `77ecf7b stage 1:JSON command`.
+- Remote branch: `origin/stage-1-e01-intake`.
+- Working tree check before S1-T05 prep: clean.
+- Review result before commit: S1-T04 approved in `review.md`.

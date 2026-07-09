@@ -12,7 +12,34 @@ Review priorities for this project:
 
 ## Current Review Queue
 
-- Confirm S1-T05 case-store schema records evidence provenance and audit events.
+## 2026-07-09 - S1-T05 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- Schema includes `cases`, `evidence_sources`, `audit_events`, and `schema_migrations`.
+- Evidence source rows preserve S1-T04 intake provenance through source paths, segment discovery JSON, adapter/dependency JSON, metadata JSON, verification JSON/status, warnings JSON, read-only assertion, and timestamps.
+- Audit events link to cases and optionally evidence sources.
+- Tests use in-memory SQLite and do not require real evidence or persistent user data.
+- The implementation stayed in scope and did not wire automatic intake persistence, UI, filesystem parsing, or real EWF parsing.
+
+Tests:
+
+- `python -m pytest`: 22 passed.
+
+Residual notes:
+
+- Audit timestamps currently use second precision. This is acceptable for the Stage 1 foundation, but later audit-heavy workflows may want higher precision or an explicit monotonic sequence.
+
+## S1-T05 Review Expectations
+
+- Schema should include cases, evidence_sources, and audit_events.
+- Evidence source records should preserve enough provenance for S1-T04 intake output.
+- Tests should use in-memory or temporary SQLite databases, not persistent user data.
+- The implementation should not broaden into UI, filesystem parsing, or automatic full case workflow.
+- Audit events should be generic enough to record future actions without schema churn.
 
 ## 2026-07-09 - S1-T04 Re-Review
 

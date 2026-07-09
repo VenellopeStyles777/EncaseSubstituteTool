@@ -13,7 +13,7 @@ Stage 1 should stay backend-first. Do not build a polished UI in this stage.
 | S1-T02 | Done | E01 segment discovery |
 | S1-T03 | Done | EWF reader adapter interface and stub adapter |
 | S1-T04 | Done | Intake command returning structured JSON |
-| S1-T05 | Ready | Minimal SQLite case-store schema |
+| S1-T05 | Done | Minimal SQLite case-store schema |
 | S1-T06 | Ready | Documentation, dependency notes, and review handoff |
 
 ## Stage 1 Definition Of Done

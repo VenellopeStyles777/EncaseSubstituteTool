@@ -137,3 +137,21 @@ YYYY-MM-DD
 - Learned: the VS Code agent handoff summary is useful context, but review should still verify files and rerun tests.
 - Blocked by: nothing for S1-T04.
 - Next: commit S1-T04 after user approval, then prepare S1-T05 minimal SQLite case-store schema.
+
+2026-07-09
+- Completed: confirmed S1-T04 was committed and pushed as `77ecf7b stage 1:JSON command` on `origin/stage-1-e01-intake`.
+- Learned: S1-T05 should define the case/evidence/audit storage foundation without over-wiring intake persistence yet.
+- Blocked by: nothing for S1-T05 planning.
+- Next: hand S1-T05 to the VS Code agent for minimal SQLite case-store schema.
+
+2026-07-09
+- Completed: implemented and reviewed S1-T05 minimal SQLite case-store schema with cases, evidence sources, audit events, schema migration marker, and helper functions.
+- Learned: S1-T04 intake output can be preserved as provenance JSON without forcing automatic persistence yet.
+- Blocked by: nothing for S1-T05.
+- Next: commit S1-T05 after user approval, then prepare S1-T06 documentation and review handoff.
+
+2026-07-09
+- Completed: implemented S1-T05 minimal SQLite case-store schema with executable setup and helpers for cases, evidence sources, and audit events.
+- Learned: S1-T04 intake output can be preserved as JSON snapshots in `evidence_sources` without forcing automatic persistence into the intake command yet.
+- Blocked by: nothing for S1-T05 implementation.
+- Next: hand S1-T05 off for review before beginning S1-T06 documentation and review handoff work. Final test run: `python -m pytest` reported 22 passed.
