@@ -37,10 +37,10 @@ If `pytest` is not installed:
 python -m pip install pytest
 ```
 
-Current S1-T01A verification on 2026-07-09:
+Current Stage 1 verification on 2026-07-09:
 
-- `python -m pytest`: 2 passed, 1 warning.
-- Warning: pytest could not create/update a path under `.pytest_cache`; this is a non-blocking local cache issue when tests still pass.
+- `python -m pytest`: 22 passed.
+- The project config routes pytest temporary files to `.test-artifacts/pytest-temp` and disables pytest's optional cache provider.
 
 ## Stage 1 Intake Command
 
@@ -57,3 +57,18 @@ python -m app.backend.api.intake path\to\sample.E01 --adapter stub
 ```
 
 The command does not write to evidence files. It composes segment discovery with the EWF reader adapter boundary and prints JSON for later UI integration.
+
+## Stage 1 Capabilities And Limits
+
+Implemented:
+
+- E01 segment discovery by filename and directory entry.
+- EWF reader adapter contract, stub adapter, and pyewf dependency-unavailable result path.
+- JSON intake command/callable.
+- SQLite schema helpers for cases, evidence sources, and audit events.
+
+Not implemented yet:
+
+- Real EWF byte parsing or image verification.
+- Filesystem, partition, export/recovery, hashing, signature, search, reporting, or UI workflows.
+- Automatic persistence from intake JSON into SQLite.

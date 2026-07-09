@@ -151,7 +151,73 @@ YYYY-MM-DD
 - Next: commit S1-T05 after user approval, then prepare S1-T06 documentation and review handoff.
 
 2026-07-09
+- Completed: confirmed S1-T05 was committed and pushed as `2aeae90 Stage 1: SQLite case store schema` on `origin/stage-1-e01-intake`; user reported it was merged.
+- Learned: the Stage 1 core implementation tickets are complete; S1-T06 should package the state clearly for review and next-stage planning.
+- Blocked by: nothing for S1-T06 planning.
+- Next: hand S1-T06 to the VS Code agent for documentation and final Stage 1 review handoff.
+
+2026-07-09
 - Completed: implemented S1-T05 minimal SQLite case-store schema with executable setup and helpers for cases, evidence sources, and audit events.
 - Learned: S1-T04 intake output can be preserved as JSON snapshots in `evidence_sources` without forcing automatic persistence into the intake command yet.
 - Blocked by: nothing for S1-T05 implementation.
 - Next: hand S1-T05 off for review before beginning S1-T06 documentation and review handoff work. Final test run: `python -m pytest` reported 22 passed.
+
+2026-07-09
+- Completed: implemented S1-T06 documentation and final Stage 1 review handoff updates across top-level docs, backend docs, environment notes, ticket status, plan, progression, and review guidance.
+- Learned: Stage 1 is review-ready as a backend intake foundation, but it must remain clearly labeled as not doing real EWF byte parsing, filesystem parsing, UI work, or automatic intake persistence.
+- Blocked by: nothing for S1-T06 implementation.
+- Next: hand S1-T06 off for final Stage 1 review and do not begin Stage 2 until review approval. Final test run: `python -m pytest` reported 22 passed.
+
+2026-07-09
+- Completed: marked Stage 1 complete at the planning level and created Stage 2/Stage 3 ticket outlines.
+- Learned: Stage 2 should focus on volume/filesystem browsing foundations, while Stage 3 should focus on export/recovery foundations; hashing/signature work should remain Stage 4.
+- Blocked by: nothing for Stage 2 planning.
+- Next: archive the Stage 1 VS Code implementation chat, then start a fresh Stage 2 implementation chat with S2-T01 after final user approval.
+
+2026-07-09
+- Completed: created the Stage 2 VS Code agent familiarization prompt.
+- Learned: Stage 2 should start with S2-T01 fixture/dependency strategy so later byte-stream and filesystem work has a safe test foundation.
+- Blocked by: nothing for Stage 2 onboarding.
+- Next: open a fresh VS Code Codex chat for Stage 2 and provide `prompts/vscode-agent/2026-07-09-stage-2-familiarization.md`.
+
+2026-07-09
+- Completed: prepared the S2-T01 fixture/dependency strategy handoff prompt and marked S2-T01 in progress.
+- Learned: the Stage 2 agent understood the scope boundary and is waiting for ticket-specific work.
+- Blocked by: nothing for S2-T01 handoff.
+- Next: give the Stage 2 VS Code agent `prompts/vscode-agent/2026-07-09-s2-t01-fixture-dependency-strategy.md`.
+
+2026-07-09
+- Completed: updated manual testing/executable timing in `plan.md`, refreshed `functionality.md` feature status, and added feature-inventory updates to the workflow.
+- Learned: Stage 1 is automated-test complete but still manually untested as an app workflow.
+- Blocked by: nothing for documentation tracking.
+- Next: keep `functionality.md` current during Stage 2 ticket reviews and mark features manually tested only after user confirmation.
+
+2026-07-09
+- Completed: reviewed S2-T01 fixture/dependency strategy and marked it done.
+- Learned: Stage 2 now has clear rules for stubs, tiny generated fixtures, and optional local-only forensic integration fixtures.
+- Blocked by: nothing for S2-T01.
+- Next: commit S2-T01 after user approval, then prepare S2-T02 image/byte-stream abstraction.
+
+2026-07-09
+- Completed: confirmed S2-T01 was committed and pushed as `2dfd2b8 stage 2: define fixure and dependency` on `origin/stage-1-e01-intake`.
+- Learned: S2-T02 is the first Stage 2 code ticket and should stay limited to read-only byte stream behavior.
+- Blocked by: nothing for S2-T02 planning.
+- Next: hand S2-T02 to the Stage 2 VS Code agent.
+
+2026-07-09
+- Completed: reviewed S2-T02 read-only image byte-stream abstraction and marked it done.
+- Learned: Stage 2 now has a local file-backed byte source for tiny generated fixtures, which can support volume and preview foundations later.
+- Blocked by: nothing for S2-T02.
+- Next: commit S2-T02 after user approval, then prepare S2-T03 volume discovery boundary.
+
+2026-07-09
+- Completed: implemented S2-T01 fixture/dependency strategy as documentation-only updates in the fixture policy, environment readiness notes, Stage 2 plan, and review handoff.
+- Learned: early Stage 2 can proceed with pure stubs for adapter/result boundaries and tiny generated files for byte/preview behavior, while real raw/EWF/TSK fixtures remain optional local-only integration inputs.
+- Blocked by: nothing for S2-T01; `pytsk3`, The Sleuth Kit, `pyewf`, and libewf remain optional and must not be required for default tests.
+- Next: hand S2-T01 off for review before beginning S2-T02 image/byte-stream abstraction work.
+
+2026-07-09
+- Completed: implemented S2-T02 read-only image byte-stream abstraction with `LocalFileImageStream`, structured metadata/read result objects, and generated-file tests.
+- Learned: local byte access can stay dependency-free by using explicit offset/length reads, read-only binary open mode, and structured statuses for missing paths, directories, invalid ranges, EOF truncation, and reads beyond EOF.
+- Blocked by: nothing for S2-T02; no native forensic dependencies or real evidence fixtures were introduced.
+- Next: hand S2-T02 off for review before beginning S2-T03 volume discovery boundary work. Final test run: `python -m pytest` reported 32 passed.

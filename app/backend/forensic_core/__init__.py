@@ -9,6 +9,14 @@ from app.backend.forensic_core.ewf_reader import (
     StubEwfReaderAdapter,
     VerificationStatus,
 )
+from app.backend.forensic_core.image_stream import (
+    ImageByteStream,
+    ImageReadResult,
+    ImageStreamInfo,
+    ImageStreamStatus,
+    ImageStreamWarning,
+    LocalFileImageStream,
+)
 from app.backend.forensic_core.segment_discovery import (
     SegmentDiscoveryResult,
     SegmentInfo,
@@ -20,6 +28,12 @@ __all__ = [
     "EwfMetadataResult",
     "EwfReaderAdapter",
     "EwfReaderWarning",
+    "ImageByteStream",
+    "ImageReadResult",
+    "ImageStreamInfo",
+    "ImageStreamStatus",
+    "ImageStreamWarning",
+    "LocalFileImageStream",
     "PyewfEwfReaderAdapter",
     "ReaderDependencyStatus",
     "SegmentDiscoveryResult",
