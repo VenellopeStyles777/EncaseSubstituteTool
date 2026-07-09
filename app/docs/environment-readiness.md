@@ -1,12 +1,12 @@
 # Environment Readiness Check
 
-Purpose: record the local tool/environment state before Stage 1 development.
+Purpose: record the local tool/environment state for backend-first development.
 
 Last checked: 2026-07-09
 
 ## Summary
 
-The repository, Git remote, and normal Python environment are ready for Stage 1 review.
+The repository, Git remote, and normal Python environment are ready for Stage 1 review and early Stage 2 documentation/stub work.
 
 Earlier on 2026-07-09, `python` resolved only to the Microsoft Store app execution alias. That has since been fixed.
 
@@ -109,6 +109,29 @@ Stage 2 and later:
 
 - `pytsk3`, libewf/pyewf, native build tools, or packaged binaries may become important.
 - Decide those only after the basic backend contract is stable.
+
+## Stage 2 Dependency Policy
+
+Required for early Stage 2 tests:
+
+- Python 3.11+.
+- `pytest`.
+
+Not required for early Stage 2 tests:
+
+- Real raw disk images.
+- Real E01/EWF evidence.
+- `pyewf`/libewf.
+- `pytsk3` or The Sleuth Kit.
+- Node, Rust, CMake, Visual C++ tools, or desktop UI tooling.
+
+Optional for later Stage 2 integration checks:
+
+- `pytsk3`/The Sleuth Kit for real filesystem parsing.
+- `pyewf`/libewf for real EWF-backed byte streams.
+- Tiny local raw or EWF training fixtures kept outside Git.
+
+Stage 2 implementation should introduce dependency boundaries before requiring native forensic packages. Missing `pytsk3`, The Sleuth Kit, `pyewf`, or libewf must produce structured adapter/dependency status and skip optional integration behavior instead of causing default test failures. Normal `python -m pytest` should remain runnable without private evidence or native forensic dependencies.
 
 ## Review Note
 

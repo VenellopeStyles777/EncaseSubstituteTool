@@ -173,3 +173,33 @@ YYYY-MM-DD
 - Learned: Stage 2 should focus on volume/filesystem browsing foundations, while Stage 3 should focus on export/recovery foundations; hashing/signature work should remain Stage 4.
 - Blocked by: nothing for Stage 2 planning.
 - Next: archive the Stage 1 VS Code implementation chat, then start a fresh Stage 2 implementation chat with S2-T01 after final user approval.
+
+2026-07-09
+- Completed: created the Stage 2 VS Code agent familiarization prompt.
+- Learned: Stage 2 should start with S2-T01 fixture/dependency strategy so later byte-stream and filesystem work has a safe test foundation.
+- Blocked by: nothing for Stage 2 onboarding.
+- Next: open a fresh VS Code Codex chat for Stage 2 and provide `prompts/vscode-agent/2026-07-09-stage-2-familiarization.md`.
+
+2026-07-09
+- Completed: prepared the S2-T01 fixture/dependency strategy handoff prompt and marked S2-T01 in progress.
+- Learned: the Stage 2 agent understood the scope boundary and is waiting for ticket-specific work.
+- Blocked by: nothing for S2-T01 handoff.
+- Next: give the Stage 2 VS Code agent `prompts/vscode-agent/2026-07-09-s2-t01-fixture-dependency-strategy.md`.
+
+2026-07-09
+- Completed: updated manual testing/executable timing in `plan.md`, refreshed `functionality.md` feature status, and added feature-inventory updates to the workflow.
+- Learned: Stage 1 is automated-test complete but still manually untested as an app workflow.
+- Blocked by: nothing for documentation tracking.
+- Next: keep `functionality.md` current during Stage 2 ticket reviews and mark features manually tested only after user confirmation.
+
+2026-07-09
+- Completed: reviewed S2-T01 fixture/dependency strategy and marked it done.
+- Learned: Stage 2 now has clear rules for stubs, tiny generated fixtures, and optional local-only forensic integration fixtures.
+- Blocked by: nothing for S2-T01.
+- Next: commit S2-T01 after user approval, then prepare S2-T02 image/byte-stream abstraction.
+
+2026-07-09
+- Completed: implemented S2-T01 fixture/dependency strategy as documentation-only updates in the fixture policy, environment readiness notes, Stage 2 plan, and review handoff.
+- Learned: early Stage 2 can proceed with pure stubs for adapter/result boundaries and tiny generated files for byte/preview behavior, while real raw/EWF/TSK fixtures remain optional local-only integration inputs.
+- Blocked by: nothing for S2-T01; `pytsk3`, The Sleuth Kit, `pyewf`, and libewf remain optional and must not be required for default tests.
+- Next: hand S2-T01 off for review before beginning S2-T02 image/byte-stream abstraction work.

@@ -9,6 +9,7 @@ Implementation agent:
 - Works primarily in `app/`.
 - Implements the current stage from `Goal.md` and `plan.md`.
 - Updates `progression.md` after meaningful changes.
+- Updates `functionality.md` when a ticket adds, completes, defers, or changes user-visible behavior.
 - Adds tests with each implementation step.
 - Does not push until review notes are addressed or explicitly deferred.
 
@@ -76,6 +77,7 @@ Do not let one prompt cover too much work. A good ticket should usually be revie
 - Are errors and unsupported dependencies visible?
 - Are tests present and runnable without large private files?
 - Are docs updated where behavior changed?
+- Is `functionality.md` updated for user-visible feature status and manual-test status?
 - Is `git status` clean except intended changes?
 
 ## Git Workflow
@@ -112,7 +114,7 @@ After implementation and review, do not push automatically. Show me git status, 
 - Prompts should list required docs to read first.
 - Prompts should specify files/folders to work in.
 - Prompts should define deliverables and tests.
-- Prompts should ask the implementation agent to update `progression.md` and `plan.md`.
+- Prompts should ask the implementation agent to update `progression.md`, `plan.md` when relevant, and `functionality.md` when user-visible behavior/status changes.
 - Prompts should tell the implementation agent to stop after the active ticket unless the user explicitly says to continue.
 
 ## Conflict Handling

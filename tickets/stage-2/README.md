@@ -8,7 +8,7 @@ Stage 2 should stay backend-first. Do not build a polished UI in this stage.
 
 | Ticket | Status | Purpose |
 | --- | --- | --- |
-| S2-T01 | Ready | Fixture and dependency strategy |
+| S2-T01 | Done | Fixture and dependency strategy |
 | S2-T02 | Ready | Image/byte-stream abstraction |
 | S2-T03 | Ready | Volume discovery boundary |
 | S2-T04 | Ready | Filesystem adapter boundary |

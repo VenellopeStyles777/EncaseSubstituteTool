@@ -8,7 +8,7 @@ Suggested first planning format:
 | --- | --- | --- | --- |
 | 0 | Decide stack and create app skeleton | Done | Python backend-first direction selected; planning docs and skeleton folders exist. |
 | 1 | Build E01 evidence intake spike | Done | S1-T01 through S1-T06 complete. Stage 1 is a backend intake foundation, not real EWF/filesystem parsing. |
-| 2 | Add volume/filesystem browsing MVP | Planned | Next stage. Start with fixture strategy, image abstraction, volume discovery, filesystem adapter boundary, and one browsable fixture/stub tree. |
+| 2 | Add volume/filesystem browsing MVP | In Progress | S2-T01 is defining the fixture/dependency strategy before image abstraction, volume discovery, filesystem adapter boundary, and one browsable fixture/stub tree. |
 | 3 | Add export/recovery foundation | Planned | Export selected fixture/stub files with manifest, hashes, provenance, and audit hooks. Deleted recovery remains conditional. |
 | 4 | Add hashing and signature checks | Not started | Make this reproducible and testable after export/filesystem foundations exist. |
 
@@ -69,6 +69,13 @@ Tickets live under `tickets/stage-2/`:
 - S2-T06: raw/text/hex preview foundation.
 - S2-T07: Stage 2 documentation and review handoff.
 
+S2-T01 fixture/dependency direction:
+
+- Default tests should use pure stubs for adapter boundaries and structured status/error shapes.
+- Tiny generated files under ignored workspace paths may be used for raw byte-stream and preview tests.
+- Real raw, EWF, or pytsk3/The Sleuth Kit integration fixtures must remain optional, local-only, and skipped unless explicitly configured.
+- `pytsk3`, The Sleuth Kit, `pyewf`, and libewf remain optional for early Stage 2; missing dependencies should produce structured unavailable status instead of failing default tests.
+
 Stage 2 definition of done:
 
 - Backend can produce structured volume/filesystem data from a fixture or stub path.
@@ -94,3 +101,22 @@ Stage 3 definition of done:
 - Export results include manifest/provenance and hash information.
 - Tests prove source/evidence paths are not modified.
 - Deleted-file recovery remains clearly scoped to filesystem support.
+
+## Manual Testing And Executable Timing
+
+Current manual testing level:
+
+- Stage 1 has backend commands and automated tests, but no user-facing executable.
+- Stage 1 manual command testing is possible through PowerShell, but it is not a packaged app workflow.
+
+Recommended timing:
+
+- End of Stage 2: first useful manual-test CLI flow. The user should be able to run intake, inspect fixture/stub volume information, list a directory/tree, and preview small text/hex content.
+- End of Stage 3: first meaningful examiner-style backend workflow. The user should be able to intake, browse fixture/stub files, export a selected file, and inspect manifest/hash/provenance/audit output.
+- Stage 4 or Stage 5: consider packaging a Windows executable once hashing/signatures or search/timeline make the tool useful enough to package.
+
+Packaging guidance:
+
+- Do not prioritize `.exe` packaging during early Stage 2.
+- Keep Stage 2 and Stage 3 as Python CLI/manual commands.
+- Revisit packaging after backend contracts stabilize and native dependency direction is clearer.

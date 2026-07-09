@@ -1,6 +1,6 @@
 # S2-T01 - Fixture And Dependency Strategy
 
-Status: Ready
+Status: Done
 
 Stage: Stage 2 - Volume and filesystem browsing MVP
 
