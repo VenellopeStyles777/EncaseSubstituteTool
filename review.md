@@ -12,6 +12,58 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## S2-T02 Review Expectations
+
+- Byte stream implementation must be read-only and bounded by offset/length.
+- Tests should use tiny generated files under ignored paths, not evidence images.
+- Missing paths, directories, and invalid ranges should return structured errors or documented exceptions.
+- S2-T02 should not introduce volume parsing, filesystem parsing, preview rendering, export/recovery, or native forensic dependencies.
+
+## 2026-07-09 - S2-T02 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- `LocalFileImageStream` provides read-only local file metadata and bounded `read_at(offset, length)` behavior.
+- Structured statuses cover missing paths, directories, unreadable/non-regular files, invalid ranges, reads beyond EOF, and successful reads.
+- Tests use tiny generated files under ignored workspace paths and do not require real evidence or native forensic dependencies.
+- S2-T02 stayed in scope and did not add volume discovery, filesystem parsing, preview rendering, export/recovery, hashing, or UI work.
+
+Tests:
+
+- `python -m pytest`: 32 passed.
+
+Residual notes:
+
+- Offset exactly at EOF with a nonzero length currently returns status `ok` with zero bytes and a `read_truncated_at_eof` warning. This is acceptable for now; later preview/volume callers should treat `bytes_read` and warnings as authoritative.
+
+## 2026-07-09 - S2-T02 Image Byte-Stream Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `LocalFileImageStream` read-only local file-backed stream.
+- Structured stream metadata, read result, status, and warning objects.
+- Bounded `read_at(offset, length)` reads with source path, stream type, size, read-only assertion, status, and warning provenance.
+- Generated-file tests for metadata, normal ranges, offset zero, EOF truncation, read beyond EOF, missing paths, directory paths, negative offset/length, and zero-length reads.
+
+Scope intentionally not implemented:
+
+- No volume discovery.
+- No filesystem adapter.
+- No directory listing.
+- No raw/text/hex preview renderer.
+- No export/recovery, hashing, or native forensic dependencies.
+
+Suggested review command:
+
+```powershell
+python -m pytest
+```
+
 ## S2-T01 Review Expectations
 
 - Confirm `app/fixtures/README.md` defines a clear Stage 2 fixture strategy.

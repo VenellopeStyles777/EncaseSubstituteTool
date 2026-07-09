@@ -10,6 +10,13 @@ Stage 1 target:
 - Stub/mock adapter for tests.
 - Read-only evidence access assumptions.
 
+Stage 2 target:
+
+- Read-only image/byte-stream abstraction.
+- Volume discovery boundary.
+- Filesystem adapter boundary.
+- Directory metadata and preview foundations.
+
 ## S1-T02 Segment Discovery
 
 `discover_e01_segments(path)` accepts a selected first segment path such as `sample.E01` and discovers sibling files with the same base name and `.E##` extensions.
@@ -35,3 +42,23 @@ The result object includes `is_valid_input`, `is_complete`, `read_only`, ordered
 - `PyewfEwfReaderAdapter`: optional pyewf/libewf adapter skeleton that reports structured dependency-unavailable results when `pyewf` is not installed. If `pyewf` is importable, real metadata extraction is still intentionally unimplemented in Stage 1 and is reported as `real_reader_not_implemented`.
 
 The adapter layer is intentionally separate from segment discovery. Stage 1 does not parse real EWF bytes and does not require real evidence files or native forensic libraries for tests.
+
+## S2-T02 Image Byte-Stream Abstraction
+
+`image_stream.py` defines the first Stage 2 read-only byte access boundary:
+
+- `ImageByteStream`: protocol for stream metadata and bounded byte-range reads.
+- `LocalFileImageStream`: local file-backed implementation for tiny generated fixtures and later raw-image experiments.
+- `ImageStreamInfo`: source metadata and provenance, including source path, stream type, size, read-only assertion, status, and warnings.
+- `ImageReadResult`: bounded read result, including offset, requested length, source size, bytes read, read-only assertion, status, warnings, and raw `bytes` for backend callers.
+- `ImageStreamStatus` and `ImageStreamWarning`: structured status/warning objects for normal and error paths.
+
+Current behavior:
+
+- opens local sources only in read-only binary mode;
+- supports bounded reads by explicit offset and length;
+- reports missing paths, directory paths, unreadable files, invalid negative ranges, and reads beyond the end of the source as structured statuses;
+- truncates reads that extend past EOF and emits a `read_truncated_at_eof` warning;
+- uses tiny generated files in tests and does not require real evidence, EWF parsing, `pyewf`, libewf, `pytsk3`, or The Sleuth Kit.
+
+S2-T02 does not parse partitions, discover volumes, parse filesystems, list directories, render previews, export files, or hash evidence. Those remain later tickets.

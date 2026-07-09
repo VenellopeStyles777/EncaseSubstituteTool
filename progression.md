@@ -199,7 +199,25 @@ YYYY-MM-DD
 - Next: commit S2-T01 after user approval, then prepare S2-T02 image/byte-stream abstraction.
 
 2026-07-09
+- Completed: confirmed S2-T01 was committed and pushed as `2dfd2b8 stage 2: define fixure and dependency` on `origin/stage-1-e01-intake`.
+- Learned: S2-T02 is the first Stage 2 code ticket and should stay limited to read-only byte stream behavior.
+- Blocked by: nothing for S2-T02 planning.
+- Next: hand S2-T02 to the Stage 2 VS Code agent.
+
+2026-07-09
+- Completed: reviewed S2-T02 read-only image byte-stream abstraction and marked it done.
+- Learned: Stage 2 now has a local file-backed byte source for tiny generated fixtures, which can support volume and preview foundations later.
+- Blocked by: nothing for S2-T02.
+- Next: commit S2-T02 after user approval, then prepare S2-T03 volume discovery boundary.
+
+2026-07-09
 - Completed: implemented S2-T01 fixture/dependency strategy as documentation-only updates in the fixture policy, environment readiness notes, Stage 2 plan, and review handoff.
 - Learned: early Stage 2 can proceed with pure stubs for adapter/result boundaries and tiny generated files for byte/preview behavior, while real raw/EWF/TSK fixtures remain optional local-only integration inputs.
 - Blocked by: nothing for S2-T01; `pytsk3`, The Sleuth Kit, `pyewf`, and libewf remain optional and must not be required for default tests.
 - Next: hand S2-T01 off for review before beginning S2-T02 image/byte-stream abstraction work.
+
+2026-07-09
+- Completed: implemented S2-T02 read-only image byte-stream abstraction with `LocalFileImageStream`, structured metadata/read result objects, and generated-file tests.
+- Learned: local byte access can stay dependency-free by using explicit offset/length reads, read-only binary open mode, and structured statuses for missing paths, directories, invalid ranges, EOF truncation, and reads beyond EOF.
+- Blocked by: nothing for S2-T02; no native forensic dependencies or real evidence fixtures were introduced.
+- Next: hand S2-T02 off for review before beginning S2-T03 volume discovery boundary work. Final test run: `python -m pytest` reported 32 passed.

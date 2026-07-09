@@ -70,3 +70,11 @@ git push -u origin main
 - Working tree check before S1-T06 prep: clean.
 - User reported the S1-T05 work was pushed and merged.
 - Review result before commit: S1-T05 approved in `review.md`.
+
+2026-07-09 Stage 1 final / S2-T01 checkpoint:
+
+- Branch: `stage-1-e01-intake`.
+- Stage 1 final handoff commit visible locally: `243dbfe stage 1: finalize handoff`.
+- S2-T01 commit visible locally and on remote branch: `2dfd2b8 stage 2: define fixure and dependency`.
+- Remote branch: `origin/stage-1-e01-intake`.
+- Working tree check before S2-T02 prep: clean.

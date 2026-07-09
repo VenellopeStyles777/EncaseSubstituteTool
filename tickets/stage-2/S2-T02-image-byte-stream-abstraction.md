@@ -1,6 +1,6 @@
 # S2-T02 - Image Byte-Stream Abstraction
 
-Status: Ready
+Status: Done
 
 Stage: Stage 2 - Volume and filesystem browsing MVP
 
