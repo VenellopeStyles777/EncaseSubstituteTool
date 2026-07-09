@@ -100,3 +100,10 @@ git push -u origin main
 - Commit visible locally and on remote branch: `c499b00 stage 2: add filesystem adapter boundary`.
 - Remote branch: `origin/stage-1-e01-intake`.
 - Working tree check before S2-T05 prep: clean.
+
+2026-07-09 S2-T05 checkpoint:
+
+- Branch: `stage-1-e01-intake`.
+- Commit visible locally and on remote branch: `3f0ef10 stage 2: add directory metadata listing`.
+- Remote branch: `origin/stage-1-e01-intake`.
+- Working tree check before S2-T06 prep: clean.

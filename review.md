@@ -12,6 +12,99 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## S2-T06 Review Expectations
+
+- Preview code should use bounded, read-only reads from a stub or tiny generated preview source.
+- Preview results should be JSON-friendly and preserve source, volume, file id/path, offset, requested length, returned length, mode, truncation, status, and warnings.
+- Text preview should handle decoding errors visibly and safely; hex preview should be deterministic.
+- Missing files, directories, invalid ranges, unsupported modes, and size-limit truncation should return structured statuses or warnings.
+- S2-T06 should not add export/recovery, hashing, UI work, real filesystem parsing, required native dependencies, persistence, or real evidence fixtures.
+
+## 2026-07-09 - S2-T06 Review
+
+Result: changes requested.
+
+Findings:
+
+- [P2] `app/backend/api/file_preview.py`: `preview_file()` reports `status.code == "ok"` when `offset` is beyond the available preview content and `length` is omitted. Example: `/hello.txt` has 13 stub bytes, but `preview_file(entry, mode="text", offset=99)` returns `ok`, zero bytes, empty text, and no truncation warning. A preview offset outside the content should be a structured non-ok status or warning, such as `preview_truncated`, `content_unavailable`, or a dedicated range status. This matters because a forensic preview boundary should not quietly report success for a range that cannot exist.
+
+Tests:
+
+- `python -m pytest`: 66 passed.
+
+Verified good behavior:
+
+- Text, hex, and raw preview outputs are JSON-friendly.
+- Stub preview content is clearly labeled as synthetic, not parsed evidence.
+- Negative offset/length, unsupported mode, directory entry, missing content, max-length truncation, content-size truncation with an explicit length, decode replacement, and provenance/read-only fields are covered.
+- S2-T06 stayed in scope and did not add export/recovery, hashing, UI, persistence, native dependency requirements, real parsing, S2-T07, or Stage 3 work.
+
+Required fix:
+
+- Add a regression test for `offset > source_content_size` with omitted `length`.
+- Return a structured non-ok status/warning for that case.
+- Keep the change inside S2-T06 and rerun `python -m pytest`.
+
+## 2026-07-09 - S2-T06 Review Fix Handoff
+
+Result: ready for re-review.
+
+Implemented:
+
+- `preview_file()` now returns structured `content_unavailable` status when the requested offset is beyond provider content size.
+- Added regression coverage for `offset > source_content_size` with omitted `length`, preserving provenance, read-only fields, zero returned bytes, and JSON-friendly shape.
+
+Tests:
+
+- `python -m pytest`: 67 passed.
+
+Scope intentionally not implemented:
+
+- No S2-T07 or Stage 3 work.
+- No export/recovery, hashing, UI, persistence, native dependency requirement, real filesystem parsing, or real evidence fixture.
+
+## 2026-07-09 - S2-T06 Re-Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- The previous offset-boundary finding is fixed: `preview_file(..., offset=99)` for the 13-byte stub file now returns structured `content_unavailable` instead of `ok`.
+- Regression coverage verifies non-ok status, zero returned bytes, no preview payload, preserved source size, read-only provenance, and a `content_unavailable` warning.
+- Existing text, hex, raw serialization, truncation, missing content, directory/non-file, unsupported mode, invalid range, decode replacement, and provenance tests still pass.
+- S2-T06 stayed in scope and did not add S2-T07, Stage 3, export/recovery, hashing, UI, persistence, native dependencies, real filesystem parsing, or real evidence fixtures.
+
+Tests:
+
+- `python -m pytest`: 67 passed.
+
+## 2026-07-09 - S2-T06 Preview Foundation Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `preview_file()` backend API callable for provider-backed raw/text/hex previews.
+- `preview_file_to_json()` serialization helper.
+- `StubPreviewProvider` with synthetic bytes for `stub-file-hello` (`/hello.txt`).
+- JSON-friendly preview result shape with source path, volume id/offset/length, file id/path/name/type, requested offset/length, returned bytes, source content size, truncation flag, read-only assertion, provider details, mode, status, preview data, and warnings.
+- Tests for text, hex, raw JSON serialization, bounded offset/length, max-length truncation, content-size truncation, missing content, directory entry rejection, unsupported mode, invalid ranges, decode replacement warning, and provenance/read-only fields.
+
+Scope intentionally not implemented:
+
+- No real filesystem byte extraction.
+- No real EWF, partition, or filesystem parsing.
+- No export/recovery or hashing.
+- No UI, persistence, background jobs, or case-store writes.
+- No required native dependency or real evidence fixture.
+
+Suggested review command:
+
+```powershell
+python -m pytest
+```
+
 ## S2-T05 Review Expectations
 
 - Directory listing view should consume the filesystem adapter boundary instead of parsing real filesystems directly.

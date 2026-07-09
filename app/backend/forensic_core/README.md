@@ -115,3 +115,20 @@ Current behavior:
 - non-root directories return `path_unsupported`, files return `path_not_directory`, unknown paths return `path_not_found`, and dependency-unavailable/not-implemented adapters return `filesystem_unavailable`.
 
 S2-T05 does not read file content, render previews, parse real filesystems, export/recover files, compute hashes, add UI, or require native forensic dependencies. Raw/text/hex preview remains S2-T06.
+
+## S2-T06 Raw/Text/Hex Preview Foundation
+
+The backend API layer in `app/backend/api/file_preview.py` provides a bounded preview foundation:
+
+- `preview_file(entry, mode="text", ...)`: returns a JSON-friendly preview result for explicit provider-backed bytes.
+- `preview_file_to_json(...)`: serializes preview results for command/API consumers.
+- `StubPreviewProvider`: dependency-free provider that maps the synthetic stub file `stub-file-hello` (`/hello.txt`) to `Hello, world!`.
+
+Current behavior:
+
+- supports `raw`, `text`, and `hex` modes;
+- preserves source path, volume id, volume offset/length, file id/path/name/type, read-only assertion, provider name, offsets, requested length, returned byte count, source content size, truncation flag, status, and warnings;
+- uses JSON-friendly raw byte values, UTF-8 text with visible replacement warnings, and deterministic lowercase hex;
+- returns structured statuses for `ok`, `preview_truncated`, `file_not_found`, `path_not_file`, `unsupported_preview_mode`, and `invalid_range`.
+
+S2-T06 does not perform real filesystem byte extraction. The current stub filesystem entries remain metadata-only; preview bytes come from an explicit stub provider. S2-T06 also does not export/recover files, compute hashes, add UI, persist case data, parse real filesystems, or require native dependencies.

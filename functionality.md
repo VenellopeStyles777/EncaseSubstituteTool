@@ -51,7 +51,7 @@ Initial feature groups to track:
 | Volume discovery boundary | 2 | Done | Untested | S2-T03; whole-image volume result for readable non-empty streams. |
 | Filesystem adapter boundary | 2 | Done | Untested | S2-T04; stub entries and pytsk3 dependency-safe skeleton. |
 | Directory listing and file metadata | 2 | Done | Untested | S2-T05; backend root listing over filesystem adapter entries. |
-| Raw/text/hex preview foundation | 2 | Planned | Untested | S2-T06. |
+| Raw/text/hex preview foundation | 2 | Done | Untested | S2-T06; bounded stub-provider raw/text/hex previews. |
 | Export manifest contract | 3 | Planned | Untested | S3-T01. |
 | Fixture/stub file export service | 3 | Planned | Untested | S3-T02. |
 | Export hashing and byte-count verification | 3 | Planned | Untested | S3-T03. |

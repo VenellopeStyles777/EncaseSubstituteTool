@@ -275,3 +275,33 @@ YYYY-MM-DD
 - Learned: the listing API now provides the first Stage 2 examiner-facing metadata view while keeping file bytes and preview work properly deferred to S2-T06.
 - Blocked by: nothing for S2-T05.
 - Next: commit S2-T05 after user approval, then prepare S2-T06 raw/text/hex preview foundation.
+
+2026-07-09
+- Completed: confirmed S2-T05 was committed and pushed as `3f0ef10 stage 2: add directory metadata listing`.
+- Learned: S2-T06 should introduce bounded preview rendering through a stub/fixture content boundary, because the current filesystem entries do not yet expose real evidence byte offsets.
+- Blocked by: nothing for S2-T06 planning.
+- Next: hand S2-T06 to the Stage 2 VS Code agent.
+
+2026-07-09
+- Completed: implemented S2-T06 raw/text/hex preview foundation with `preview_file()`, `preview_file_to_json()`, and `StubPreviewProvider` for synthetic `/hello.txt` bytes.
+- Learned: preview can preserve entry and volume provenance while honestly separating stub preview content from real filesystem byte extraction, which remains unimplemented.
+- Blocked by: nothing for S2-T06; no export/recovery, hashing, UI, persistence, native dependency, real filesystem parsing, or real evidence fixture was introduced.
+- Next: hand S2-T06 off for review before beginning S2-T07 Stage 2 documentation and review handoff work. Final test run: `python -m pytest` reported 66 passed.
+
+2026-07-09
+- Completed: reviewed S2-T06 and requested a narrow offset-boundary fix.
+- Learned: `preview_file()` currently reports `ok` for omitted-length previews when the requested offset is beyond the available content size.
+- Blocked by: S2-T06 needs a regression test and structured non-ok status/warning for `offset > source_content_size`.
+- Next: give the Stage 2 VS Code agent the S2-T06 review-fix prompt before re-reviewing S2-T06.
+
+2026-07-09
+- Completed: fixed the S2-T06 offset-boundary review finding by returning structured `content_unavailable` status when a requested preview offset is beyond available provider content.
+- Learned: S2-T06 needs content-aware range handling after preview bytes are resolved, because syntax-only offset validation cannot know the provider's content size.
+- Blocked by: nothing for this S2-T06 review fix; no S2-T07 or Stage 3 work was introduced.
+- Next: hand the S2-T06 fix off for re-review. Final test run: `python -m pytest` reported 67 passed.
+
+2026-07-09
+- Completed: re-reviewed S2-T06 after the offset-boundary fix and marked it done.
+- Learned: the preview foundation now handles both syntactically invalid ranges and content-size-invalid offsets as structured statuses.
+- Blocked by: nothing for S2-T06.
+- Next: commit S2-T06 after user approval, then prepare S2-T07 Stage 2 documentation and review handoff.
