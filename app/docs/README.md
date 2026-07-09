@@ -8,3 +8,7 @@ Suggested future files:
 - Windows dependency setup.
 - Forensic assumptions.
 - Test fixture strategy.
+
+Current docs:
+
+- `environment-readiness.md`: local tool and dependency readiness before Stage 1.

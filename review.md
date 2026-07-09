@@ -12,7 +12,23 @@ Review priorities for this project:
 
 ## Current Review Queue
 
-- Review the future Stage 1 implementation for read-only evidence handling.
-- Verify segment discovery works without real evidence files.
-- Verify dependency-unavailable behavior is tested.
-- Confirm case-store schema records evidence provenance and audit events.
+- Review S1-T02 for segment discovery without real evidence files.
+- Review S1-T03 for dependency-unavailable behavior.
+- Confirm S1-T05 case-store schema records evidence provenance and audit events.
+
+## 2026-07-09 - S1-T01/S1-T01A Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- The backend package skeleton is intentionally minimal and stays within S1-T01 scope.
+- Smoke tests cover package import and backend subpackage import.
+- `.gitignore` covers Python cache/test artifacts, virtual environments, and common build outputs.
+- `python -m pytest` passed: 2 tests passed, 1 warning.
+
+Residual notes:
+
+- Pytest still reports a non-blocking cache warning under `.pytest_cache`; tests pass.
+- No E01 logic is expected in S1-T01. Segment discovery should begin in S1-T02.
