@@ -78,3 +78,11 @@ git push -u origin main
 - S2-T01 commit visible locally and on remote branch: `2dfd2b8 stage 2: define fixure and dependency`.
 - Remote branch: `origin/stage-1-e01-intake`.
 - Working tree check before S2-T02 prep: clean.
+
+2026-07-09 S2-T02 checkpoint:
+
+- Branch: `stage-1-e01-intake`.
+- Commit visible locally: `849a79c stage 2: read only image byte stream`.
+- User reported S2-T02 was pushed.
+- Remote-tracking branch visible in this shell before S2-T03 prep: `origin/stage-1-e01-intake` at `2dfd2b8`.
+- Working tree check before S2-T03 prep: clean.
