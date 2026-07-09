@@ -35,6 +35,21 @@ Subagents:
 5. Implementation agent fixes accepted findings.
 6. Research/review agent verifies status, prepares a commit, and pushes only after the user approves or explicitly requests it.
 
+## Implementation Handoff Summary
+
+When the VS Code implementation agent finishes a ticket or review fix, paste its summary into the research/review chat when practical.
+
+Useful handoff summaries include:
+
+- What ticket was completed.
+- What files changed.
+- What behavior was added or fixed.
+- What tests were added or changed.
+- Exact test command and result.
+- Any blockers, assumptions, skipped work, or scope boundaries.
+
+This summary is helpful but does not replace review. The research/review agent still checks the actual files and reruns tests.
+
 ## Ticketing Workflow
 
 Tickets live in `tickets/`.
@@ -48,8 +63,9 @@ Use the ticketing workflow when development begins:
 3. Research/review agent creates a VS Code agent prompt and stores it in prompt history.
 4. VS Code agent implements only the active ticket.
 5. VS Code agent updates `progression.md` and requested docs.
-6. Research/review agent reviews the result and updates ticket status.
-7. User approves commit and push separately.
+6. User shares the VS Code agent's handoff summary when available.
+7. Research/review agent reviews the result and updates ticket status.
+8. User approves commit and push separately.
 
 Do not let one prompt cover too much work. A good ticket should usually be reviewable in one sitting.
 

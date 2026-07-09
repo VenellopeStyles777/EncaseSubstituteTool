@@ -12,8 +12,110 @@ Review priorities for this project:
 
 ## Current Review Queue
 
-- Review S1-T03 for dependency-unavailable behavior.
-- Confirm S1-T05 case-store schema records evidence provenance and audit events.
+## 2026-07-09 - S1-T05 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- Schema includes `cases`, `evidence_sources`, `audit_events`, and `schema_migrations`.
+- Evidence source rows preserve S1-T04 intake provenance through source paths, segment discovery JSON, adapter/dependency JSON, metadata JSON, verification JSON/status, warnings JSON, read-only assertion, and timestamps.
+- Audit events link to cases and optionally evidence sources.
+- Tests use in-memory SQLite and do not require real evidence or persistent user data.
+- The implementation stayed in scope and did not wire automatic intake persistence, UI, filesystem parsing, or real EWF parsing.
+
+Tests:
+
+- `python -m pytest`: 22 passed.
+
+Residual notes:
+
+- Audit timestamps currently use second precision. This is acceptable for the Stage 1 foundation, but later audit-heavy workflows may want higher precision or an explicit monotonic sequence.
+
+## S1-T05 Review Expectations
+
+- Schema should include cases, evidence_sources, and audit_events.
+- Evidence source records should preserve enough provenance for S1-T04 intake output.
+- Tests should use in-memory or temporary SQLite databases, not persistent user data.
+- The implementation should not broaden into UI, filesystem parsing, or automatic full case workflow.
+- Audit events should be generic enough to record future actions without schema churn.
+
+## 2026-07-09 - S1-T04 Re-Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- The previous status-contract issue is fixed: importable-but-unimplemented pyewf now returns `reader_not_implemented` instead of `ok`.
+- Stub-backed intake still returns `ok`.
+- Missing-pyewf intake still returns `metadata_unavailable`.
+- The intake command remains scoped to S1-T04 and does not add SQLite, UI, filesystem parsing, or real EWF parsing.
+
+Tests:
+
+- `python -m pytest`: 18 passed.
+
+Residual notes:
+
+- The CLI currently returns nonzero only for `invalid_input`; future stages may decide whether `reader_not_implemented` or `metadata_unavailable` should also have nonzero CLI exit codes.
+
+## 2026-07-09 - S1-T04 Review
+
+Result: changes requested.
+
+Findings:
+
+- [P2] `app/backend/api/intake.py`: `run_e01_intake()` reports `status: "ok"` whenever `adapter_available` is true. If `PyewfEwfReaderAdapter` is importable but real metadata extraction is still deferred, it returns empty metadata plus `real_reader_not_implemented`, yet intake status is `"ok"`. That would mislead future users who install `pyewf` before real parsing is implemented.
+
+Tests:
+
+- `python -m pytest`: 17 passed.
+
+Good notes:
+
+- The intake layer correctly composes segment discovery and EWF adapter output.
+- Invalid input returns structured JSON-style data rather than a traceback.
+- CLI behavior for invalid input is tested.
+- No SQLite, filesystem parsing, UI work, real evidence, or native dependency requirement was added.
+
+## S1-T04 Review Expectations
+
+- Intake command should compose segment discovery and reader adapter output without duplicating their logic.
+- Output should be JSON-serializable and stable enough for future UI use.
+- Tests must pass without real evidence or native forensic dependencies.
+- Invalid input should not produce raw tracebacks for expected user mistakes.
+- S1-T04 must not add case storage, filesystem parsing, or UI work.
+
+## 2026-07-09 - S1-T03 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- The adapter boundary is separate from segment discovery.
+- The stub adapter returns predictable synthetic metadata and verification shape for tests.
+- The pyewf adapter skeleton handles missing `pyewf` as structured dependency-unavailable data, not a raw import crash.
+- Tests do not require real evidence, pyewf, or libewf.
+
+Tests:
+
+- `python -m pytest`: 12 passed.
+
+Residual notes:
+
+- Real pyewf metadata extraction is intentionally deferred beyond S1-T03.
+- Result dataclasses contain normal dictionaries; this is acceptable for the current boundary, but later evidence-facing code should avoid mutating returned result objects in place.
+
+## S1-T03 Review Expectations
+
+- Adapter interface should be separate from segment discovery.
+- Tests must pass without `pyewf`, libewf, or real E01 evidence.
+- Stub adapter should return predictable metadata and verification status.
+- Missing dependency behavior should be structured and visible, not a raw import crash.
+- Real pyewf adapter code, if added, should be optional and read-only by design.
 
 ## 2026-07-09 - S1-T02 Re-Review
 

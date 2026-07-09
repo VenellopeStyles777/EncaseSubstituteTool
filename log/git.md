@@ -36,3 +36,28 @@ git push -u origin main
 - Base branch visible locally: `main` at `421994e skeleton`.
 - Working tree check after push: clean.
 - Review result before commit: S1-T01/S1-T01A approved in `review.md`.
+
+2026-07-09 S1-T02 checkpoint:
+
+- Branch: `stage-1-e01-intake`.
+- Commit visible locally: `5a5f90e stage 1: E01 segment discovery`.
+- Remote branch visible locally: `origin/stage-1-e01-intake`.
+- User reported the S1-T02 work was pushed and merged.
+- Local working tree check before S1-T03 prep: clean.
+- Local `main` had not been refreshed in this session at the time of this note.
+
+2026-07-09 S1-T03 checkpoint:
+
+- Branch: `stage-1-e01-intake`.
+- Commit visible locally: `4166b02 stage 1: EWF reader adapter`.
+- Remote branch visible locally before S1-T04 prep: `origin/stage-1-e01-intake` at `5a5f90e`.
+- Working tree check before S1-T04 prep: clean.
+- Note: local view did not yet show S1-T03 pushed to the remote branch at the time of this note.
+
+2026-07-09 S1-T04 checkpoint:
+
+- Branch: `stage-1-e01-intake`.
+- Commit visible locally and on remote branch: `77ecf7b stage 1:JSON command`.
+- Remote branch: `origin/stage-1-e01-intake`.
+- Working tree check before S1-T05 prep: clean.
+- Review result before commit: S1-T04 approved in `review.md`.

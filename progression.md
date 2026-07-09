@@ -89,3 +89,69 @@ YYYY-MM-DD
 - Learned: the segment discovery behavior is now good enough for the later S1-T04 JSON intake command.
 - Blocked by: nothing for S1-T02.
 - Next: commit S1-T02 after user approval, then prepare the S1-T03 adapter-interface ticket.
+
+2026-07-09
+- Completed: implemented and reviewed S1-T03 EWF reader adapter boundary with stub metadata, verification status shape, and structured pyewf dependency-unavailable behavior.
+- Learned: the project now has a clean split between segment discovery and metadata-reader adapters, which sets up S1-T04's intake JSON command.
+- Blocked by: nothing for S1-T03.
+- Next: commit S1-T03 after user approval, then prepare S1-T04 intake command JSON output.
+
+2026-07-09
+- Completed: confirmed S1-T03 is committed locally as `4166b02 stage 1: EWF reader adapter` and the working tree is clean before S1-T04 prep.
+- Learned: S1-T04 should compose existing segment discovery and EWF adapter result shapes rather than inventing new parsing logic.
+- Blocked by: local Git view did not yet show S1-T03 on `origin/stage-1-e01-intake`; push can happen as a separate checkpoint.
+- Next: hand S1-T04 to the VS Code agent for intake command JSON output.
+
+2026-07-09
+- Completed: confirmed S1-T02 commit `5a5f90e stage 1: E01 segment discovery` is visible locally on `stage-1-e01-intake`; user reported it was pushed and merged.
+- Learned: the branch remains clean and ready for the next ticket handoff.
+- Blocked by: nothing for S1-T03 planning.
+- Next: hand S1-T03 to the VS Code agent for EWF reader adapter interface and stub behavior.
+
+2026-07-09
+- Completed: implemented S1-T03 EWF reader adapter boundary with structured dependency, metadata, warning, and verification result objects; added a dependency-free stub adapter and pyewf-unavailable adapter path.
+- Learned: the reader adapter can remain separate from segment discovery and tests can cover metadata shape without real E01 evidence or native libraries.
+- Blocked by: nothing for S1-T03 implementation.
+- Next: hand S1-T03 off for review before beginning S1-T04 intake JSON command work. Final test run: `python -m pytest` reported 12 passed.
+
+2026-07-09
+- Completed: implemented S1-T04 intake JSON command/callable that composes E01 segment discovery with the EWF reader adapter boundary and handles invalid input as structured output.
+- Learned: the intake layer can stay thin by reusing `discover_e01_segments()` and adapter result objects instead of duplicating their logic.
+- Blocked by: nothing for S1-T04 implementation.
+- Next: hand S1-T04 off for review before beginning S1-T05 SQLite case-store work. Final test run: `python -m pytest` reported 17 passed.
+
+2026-07-09
+- Completed: reviewed S1-T04 intake command/callable.
+- Learned: main structure is good, but intake status is misleading if `pyewf` is importable while real metadata extraction remains unimplemented.
+- Blocked by: S1-T04 needs a small status-contract fix and regression test before approval.
+- Next: give the VS Code agent the S1-T04 review fix prompt for importable-but-not-implemented pyewf status handling.
+
+2026-07-09
+- Completed: fixed the S1-T04 review finding so an importable-but-unimplemented pyewf adapter returns `reader_not_implemented` instead of `ok`.
+- Learned: intake status needs to consider adapter warning codes, not just whether the adapter dependency is importable.
+- Blocked by: nothing for the S1-T04 review fix.
+- Next: return S1-T04 for review before starting S1-T05 SQLite case-store work. Final test run: `python -m pytest` reported 18 passed.
+
+2026-07-09
+- Completed: re-reviewed S1-T04 after the status-contract fix and approved it for commit.
+- Learned: the VS Code agent handoff summary is useful context, but review should still verify files and rerun tests.
+- Blocked by: nothing for S1-T04.
+- Next: commit S1-T04 after user approval, then prepare S1-T05 minimal SQLite case-store schema.
+
+2026-07-09
+- Completed: confirmed S1-T04 was committed and pushed as `77ecf7b stage 1:JSON command` on `origin/stage-1-e01-intake`.
+- Learned: S1-T05 should define the case/evidence/audit storage foundation without over-wiring intake persistence yet.
+- Blocked by: nothing for S1-T05 planning.
+- Next: hand S1-T05 to the VS Code agent for minimal SQLite case-store schema.
+
+2026-07-09
+- Completed: implemented and reviewed S1-T05 minimal SQLite case-store schema with cases, evidence sources, audit events, schema migration marker, and helper functions.
+- Learned: S1-T04 intake output can be preserved as provenance JSON without forcing automatic persistence yet.
+- Blocked by: nothing for S1-T05.
+- Next: commit S1-T05 after user approval, then prepare S1-T06 documentation and review handoff.
+
+2026-07-09
+- Completed: implemented S1-T05 minimal SQLite case-store schema with executable setup and helpers for cases, evidence sources, and audit events.
+- Learned: S1-T04 intake output can be preserved as JSON snapshots in `evidence_sources` without forcing automatic persistence into the intake command yet.
+- Blocked by: nothing for S1-T05 implementation.
+- Next: hand S1-T05 off for review before beginning S1-T06 documentation and review handoff work. Final test run: `python -m pytest` reported 22 passed.
