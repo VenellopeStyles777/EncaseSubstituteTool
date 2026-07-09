@@ -253,7 +253,25 @@ YYYY-MM-DD
 - Next: hand S2-T04 off for review before beginning S2-T05 directory listing and file metadata view work. Final test run: `python -m pytest` reported 44 passed.
 
 2026-07-09
+- Completed: implemented S2-T05 backend directory listing and file metadata view with `list_directory()`, JSON serialization, root stub listing, path normalization, and structured non-root/file/unavailable statuses.
+- Learned: the API layer can consume S2-T04 `FilesystemEntry` data directly while preserving provenance and keeping file-content preview, export, hashing, persistence, UI, and real filesystem parsing out of scope.
+- Blocked by: nothing for S2-T05; no native dependency, real evidence fixture, or S2-T06 preview work was introduced.
+- Next: hand S2-T05 off for review before beginning S2-T06 raw/text/hex preview foundation work. Final test run: `python -m pytest` reported 53 passed.
+
+2026-07-09
 - Completed: reviewed S2-T04 filesystem adapter boundary and marked it done.
 - Learned: the stub adapter now gives S2-T05 deterministic root entries while the pytsk3 skeleton keeps native dependency behavior explicit and non-blocking.
 - Blocked by: nothing for S2-T04.
 - Next: commit S2-T04 after user approval, then prepare S2-T05 directory listing and file metadata view.
+
+2026-07-09
+- Completed: confirmed S2-T04 was committed and pushed as `c499b00 stage 2: add filesystem adapter boundary`.
+- Learned: S2-T05 should consume the filesystem adapter result as a listing/metadata view rather than adding parsing or preview content.
+- Blocked by: nothing for S2-T05 planning.
+- Next: hand S2-T05 to the Stage 2 VS Code agent.
+
+2026-07-09
+- Completed: reviewed S2-T05 backend directory listing and file metadata view and marked it done.
+- Learned: the listing API now provides the first Stage 2 examiner-facing metadata view while keeping file bytes and preview work properly deferred to S2-T06.
+- Blocked by: nothing for S2-T05.
+- Next: commit S2-T05 after user approval, then prepare S2-T06 raw/text/hex preview foundation.

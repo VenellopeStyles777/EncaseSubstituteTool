@@ -12,6 +12,61 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## S2-T05 Review Expectations
+
+- Directory listing view should consume the filesystem adapter boundary instead of parsing real filesystems directly.
+- Root listing should return deterministic JSON-friendly entries from the stub adapter.
+- Unsupported, missing, file, or nested paths should return structured status/warning results unless explicitly supported.
+- Adapter dependency-unavailable or real-parser-not-implemented states should be visible in the listing response.
+- S2-T05 should not add raw/text/hex preview, export/recovery, hashing, UI work, real filesystem parsing, or required native dependencies.
+
+## 2026-07-09 - S2-T05 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- `list_directory()` consumes `FilesystemAdapter.inspect_volume()` and returns a JSON-friendly directory listing response without parsing real filesystems directly.
+- Stub root listing returns deterministic `/Documents` and `/hello.txt` metadata entries with source, volume, adapter, filesystem, status, timestamp, allocation/deleted, and read-only provenance preserved.
+- Unsupported nested paths, file paths, unknown paths, dependency-unavailable adapters, importable-but-not-implemented pytsk3, and defensive adapter exceptions are represented as structured statuses.
+- Tests do not require `pytsk3`, The Sleuth Kit, real filesystems, real evidence, private fixtures, or network access.
+- S2-T05 stayed in scope and did not add file-content preview, export/recovery, hashing, UI work, persistence, case-store writes, real filesystem parsing, or required native dependencies.
+
+Tests:
+
+- `python -m pytest`: 53 passed.
+
+Residual notes:
+
+- The default adapter path is dependency-safe but normally returns `filesystem_unavailable` until real pytsk3 parsing exists. For current smoke/manual checks, callers should pass `StubFilesystemAdapter`.
+
+## 2026-07-09 - S2-T05 Directory Listing Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `list_directory()` backend API callable over `FilesystemAdapter.inspect_volume()`.
+- `directory_listing_to_json()` serialization helper.
+- Root listing for `StubFilesystemAdapter` returning `/Documents` and `/hello.txt`.
+- Structured statuses for `ok`, `path_not_found`, `path_not_directory`, `path_unsupported`, `filesystem_unavailable`, and defensive `filesystem_error`.
+- Tests for root listing, JSON shape, provenance/read-only fields, unsupported nested path, file path, unknown path, path normalization, and pytsk3 dependency-unavailable/not-implemented states.
+
+Scope intentionally not implemented:
+
+- No file-content reads or raw/text/hex preview.
+- No export/recovery or hashing.
+- No UI, persistence, background jobs, or case-store writes.
+- No real filesystem parsing or required native dependency.
+- No real evidence or filesystem images.
+
+Suggested review command:
+
+```powershell
+python -m pytest
+```
+
 ## S2-T04 Review Expectations
 
 - Filesystem adapter boundary should expose stable result/status/entry shapes.

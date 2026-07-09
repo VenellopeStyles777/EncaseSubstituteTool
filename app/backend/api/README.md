@@ -40,3 +40,33 @@ Current status values include:
 - `reader_error`: unexpected adapter exception caught at the command boundary.
 
 S1-T04 does not persist results automatically. Use the case-store helpers explicitly when a case workflow is ready.
+
+## S2-T05 Directory Listing Callable
+
+Callable usage from Python:
+
+```python
+from app.backend.api import list_directory
+from app.backend.forensic_core import StubFilesystemAdapter
+
+result = list_directory(volume, "/", StubFilesystemAdapter())
+```
+
+`list_directory()` consumes a `VolumeInfo` and a filesystem adapter. It returns a JSON-friendly dictionary with:
+
+- schema version and structured listing status;
+- directory path;
+- source path, volume id, volume offset/length, filesystem type, adapter/dependency details, and read-only assertion;
+- file/directory entries from the filesystem adapter, including file id, path, name, type, size, timestamps, allocation/deleted state, status/warnings, and provenance;
+- adapter/listing warnings.
+
+Current S2-T05 behavior:
+
+- root listing with `StubFilesystemAdapter` returns deterministic entries for `/Documents` and `/hello.txt`;
+- empty path normalizes to `/`, and paths without a leading slash are normalized with one;
+- nested directory paths such as `/Documents` return `path_unsupported`;
+- file paths such as `/hello.txt` return `path_not_directory`;
+- missing paths return `path_not_found`;
+- dependency-unavailable or not-implemented adapters return `filesystem_unavailable`.
+
+S2-T05 does not read file content, render raw/text/hex preview, export files, hash files, persist case-store data, parse real filesystems, or require `pytsk3`/The Sleuth Kit.

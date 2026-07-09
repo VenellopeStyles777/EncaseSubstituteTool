@@ -50,7 +50,7 @@ Initial feature groups to track:
 | Read-only image/byte-stream abstraction | 2 | Done | Untested | S2-T02; local file-backed read-only stream with tiny generated test files. |
 | Volume discovery boundary | 2 | Done | Untested | S2-T03; whole-image volume result for readable non-empty streams. |
 | Filesystem adapter boundary | 2 | Done | Untested | S2-T04; stub entries and pytsk3 dependency-safe skeleton. |
-| Directory listing and file metadata | 2 | Planned | Untested | S2-T05. |
+| Directory listing and file metadata | 2 | Done | Untested | S2-T05; backend root listing over filesystem adapter entries. |
 | Raw/text/hex preview foundation | 2 | Planned | Untested | S2-T06. |
 | Export manifest contract | 3 | Planned | Untested | S3-T01. |
 | Fixture/stub file export service | 3 | Planned | Untested | S3-T02. |

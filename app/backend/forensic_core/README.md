@@ -99,3 +99,19 @@ Current behavior:
 - tests do not require real evidence, real filesystems, `pytsk3`, or The Sleuth Kit.
 
 S2-T04 does not add a directory-listing command/workflow, parse real filesystems, render previews, export files, hash evidence, or require native forensic dependencies.
+
+## S2-T05 Directory Listing And File Metadata View
+
+The backend API layer in `app/backend/api/directory_listing.py` consumes the S2-T04 filesystem adapter boundary and exposes a JSON-friendly directory listing callable:
+
+- `list_directory(volume, directory_path="/", adapter=None)`: returns a stable dictionary for a directory listing.
+- `directory_listing_to_json(...)`: serializes the listing result for command/API consumers.
+
+Current behavior:
+
+- uses adapter-provided `FilesystemEntry` metadata without mutating adapter results;
+- preserves source path, volume id, volume offset/length, filesystem type, adapter/dependency information, read-only assertion, entry status/warnings, allocation/deleted state, and timestamps;
+- root listing with `StubFilesystemAdapter` returns `/Documents` and `/hello.txt`;
+- non-root directories return `path_unsupported`, files return `path_not_directory`, unknown paths return `path_not_found`, and dependency-unavailable/not-implemented adapters return `filesystem_unavailable`.
+
+S2-T05 does not read file content, render previews, parse real filesystems, export/recover files, compute hashes, add UI, or require native forensic dependencies. Raw/text/hex preview remains S2-T06.
