@@ -12,6 +12,76 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## S1-T06 Review Expectations
+
+- Docs should accurately describe current Stage 1 behavior and limitations.
+- Test commands should be current and runnable.
+- The handoff should not claim real EWF parsing, filesystem parsing, UI, or automatic persistence.
+- The final Stage 1 review section should make it clear what is ready for Stage 2 planning.
+
+## 2026-07-09 - Stage 1 Final Review
+
+Result: Stage 1 complete at the planning/review level.
+
+Verified Stage 1 scope:
+
+- Backend skeleton exists and imports.
+- E01 segment discovery is implemented and tested without real evidence.
+- EWF reader adapter boundary is implemented with stub and pyewf-unavailable behavior.
+- Intake JSON callable/CLI exists and handles invalid input/dependency states.
+- SQLite case-store schema exists for cases, evidence sources, audit events, and schema migration marker.
+- Documentation clearly states that real EWF byte parsing, filesystem parsing, UI, and automatic intake persistence are not implemented yet.
+
+Stage 2 readiness:
+
+- Stage 2 tickets exist under `tickets/stage-2/`.
+- Stage 2 should begin with fixture/dependency strategy before implementing byte streams or filesystem adapters.
+- Review should continue enforcing read-only source handling, structured unsupported-dependency behavior, and no private evidence in tests.
+
+Stage 3 readiness:
+
+- Stage 3 tickets exist under `tickets/stage-3/`.
+- Stage 3 should not begin until Stage 2 provides a stable file/metadata source.
+
+## 2026-07-09 - Stage 1 Final Review Handoff
+
+Result: ready for research/review agent final Stage 1 review.
+
+Implemented capabilities to verify:
+
+- Backend Python package skeleton and pytest configuration.
+- E01 segment discovery with ordered segments and structured warnings.
+- EWF reader adapter boundary with stub metadata, verification status shape, and pyewf dependency-unavailable behavior.
+- Intake JSON command/callable through `python -m app.backend.api.intake path\to\sample.E01`.
+- SQLite schema/helpers for `cases`, `evidence_sources`, `audit_events`, and `schema_migrations`.
+
+Current limitations to keep visible:
+
+- No real EWF byte parsing or real image verification yet.
+- No partition/filesystem parsing yet.
+- No UI yet.
+- No automatic persistence from intake command to SQLite yet.
+- `pyewf`/libewf is optional and not required for tests.
+- No real forensic evidence is required for tests.
+
+Review commands:
+
+```powershell
+python -m pytest
+python -m app.backend.api.intake path\to\sample.E01 --adapter stub
+```
+
+Expected S1-T06 test result:
+
+- `python -m pytest`: 22 passed.
+
+Suggested final review checklist:
+
+- Confirm documentation does not overclaim Stage 1 behavior.
+- Confirm test and intake commands are accurate on Windows.
+- Confirm no Stage 2 filesystem/UI work was introduced.
+- Confirm `plan.md`, `progression.md`, ticket status, and backend docs agree.
+
 ## 2026-07-09 - S1-T05 Review
 
 Result: approved for commit.

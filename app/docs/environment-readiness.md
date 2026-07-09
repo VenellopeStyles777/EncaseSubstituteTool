@@ -6,7 +6,7 @@ Last checked: 2026-07-09
 
 ## Summary
 
-The repository, Git remote, and normal Python environment are now ready for S1-T01 smoke testing.
+The repository, Git remote, and normal Python environment are ready for Stage 1 review.
 
 Earlier on 2026-07-09, `python` resolved only to the Microsoft Store app execution alias. That has since been fixed.
 
@@ -16,20 +16,20 @@ Git:
 
 - Status: installed.
 - Version checked: `git version 2.55.0.windows.2`.
-- Branch: `main`.
-- Upstream: `origin/main`.
+- Branch checked during S1-T06: `stage-1-e01-intake`.
+- Upstream: stage branch workflow; merge to `main` is handled after review.
 - Remote: `https://github.com/VenellopeStyles777/EncaseSubstituteTool.git`.
-- Latest visible commit: `421994e skeleton`.
+- Latest visible local commit during S1-T06: `2aeae90 Stage 1: SQLite case store schema`.
 
 Python:
 
-- Status: ready for S1-T01.
+- Status: ready for Stage 1.
 - `python --version`: Python 3.14.6.
 - `python -m pip --version`: pip 26.1.2.
-- `python -m pytest`: 2 passed, 1 warning.
+- `python -m pytest`: 22 passed during S1-T06 handoff.
 - Pytest version observed: 9.1.1.
-- Warning observed: pytest could not create one cache path under `.pytest_cache`; tests still passed.
-- Follow-up check: the local `.pytest_cache` directory is permission-denied to the shell, which explains the warning. `.gitignore` covers `.pytest_cache/`, so this remains a non-blocking local cache artifact.
+- Earlier warning: pytest could not create one cache path under `.pytest_cache`; tests still passed.
+- Follow-up: project config now disables pytest's optional cache provider. Current S1-T06 test run completed without that warning.
 - S1-T02 follow-up: pytest's default Windows temp path also produced permission issues for `tmp_path`/temporary-directory style tests. The project now configures pytest to use repo-local ignored path `.test-artifacts/pytest-temp` for temporary files and disables pytest's optional cache provider.
 
 Codex bundled runtime:
@@ -62,7 +62,7 @@ Forensic Python libraries:
 - `python-magic`: not installed.
 - This is expected for now. Stage 1 should include stub/fallback adapters and should not block on these libraries.
 
-## Recommended Setup Before Reviewing S1-T01
+## Recommended Setup Before Reviewing Stage 1
 
 Verify from the project root:
 
@@ -89,22 +89,21 @@ The project test configuration stores pytest temporary files under `.test-artifa
 
 ## Stage 1 Dependency Policy
 
-S1-T01:
+Required for tests:
 
-- Required: Python 3.11+ and `pytest`.
-- Current status: available; smoke tests passed.
-- Not required: `pyewf`, `pytsk3`, Node, Rust, CMake, Visual C++ tools.
+- Python 3.11+.
+- `pytest`.
 
-S1-T02:
+Not required for Stage 1 tests:
 
-- Required: Python 3.11+ and `pytest`.
-- Not required: real E01 evidence or pyewf.
+- Real E01 evidence.
+- `pyewf`/libewf.
+- `pytsk3`.
+- Node, Rust, CMake, Visual C++ tools.
 
-S1-T03:
+Optional:
 
-- Required: adapter interface and stub adapter.
-- Optional: pyewf/libewf real adapter.
-- Missing pyewf must produce a clear dependency-unavailable status, not a crash.
+- `pyewf`/libewf. Missing `pyewf` produces structured dependency-unavailable output. Importable `pyewf` still does not provide real metadata extraction in Stage 1.
 
 Stage 2 and later:
 

@@ -14,7 +14,7 @@ Stage 1 should stay backend-first. Do not build a polished UI in this stage.
 | S1-T03 | Done | EWF reader adapter interface and stub adapter |
 | S1-T04 | Done | Intake command returning structured JSON |
 | S1-T05 | Done | Minimal SQLite case-store schema |
-| S1-T06 | Ready | Documentation, dependency notes, and review handoff |
+| S1-T06 | Done | Documentation, dependency notes, and review handoff |
 
 ## Stage 1 Definition Of Done
 
@@ -24,3 +24,5 @@ Stage 1 should stay backend-first. Do not build a polished UI in this stage.
 - Missing native dependencies produce clear messages.
 - Case/evidence/audit schema direction is documented or implemented.
 - `plan.md`, `progression.md`, and `review.md` are updated.
+
+Status: complete as of 2026-07-09.

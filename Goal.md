@@ -43,14 +43,14 @@ Out of initial scope:
 
 ## Development Stages
 
-1. Foundation: initialize Git, choose stack, create skeleton, add test/lint commands, define docs structure.
-2. Evidence intake: prove segmented E01 discovery, metadata reading, read-only evidence stream, verification status, and error handling.
-3. Volume/filesystem view: parse partitions and browse one filesystem with metadata.
-4. Export/recovery: export selected files and later recover deleted files where supported.
-5. Hash/signature analysis: add file hashing, known-file matching, file type detection, and mismatch flags.
-6. Search/timeline: add filename search, metadata filters, full-text search, and timestamp timeline.
-7. Reporting/workflow: bookmarks, examiner notes, audit log, and report generation.
-8. Advanced features: carving, artifact parsers, archive expansion, shadow copies, encryption detection, OCR, and optional AI triage.
+0. Foundation: initialize Git, choose stack, create skeleton, add test/lint commands, define docs structure. Status: complete.
+1. Evidence intake: prove segmented E01 discovery, adapter boundaries, JSON intake output, case-store schema, and dependency-safe behavior. Status: complete.
+2. Volume/filesystem view: establish image/byte-stream fixtures, detect partitions/volumes, and browse one filesystem with metadata. Status: planned next.
+3. Export/recovery: export selected files with provenance and lay groundwork for deleted-file recovery where supported. Status: planned.
+4. Hash/signature analysis: add file hashing, known-file matching, file type detection, and mismatch flags.
+5. Search/timeline: add filename search, metadata filters, full-text search, and timestamp timeline.
+6. Reporting/workflow: bookmarks, examiner notes, audit log, and report generation.
+7. Advanced features: carving, artifact parsers, archive expansion, shadow copies, encryption detection, OCR, and optional AI triage.
 
 ## Stage 1 Detailed Targets
 
@@ -77,6 +77,68 @@ Stage 1 acceptance criteria:
 - Tests can run without large real forensic images.
 - Native dependency absence is handled with a useful message.
 - Review notes are captured in `review.md` before any push to GitHub.
+
+Stage 1 status: complete as of 2026-07-09.
+
+Implemented:
+
+- Python backend skeleton and test configuration.
+- E01 segment discovery for sibling `.E01/.E02/.E03...` files.
+- EWF reader adapter boundary with stub and pyewf-unavailable behavior.
+- JSON intake callable/CLI.
+- SQLite case-store schema for cases, evidence sources, audit events, and schema migration marker.
+- Documentation and review handoff.
+
+Known Stage 1 limits:
+
+- No real EWF byte parsing yet.
+- No partition or filesystem parsing yet.
+- No UI yet.
+- No automatic persistence from intake command to SQLite yet.
+- No real evidence needed for tests.
+
+## Stage 2 Detailed Targets
+
+Stage 2 goal: move from "we can identify and describe an evidence source" to "we can discover volumes and browse a small filesystem view through a safe backend boundary."
+
+Targets:
+
+- Decide the Stage 2 fixture strategy for raw images, EWF images, and/or generated tiny filesystems.
+- Add an image/byte-stream abstraction that can be backed by a local raw fixture and later by real EWF readers.
+- Add a volume discovery boundary that can report partitions/volumes or a single whole-disk/whole-image volume for simple fixtures.
+- Add a filesystem adapter boundary, preferably pytsk3-compatible, with stub/fallback behavior when native dependencies are missing.
+- Browse one supported filesystem path/tree from a tiny non-sensitive fixture or stub adapter.
+- Return structured file metadata: path, type, size, timestamps where available, allocation/deleted state when supported, and source provenance.
+- Add tests that do not require private evidence or large images.
+- Keep all evidence/image reads read-only.
+
+Stage 2 acceptance criteria:
+
+- A documented backend command/callable can list volume/filesystem information for a test fixture or stubbed filesystem.
+- Unsupported or missing native dependencies produce structured status, not raw crashes.
+- Tests run without private evidence.
+- Stage 2 docs clearly state which behavior is real fixture-backed and which remains stubbed.
+
+## Stage 3 Detailed Targets
+
+Stage 3 goal: add safe file export foundations so a selected file-like item can be written out with provenance, hashes, and audit context.
+
+Targets:
+
+- Define export request/result structures.
+- Add an export service that writes to an examiner-selected output directory, never evidence paths.
+- Support exporting bytes from a stub or fixture-backed file entry.
+- Compute output hashes, at minimum SHA-256, with MD5/SHA-1 deferred to the broader hash-analysis stage if needed.
+- Record source provenance in an export manifest.
+- Add audit-event integration through the case store when a case/evidence id is provided.
+- Document deleted-file recovery as later/conditional behavior unless the Stage 2 filesystem adapter truly exposes deleted entries.
+
+Stage 3 acceptance criteria:
+
+- A documented backend command/callable can export a selected fixture/stub file to an output folder.
+- Export output includes a manifest with source path/id, evidence id when available, output path, byte count, hash, and timestamp.
+- Tests prove exports do not write into evidence/source fixture directories.
+- Deleted-file recovery limitations are explicit.
 
 ## Recommended First Technical Direction
 

@@ -151,7 +151,25 @@ YYYY-MM-DD
 - Next: commit S1-T05 after user approval, then prepare S1-T06 documentation and review handoff.
 
 2026-07-09
+- Completed: confirmed S1-T05 was committed and pushed as `2aeae90 Stage 1: SQLite case store schema` on `origin/stage-1-e01-intake`; user reported it was merged.
+- Learned: the Stage 1 core implementation tickets are complete; S1-T06 should package the state clearly for review and next-stage planning.
+- Blocked by: nothing for S1-T06 planning.
+- Next: hand S1-T06 to the VS Code agent for documentation and final Stage 1 review handoff.
+
+2026-07-09
 - Completed: implemented S1-T05 minimal SQLite case-store schema with executable setup and helpers for cases, evidence sources, and audit events.
 - Learned: S1-T04 intake output can be preserved as JSON snapshots in `evidence_sources` without forcing automatic persistence into the intake command yet.
 - Blocked by: nothing for S1-T05 implementation.
 - Next: hand S1-T05 off for review before beginning S1-T06 documentation and review handoff work. Final test run: `python -m pytest` reported 22 passed.
+
+2026-07-09
+- Completed: implemented S1-T06 documentation and final Stage 1 review handoff updates across top-level docs, backend docs, environment notes, ticket status, plan, progression, and review guidance.
+- Learned: Stage 1 is review-ready as a backend intake foundation, but it must remain clearly labeled as not doing real EWF byte parsing, filesystem parsing, UI work, or automatic intake persistence.
+- Blocked by: nothing for S1-T06 implementation.
+- Next: hand S1-T06 off for final Stage 1 review and do not begin Stage 2 until review approval. Final test run: `python -m pytest` reported 22 passed.
+
+2026-07-09
+- Completed: marked Stage 1 complete at the planning level and created Stage 2/Stage 3 ticket outlines.
+- Learned: Stage 2 should focus on volume/filesystem browsing foundations, while Stage 3 should focus on export/recovery foundations; hashing/signature work should remain Stage 4.
+- Blocked by: nothing for Stage 2 planning.
+- Next: archive the Stage 1 VS Code implementation chat, then start a fresh Stage 2 implementation chat with S2-T01 after final user approval.

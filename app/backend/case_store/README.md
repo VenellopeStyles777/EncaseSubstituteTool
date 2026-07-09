@@ -35,3 +35,10 @@ case_id = insert_case(connection, name="Example Case")
 ```
 
 S1-T05 does not automatically persist S1-T04 intake results. Callers can explicitly pass an intake result dict to `insert_evidence_source()` when a case workflow is ready.
+
+Current limits:
+
+- No migration runner beyond the initial `schema_migrations` marker.
+- No automatic case creation or intake persistence in the CLI.
+- No analysis-result, bookmark, note, export, or report tables yet.
+- Audit timestamps use UTC ISO strings with second precision.
