@@ -46,7 +46,7 @@ Out of initial scope:
 0. Foundation: initialize Git, choose stack, create skeleton, add test/lint commands, define docs structure. Status: complete.
 1. Evidence intake: prove segmented E01 discovery, adapter boundaries, JSON intake output, case-store schema, and dependency-safe behavior. Status: complete.
 2. Volume/filesystem view: establish image/byte-stream fixtures, discover whole-image volumes, and browse a stubbed filesystem with metadata and bounded preview output. Status: complete as of S2-T07 final review.
-3. Export/recovery: export selected files with provenance and lay groundwork for deleted-file recovery where supported. Status: S3-T03 reviewed and done; S3-T04 is the next Stage 3 ticket to prepare.
+3. Export/recovery: export selected files with provenance and lay groundwork for deleted-file recovery where supported. Status: S3-T04 reviewed and done; S3-T05 is the next Stage 3 ticket to prepare.
 4. Hash/signature analysis: add file hashing, known-file matching, file type detection, and mismatch flags. Status: rough plan only; begin after Stage 3 export contracts and safe export workflow are reviewed.
 5. Search/timeline: add filename search, metadata filters, full-text search, and timestamp timeline.
 6. Reporting/workflow: bookmarks, examiner notes, audit log, and report generation.
@@ -166,7 +166,8 @@ Stage 3 acceptance criteria:
 Stage 3 planning note, 2026-07-13:
 
 - The first Stage 3 VS Code implementation chat should start with `prompts/vscode-agent/2026-07-13-stage-3-familiarization.md`.
-- S3-T01 through S3-T03 are reviewed and done. S3-T04 is the next ticket to prepare; later Stage 3 tickets are expanded as plans but should be reviewed again one at a time before implementation.
+- S3-T01 through S3-T04 are reviewed and done. S3-T05 is the next ticket to prepare; later Stage 3 tickets are expanded as plans but should be reviewed again one at a time before implementation.
+- S3-T04 adds optional audit events only when explicit audit context is supplied. Source provenance ids alone must not trigger database writes.
 - S3-T01 should define export contracts only. It should not write exported files, compute real hashes, add audit persistence, or start deleted recovery.
 - S3-T03 verifies written export artifacts with SHA-256 and on-disk byte counts only; broader hash/signature analysis remains Stage 4.
 - Stage 3 must keep preview, metadata, and export content separated: rendered preview output is not an export byte source.

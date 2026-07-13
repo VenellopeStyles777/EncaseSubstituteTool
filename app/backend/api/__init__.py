@@ -7,6 +7,7 @@ __all__ = [
     "FILE_PREVIEW_SCHEMA_VERSION",
     "INTAKE_SCHEMA_VERSION",
     "DEFAULT_MANIFEST_SUFFIX",
+    "ExportAuditContext",
     "ExportContent",
     "StubExportContentProvider",
     "StubPreviewProvider",
@@ -46,6 +47,7 @@ def __getattr__(name: str):
 
     if name in {
         "DEFAULT_MANIFEST_SUFFIX",
+        "ExportAuditContext",
         "ExportContent",
         "StubExportContentProvider",
         "export_file",

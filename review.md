@@ -12,6 +12,30 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-13 - S3-T04 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- `app.backend.api.ExportAuditContext` provides explicit opt-in audit context with database connection, case id, optional evidence id, optional actor, and `audit_failed_exports`.
+- `export_file()` and `export_file_to_json()` accept audit context while standalone exports continue to work without case-store writes.
+- Successful audited exports create one `audit_events` row using `action="file_export"` and existing `insert_audit_event()`.
+- Audit details JSON records export status, source provenance, audit context ids, destination/output/manifest paths, byte counts, SHA-256/hash status, destination status, content-source identity, and warnings.
+- Failed exports are not audited by default; when `audit_failed_exports=True`, details preserve the non-ok status and hash/byte placeholders.
+- Source provenance case/evidence ids alone do not trigger database writes.
+- S3-T04 uses the existing case-store schema and does not add automatic case/evidence creation, automatic persistence for other API calls, deleted recovery, UI, reporting, real parser work, or Stage 4 hash/signature analysis.
+
+Tests:
+
+- `python -m pytest`: 99 passed in 3.19s.
+
+Residual notes:
+
+- Audit persistence errors are documented as surfacing to the caller rather than being hidden as success.
+- S3-T05 remains the next Stage 3 gate and should stay planning/research-focused unless real adapter support exists.
+
 ## 2026-07-13 - S3-T03 Review
 
 Result: approved for commit.
