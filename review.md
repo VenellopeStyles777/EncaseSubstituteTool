@@ -12,6 +12,117 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-13 - S3-T02 Fixture/Stub Export Service Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `app/backend/api/file_export.py` defines a separate raw export content provider protocol, `StubExportContentProvider`, `export_file()`, and `export_file_to_json()`.
+- Successful exports require an explicit output directory, use provider-owned raw bytes, write the output file, write a sibling JSON manifest from the S3-T01 result/manifest shape, and return `ExportResult`.
+- Destination safety checks run before writing and reject overlap with known source/evidence paths.
+- Structured statuses cover `ok`, `path_not_file`, `content_source_unavailable`, `destination_not_selected`, `unsafe_destination`, `invalid_output_name`, `output_exists`, and `export_write_failed`.
+- Tests cover successful stub export, manifest JSON, byte equality, result/manifest agreement, missing content, directory entries, missing destination, unsafe destination, traversal/invalid output names, existing output refusal, and provider data non-mutation.
+
+Tests:
+
+- `python -m pytest`: 83 passed.
+
+Scope intentionally not implemented:
+
+- No SHA-256/hash computation; hashes remain `hash_not_computed`.
+- No audit integration.
+- No deleted-file recovery.
+- No UI, search, reporting, real EWF parsing, real partition parsing, real filesystem parsing, required native dependencies, commit, or push.
+- No preview-rendered text/hex used as export bytes.
+
+## 2026-07-13 - S3-T02 Review
+
+Result: changes requested.
+
+Findings:
+
+- [P2] `app/backend/api/file_export.py`: `export_file()` checks for existing output/manifest paths, then writes with overwrite-capable `Path.write_bytes()` and `Path.write_text()`. A file appearing between the preflight check and write would be overwritten despite the `output_exists` policy. Use exclusive creation for both output and manifest writes, such as `open("xb")`/`open("x", encoding="utf-8")`, and map `FileExistsError` to structured `output_exists`. Add a regression test that proves an existing output/manifest cannot be overwritten by the write path.
+- [P2] `app/backend/api/file_export.py`: if the output file write succeeds and the manifest write fails, `export_file()` returns `export_write_failed` but leaves the exported file behind without a manifest. A failed export should not leave an unmanifested artifact unless the result/warnings explicitly document a partial artifact and the design chooses to retain it. Prefer best-effort cleanup of the just-written output file on manifest-write failure, with a test that simulates manifest-write failure.
+- [P2] `app/backend/api/file_export.py`: `ExportRequest.requested_output_path` is captured early but ignored on the success path; the service writes `source.file_name` unless `output_name` is passed. This means an `ExportRequest` asking for `custom.txt` silently writes `hello.txt`, and an unsafe requested path is not validated. Support a safe request-level output name or reject unsupported/unsafe requested paths with `invalid_output_name`; add tests for both safe and traversal-style `ExportRequest.requested_output_path` values.
+
+Tests:
+
+- `python -m pytest`: 83 passed.
+
+Verified good behavior:
+
+- Export content comes from an explicit export provider separate from preview providers.
+- The default stub export provider returns raw synthetic bytes and manifests label the content source as stub/synthetic.
+- Destination/source overlap, missing destination, non-file entries, missing content, invalid names, and existing outputs are structured in normal preflight paths.
+- Result and manifest preserve S3-T01 provenance and keep hashes at `hash_not_computed`.
+- S3-T02 did not add SHA-256 computation, audit integration, deleted recovery, UI, real parser work, or native dependency requirements.
+
+Required fix:
+
+- Make overwrite refusal atomic at write time.
+- Prevent failed manifest writes from leaving silent unmanifested export artifacts, or explicitly model and test partial-artifact retention if that is the chosen behavior.
+- Honor or reject `ExportRequest.requested_output_path` predictably.
+- Rerun `python -m pytest`.
+
+## 2026-07-13 - S3-T02 Re-Review
+
+Result: changes requested.
+
+Findings:
+
+- [P2] `app/backend/api/file_export.py`: the write-failure cleanup still misses partial files created by a generic `OSError` inside the exclusive write helpers. `output_created` is set only after `_write_bytes_exclusive()` returns, so if the output helper creates the file and then raises, the `except OSError` path will not clean up the partial output. Likewise, if `_write_text_exclusive()` creates a manifest and then raises, the code cleans up the output but not the partial manifest. For an export workflow, failed writes should not leave silent partial artifacts. In the generic `OSError` path, do best-effort cleanup of both the output path and manifest path, while keeping `FileExistsError` separate so pre-existing files are not removed.
+
+Tests:
+
+- `python -m pytest`: 88 passed.
+
+Verified fixes:
+
+- Output and manifest writes now use exclusive create helpers.
+- Write-time `FileExistsError` maps to structured `output_exists`.
+- The manifest `FileExistsError` path cleans up the just-written output.
+- Safe `ExportRequest.requested_output_path` values are honored, and traversal/path components are rejected with `invalid_output_name`.
+- S3-T02 still keeps SHA-256, audit integration, deleted recovery, UI, parser work, and preview-rendered export bytes out of scope.
+
+Required fix:
+
+- In the generic `OSError` branch, best-effort cleanup both output and manifest paths.
+- Add regression tests where `_write_bytes_exclusive()` creates a partial output then raises `OSError`, and `_write_text_exclusive()` creates a partial manifest then raises `OSError`.
+- Rerun `python -m pytest`.
+
+## 2026-07-13 - S3-T02 Second Re-Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- The previous partial-artifact cleanup finding is fixed. Generic `OSError` write failures now best-effort clean up both output and manifest paths.
+- `FileExistsError` remains separate, preserving the policy that pre-existing files are reported as `output_exists` and not removed.
+- Regression coverage now simulates partial output creation followed by `OSError` and partial manifest creation followed by `OSError`; both paths return structured `export_write_failed` and leave no partial artifact behind.
+- Earlier fixes remain in place: exclusive write helpers, write-time `output_exists`, safe `ExportRequest.requested_output_path` support, traversal rejection, and manifest-write failure cleanup.
+- S3-T02 stayed in scope and did not add SHA-256 computation, audit integration, deleted recovery, UI, real parser work, native dependency requirements, or preview-rendered export bytes.
+
+Tests:
+
+- `python -m pytest`: 90 passed.
+
+Residual notes:
+
+- S3-T03 should build directly on this accepted write path and add SHA-256 plus byte-count verification only.
+
+## S3-T02 Review Expectations
+
+- Export must use an explicit export content provider/source, separate from preview providers.
+- Export must not use rendered preview text/hex as output bytes.
+- Destination safety checks must run before writing output or manifest files.
+- Source/evidence paths must not be modified.
+- Successful S3-T02 exports should write only the expected exported file and manifest JSON under an explicit output directory.
+- Result and manifest should preserve S3-T01 provenance and content-source identity.
+- SHA-256 must remain `hash_not_computed`; S3-T03 owns hashing.
+- S3-T02 should not add audit integration, deleted recovery, UI, real parsers, required native dependencies, or Stage 4 hash/signature scope.
+
 ## 2026-07-13 - S3-T01 Export Manifest Contract Handoff
 
 Result: ready for research/review agent review.

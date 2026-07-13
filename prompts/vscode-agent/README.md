@@ -20,6 +20,7 @@ Current major onboarding prompts:
 - `2026-07-09-stage-2-familiarization.md`: Stage 2 implementation onboarding.
 - `2026-07-13-stage-3-familiarization.md`: Stage 3 implementation onboarding.
 - `2026-07-13-s3-t01-export-manifest-contract.md`: Stage 3 S3-T01 implementation prompt.
+- `2026-07-13-s3-t02-file-export-service.md`: Stage 3 S3-T02 implementation prompt.
 
 Each prompt should name:
 

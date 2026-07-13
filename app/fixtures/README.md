@@ -54,12 +54,13 @@ When the project is ready for real raw/EWF/TSK-style integration fixtures:
 
 ## Stage 3 Export Content-Source Guidance
 
-S3-T01 introduces export contract structures only. Tests should continue to use Stage 2-style stub metadata dictionaries and explicit synthetic content-source identities instead of real export files.
+S3-T01 introduced export contract structures. S3-T02 adds workspace-local export tests that write only small synthetic provider-backed bytes under ignored `.test-artifacts/` output directories.
 
-For later Stage 3 tickets:
+For Stage 3 tickets:
 
 - Export bytes must come from an explicit export content source/provider.
 - Filesystem metadata entries are not byte-bearing objects by themselves.
 - Preview-rendered text or hex is not an export byte source.
 - Stub/provider/generated-fixture exports must be labeled as synthetic, generated, or provider-backed in the result and manifest.
+- S3-T02 output files and manifests are test artifacts, not committed fixtures.
 - Real raw/EWF/filesystem fixtures remain optional local-only inputs until a reviewed ticket explicitly adds safe integration behavior.

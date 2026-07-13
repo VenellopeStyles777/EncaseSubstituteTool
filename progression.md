@@ -347,3 +347,21 @@ YYYY-MM-DD
 - Learned: export result/manifest read-only assertions now derive from source provenance by default, avoiding an optimistic true value when a source is not read-only.
 - Blocked by: nothing for S3-T01.
 - Next: prepare S3-T02 for implementation handoff, keeping it focused on explicit export content providers and destination safety checks before writing files.
+
+2026-07-13
+- Completed: reviewed and tightened S3-T02 against the landed S3-T01 contract, marked S3-T02 ready, and created the paste-ready VS Code implementation prompt.
+- Learned: S3-T02 should use the existing `ExportResult`/`ExportManifest` shapes directly, keep SHA-256 as `hash_not_computed`, and make destination safety run before any write.
+- Blocked by: nothing for S3-T02 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-13-s3-t02-file-export-service.md`, then review the resulting implementation before S3-T03 is made ready.
+
+2026-07-13
+- Completed: implemented S3-T02 fixture/stub file export service with a separate raw export content provider, destination safety checks, output/manifest writes, JSON helper, API exports, tests, and documentation updates.
+- Learned: the S3-T01 result/manifest contract can represent the first write workflow while still keeping hash computation deferred. Export must remain distinct from preview rendering; the stub provider supplies raw bytes directly.
+- Blocked by: nothing for S3-T02 implementation; review is pending.
+- Next: review S3-T02 before making S3-T03 ready. S3-T03 should add SHA-256 and byte-count verification only after this write path is accepted.
+
+2026-07-13
+- Completed: re-reviewed S3-T02 after the partial-artifact cleanup fix and approved it.
+- Learned: the export write path now refuses overwrites atomically, honors safe requested output names, and cleans up partial output/manifest artifacts on generic write failures.
+- Blocked by: nothing for S3-T02.
+- Next: prepare S3-T03 for implementation handoff when requested, keeping it focused on SHA-256 and byte-count verification for the accepted export path.

@@ -27,8 +27,8 @@ Stage 2 handoff summary:
 Stage 3 export-contract start:
 
 - `export_manifest.py` defines JSON-friendly export request, result, manifest, status, warning, content-source identity, source provenance, and hash-placeholder structures.
-- S3-T01 does not export files, write manifests, compute hashes, check destination overlap, record audit events, or recover deleted files.
-- Export content remains separate from Stage 2 metadata and preview rendering. Future export bytes must come from an explicit export content source/provider, not from filesystem entries alone and not from rendered preview text or hex.
+- S3-T02 adds a backend API export service that writes only explicit provider-backed fixture/stub bytes to examiner-selected output directories.
+- Export content remains separate from Stage 2 metadata and preview rendering. Export bytes must come from an explicit export content source/provider, not from filesystem entries alone and not from rendered preview text or hex.
 
 ## S1-T02 Segment Discovery
 
@@ -164,3 +164,23 @@ Current S3-T01 behavior:
 - keeps default tests dependency-free and free of real evidence.
 
 S3-T01 does not write exported files or manifest files, compute SHA-256, enforce destination safety, add an API command, persist audit events, implement deleted-file recovery, parse real EWF/partition/filesystem data, or use preview-rendered text/hex as export bytes.
+
+## S3-T02 Fixture/Stub File Export Service
+
+The backend API layer in `app/backend/api/file_export.py` provides the first write-capable Stage 3 export foundation:
+
+- `ExportContentProvider`: protocol for raw export byte providers, intentionally separate from preview providers.
+- `StubExportContentProvider`: dependency-free provider that maps the synthetic stub file `stub-file-hello` (`/hello.txt`) to raw `Hello, world!` bytes.
+- `export_file(entry_or_request, output_directory, ...)`: validates the source, destination, output name, and provider content; writes the output file and manifest when safe; returns an S3-T01 `ExportResult`.
+- `export_file_to_json(...)`: runs export and serializes the returned result as stable JSON.
+
+Current S3-T02 behavior:
+
+- requires an explicit output directory;
+- rejects output directories that overlap the known source/evidence path when that can be determined;
+- rejects path traversal, unsafe output names, directory/non-file entries, missing content, and existing output/manifest files with structured statuses;
+- writes a manifest from `ExportResult.to_manifest()` beside the exported file;
+- records provider byte counts as `bytes_requested` and `bytes_written`;
+- keeps SHA-256 and broader hash analysis deferred through `hash_not_computed`.
+
+S3-T02 does not parse real filesystems, extract real evidence bytes, compute hashes, add case-store audit integration, implement deleted-file recovery, add UI, or require native forensic dependencies.

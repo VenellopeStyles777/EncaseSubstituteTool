@@ -6,8 +6,13 @@ __all__ = [
     "DIRECTORY_LISTING_SCHEMA_VERSION",
     "FILE_PREVIEW_SCHEMA_VERSION",
     "INTAKE_SCHEMA_VERSION",
+    "DEFAULT_MANIFEST_SUFFIX",
+    "ExportContent",
+    "StubExportContentProvider",
     "StubPreviewProvider",
     "directory_listing_to_json",
+    "export_file",
+    "export_file_to_json",
     "intake_to_json",
     "list_directory",
     "main",
@@ -38,5 +43,15 @@ def __getattr__(name: str):
     }:
         preview_module = import_module("app.backend.api.file_preview")
         return getattr(preview_module, name)
+
+    if name in {
+        "DEFAULT_MANIFEST_SUFFIX",
+        "ExportContent",
+        "StubExportContentProvider",
+        "export_file",
+        "export_file_to_json",
+    }:
+        export_module = import_module("app.backend.api.file_export")
+        return getattr(export_module, name)
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

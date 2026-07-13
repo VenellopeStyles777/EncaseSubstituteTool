@@ -7,10 +7,11 @@ Current Stage 2 API surface:
 - E01 intake command/callable from Stage 1.
 - Directory listing/file metadata callable over the Stage 2 filesystem adapter boundary.
 - Raw/text/hex preview callable over explicit preview-provider bytes.
+- Fixture/stub file export callable over an explicit export content provider.
 
-These callables are backend-only and JSON-friendly. They do not provide UI, executable packaging, export/recovery, hashing, search, reporting, real EWF byte parsing, real partition parsing, real filesystem parsing, or automatic case-store persistence.
+These callables are backend-only and JSON-friendly. They do not provide UI, executable packaging, hashing, search, reporting, real EWF byte parsing, real partition parsing, real filesystem parsing, deleted recovery, or automatic case-store persistence.
 
-Stage 3 note: S3-T01 adds core export request/result/manifest contract structures in `app.backend.forensic_core`. It does not add a backend API command/callable yet, write export files, write manifest files, compute hashes, or persist audit events. A future Stage 3 ticket should add an API/service boundary only after the export content-source and destination-safety behavior is implemented.
+Stage 3 note: S3-T02 adds the first write-capable export callable for explicit fixture/stub/provider-backed raw bytes. It does not compute hashes, persist audit events, recover deleted files, parse real filesystems, or use preview-rendered text/hex as export bytes.
 
 ## S1-T04 Intake Command
 
@@ -112,4 +113,26 @@ S2-T06 does not perform real filesystem byte extraction, parse evidence/filesyst
 
 Export contracts now exist in `app.backend.forensic_core.export_manifest` for later service/API work. They preserve Stage 2 source provenance and identify the explicit export content source/provider, but all output path, manifest path, byte-count, destination-safety, and hash fields are placeholder-ready until later Stage 3 tickets implement actual export behavior.
 
-The API layer still has no export command. Stage 2 preview output remains a preview surface only; rendered text or hex must not be treated as export bytes.
+Stage 2 preview output remains a preview surface only; rendered text or hex must not be treated as export bytes.
+
+## S3-T02 Fixture/Stub Export Callable
+
+Callable usage from Python:
+
+```python
+from app.backend.api import export_file
+
+result = export_file(entry, r"C:\case-exports")
+```
+
+`export_file()` consumes a Stage 2-style file-entry dictionary or S3-T01 `ExportRequest`, an explicit output directory, and an explicit export content provider. The default `StubExportContentProvider` maps `stub-file-hello` (`/hello.txt`) to raw synthetic `Hello, world!` bytes for dependency-free tests and smoke checks.
+
+Current S3-T02 behavior:
+
+- writes the exported file and a sibling JSON manifest when the destination is explicit and safe;
+- preserves S3-T01 source provenance and content-source identity in the returned `ExportResult` and manifest;
+- records byte counts from provider bytes and written output length;
+- keeps hashes at `hash_not_computed` for S3-T03;
+- refuses missing content, non-file entries, missing destinations, source/destination overlap, unsafe output names, and existing output/manifest files through structured statuses.
+
+S3-T02 does not compute SHA-256, add audit persistence, recover deleted files, add UI/export commands, parse real evidence/filesystems, or require native forensic dependencies.
