@@ -28,6 +28,7 @@ Stage 3 export-contract start:
 
 - `export_manifest.py` defines JSON-friendly export request, result, manifest, status, warning, content-source identity, source provenance, and hash-placeholder structures.
 - S3-T02 adds a backend API export service that writes only explicit provider-backed fixture/stub bytes to examiner-selected output directories.
+- S3-T03 verifies written export artifacts by reading the output file after writing, recording on-disk byte count, and computing SHA-256 into the existing `ExportHashSummary` contract.
 - Export content remains separate from Stage 2 metadata and preview rendering. Export bytes must come from an explicit export content source/provider, not from filesystem entries alone and not from rendered preview text or hex.
 
 ## S1-T02 Segment Discovery
@@ -179,8 +180,19 @@ Current S3-T02 behavior:
 - requires an explicit output directory;
 - rejects output directories that overlap the known source/evidence path when that can be determined;
 - rejects path traversal, unsafe output names, directory/non-file entries, missing content, and existing output/manifest files with structured statuses;
-- writes a manifest from `ExportResult.to_manifest()` beside the exported file;
-- records provider byte counts as `bytes_requested` and `bytes_written`;
-- keeps SHA-256 and broader hash analysis deferred through `hash_not_computed`.
+- writes a manifest from `ExportResult.to_manifest()` beside the exported file.
 
-S3-T02 does not parse real filesystems, extract real evidence bytes, compute hashes, add case-store audit integration, implement deleted-file recovery, add UI, or require native forensic dependencies.
+S3-T02 does not parse real filesystems, extract real evidence bytes, add case-store audit integration, implement deleted-file recovery, add UI, or require native forensic dependencies.
+
+## S3-T03 Export Hashing And Byte-Count Verification
+
+The backend API export service now fills the S3-T01 hash and byte-count fields for written artifacts:
+
+- `bytes_requested` remains the provider byte count when known;
+- `bytes_written` is measured by reading the written output file after export;
+- `ExportHashSummary.sha256` is computed from the written output bytes;
+- `ExportHashSummary.status` is `ok` only when SHA-256 was computed from the exported artifact;
+- byte-count mismatches return structured `byte_count_mismatch` status and warnings;
+- unreadable or missing output after write returns structured `export_verification_failed` with hash status `hash_failed`.
+
+This is export-output verification only. Broader file hash analysis, MD5/SHA-1 production hashing, known-file matching, file signatures, extension mismatch checks, image verification, audit integration, deleted recovery, UI, and real parser work remain deferred.

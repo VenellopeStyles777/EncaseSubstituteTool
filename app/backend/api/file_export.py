@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import hashlib
 import json
 from pathlib import Path
 from typing import Mapping, Protocol
@@ -251,9 +252,14 @@ def export_file(
         destination_dir.mkdir(parents=True, exist_ok=True)
         _write_bytes_exclusive(output_path, content.data)
         output_created = True
+        hashes, bytes_written, verification_status, verification_warnings = (
+            _verify_exported_output(output_path, expected_byte_count=len(content.data))
+        )
+        status_code = verification_status.code
+        status_message = verification_status.message
         result = _result(
-            status_code="ok",
-            status_message="Export file and manifest were written.",
+            status_code=status_code,
+            status_message=status_message,
             source=source,
             provider=export_provider,
             content_source=content_source,
@@ -262,12 +268,13 @@ def export_file(
             output_path=str(output_path),
             manifest_path=str(manifest_path),
             bytes_requested=len(content.data),
-            bytes_written=len(content.data),
+            bytes_written=bytes_written,
+            hashes=hashes,
             destination_status=ExportStatus(
                 code="ok",
                 message="Destination safety checks passed.",
             ),
-            warnings=content.warnings,
+            warnings=content.warnings + verification_warnings,
         )
         manifest_json = json.dumps(result.to_manifest().to_dict(), indent=2, sort_keys=True)
         _write_text_exclusive(manifest_path, manifest_json)
@@ -427,6 +434,88 @@ def _write_text_exclusive(path: Path, text: str) -> None:
         output.write(text)
 
 
+def _verify_exported_output(
+    output_path: Path,
+    *,
+    expected_byte_count: int | None,
+) -> tuple[ExportHashSummary, int | None, ExportStatus, tuple[ExportWarning, ...]]:
+    sha256 = hashlib.sha256()
+    bytes_written = 0
+
+    try:
+        with output_path.open("rb") as output:
+            while True:
+                chunk = output.read(1024 * 1024)
+                if not chunk:
+                    break
+                bytes_written += len(chunk)
+                sha256.update(chunk)
+    except OSError as error:
+        status = ExportStatus(
+            code="export_verification_failed",
+            message=f"Exported output could not be verified after writing: {error}",
+        )
+        return (
+            ExportHashSummary(
+                sha256=None,
+                status=ExportStatus(
+                    code="hash_failed",
+                    message="SHA-256 could not be computed from the written output.",
+                ),
+            ),
+            None,
+            status,
+            (
+                ExportWarning(
+                    code=status.code,
+                    message=status.message,
+                    path=str(output_path),
+                    source="export_verification",
+                ),
+            ),
+        )
+
+    hash_summary = ExportHashSummary(
+        sha256=sha256.hexdigest(),
+        status=ExportStatus(
+            code="ok",
+            message="SHA-256 was computed from the written output.",
+        ),
+    )
+    if expected_byte_count is not None and bytes_written != expected_byte_count:
+        status = ExportStatus(
+            code="byte_count_mismatch",
+            message=(
+                "Written output byte count does not match the export provider byte count."
+            ),
+        )
+        return (
+            hash_summary,
+            bytes_written,
+            status,
+            (
+                ExportWarning(
+                    code=status.code,
+                    message=(
+                        f"Expected {expected_byte_count} bytes but wrote {bytes_written} bytes."
+                    ),
+                    path=str(output_path),
+                    source="export_verification",
+                ),
+            ),
+        )
+
+    return (
+        hash_summary,
+        bytes_written,
+        ExportStatus(
+            code="ok",
+            message="Export file, manifest, SHA-256, and byte count were verified.",
+        ),
+        (),
+    )
+
+
 def _cleanup_written_output(path: Path) -> None:
     try:
         path.unlink()
@@ -452,6 +541,7 @@ def _result(
     manifest_path: str | None = None,
     bytes_requested: int | None = None,
     bytes_written: int | None = None,
+    hashes: ExportHashSummary | None = None,
     destination_status: ExportStatus | None = None,
     content_status_code: str = "export_not_started",
     content_status_message: str = "Export content source has not been read.",
@@ -477,7 +567,7 @@ def _result(
         manifest_path=manifest_path,
         bytes_requested=bytes_requested,
         bytes_written=bytes_written,
-        hashes=ExportHashSummary(),
+        hashes=hashes or ExportHashSummary(),
         destination_status=destination_status
         or ExportStatus(
             code="destination_not_checked",

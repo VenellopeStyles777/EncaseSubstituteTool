@@ -55,7 +55,7 @@ Initial feature groups to track:
 | Stage 2 documentation handoff | 2 | Done | Untested | S2-T07; documentation/review wrap-up only. Stage 2 final review handoff is ready. |
 | Export manifest contract | 3 | Done | Untested | S3-T01 contract structures and tests are reviewed; no file export yet. |
 | Fixture/stub file export service | 3 | Done | Untested | S3-T02 reviewed; exports explicit stub/provider bytes only. |
-| Export hashing and byte-count verification | 3 | Planned | Untested | S3-T03 is expanded as a Draft; broader hash analysis remains Stage 4. |
+| Export hashing and byte-count verification | 3 | Done | Untested | S3-T03 reviewed; verifies written export artifacts with SHA-256 and on-disk byte counts. Broader hash analysis remains Stage 4. |
 | Export audit integration | 3 | Planned | Untested | S3-T04 is expanded as a Draft; audit must be explicit and optional. |
 | Deleted-file recovery | 3 | Planned | Untested | S3-T05 is planning/docs only unless a real adapter exposes recoverable bytes. |
 | Hash/signature analysis | 4 | Planned | Untested | Broader analysis stage; not Stage 3. |

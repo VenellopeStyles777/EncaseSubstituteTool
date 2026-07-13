@@ -1,6 +1,7 @@
 """Tests for the S3-T02 fixture/stub export service."""
 
 from contextlib import contextmanager
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -13,6 +14,9 @@ from app.backend.api import (
 )
 import app.backend.api.file_export as file_export_module
 from app.backend.forensic_core import ExportRequest, ExportSourceProvenance
+
+
+HELLO_SHA256 = "315f5bdb76d078c43b8ac0064e4a0164612b1fce77c869345bfc94c75894edd3"
 
 
 @contextmanager
@@ -88,13 +92,15 @@ def test_successful_stub_export_writes_file_and_manifest():
     assert manifest["content_source"]["source_kind"] == "stub"
     assert manifest["content_source"]["synthetic"] is True
     assert manifest["content_source"]["source_content_size"] == 13
-    assert manifest["hashes"]["sha256"] is None
-    assert manifest["hashes"]["status"]["code"] == "hash_not_computed"
+    assert manifest["hashes"]["sha256"] == HELLO_SHA256
+    assert manifest["hashes"]["status"]["code"] == "ok"
     assert result.bytes_requested == 13
     assert result.bytes_written == 13
-    assert result.hashes.status.code == "hash_not_computed"
+    assert result.hashes.sha256 == HELLO_SHA256
+    assert result.hashes.status.code == "ok"
     assert result.destination_status.code == "ok"
     assert parsed["status"]["code"] == "ok"
+    assert parsed["hashes"]["sha256"] == HELLO_SHA256
 
 
 def test_result_and_manifest_agree_on_export_fields():
@@ -110,8 +116,89 @@ def test_result_and_manifest_agree_on_export_fields():
     assert manifest["bytes_written"] == result_dict["bytes_written"]
     assert manifest["source"] == result_dict["source"]
     assert manifest["content_source"] == result_dict["content_source"]
-    assert manifest["hashes"]["status"]["code"] == "hash_not_computed"
+    assert manifest["hashes"] == result_dict["hashes"]
+    assert manifest["hashes"]["sha256"] == HELLO_SHA256
+    assert manifest["hashes"]["status"]["code"] == "ok"
     assert result_dict["manifest"]["manifest_path"] == result_dict["manifest_path"]
+
+
+def test_hash_is_calculated_from_exported_file_bytes(monkeypatch):
+    written_bytes = b"Jello, world!"
+
+    def write_different_same_size_bytes(path: Path, data: bytes) -> None:
+        assert len(data) == len(written_bytes)
+        with path.open("xb") as output:
+            output.write(written_bytes)
+
+    monkeypatch.setattr(
+        file_export_module,
+        "_write_bytes_exclusive",
+        write_different_same_size_bytes,
+    )
+
+    with _export_fixture_directory("file-export-hash-from-disk") as directory:
+        result = export_file(_stub_file_entry(), directory / "exports")
+        manifest = json.loads(Path(str(result.manifest_path)).read_text(encoding="utf-8"))
+
+    expected_hash = hashlib.sha256(written_bytes).hexdigest()
+    assert result.status.code == "ok"
+    assert result.bytes_requested == 13
+    assert result.bytes_written == 13
+    assert result.hashes.sha256 == expected_hash
+    assert result.hashes.sha256 != HELLO_SHA256
+    assert manifest["hashes"]["sha256"] == expected_hash
+    assert manifest["bytes_written"] == 13
+
+
+def test_byte_count_mismatch_returns_structured_non_ok_status(monkeypatch):
+    def write_short_output(path: Path, data: bytes) -> None:
+        with path.open("xb") as output:
+            output.write(b"short")
+
+    monkeypatch.setattr(file_export_module, "_write_bytes_exclusive", write_short_output)
+
+    with _export_fixture_directory("file-export-byte-count-mismatch") as directory:
+        result = export_file(_stub_file_entry(), directory / "exports")
+        manifest = json.loads(Path(str(result.manifest_path)).read_text(encoding="utf-8"))
+
+    assert result.status.code == "byte_count_mismatch"
+    assert result.bytes_requested == 13
+    assert result.bytes_written == 5
+    assert result.hashes.sha256 == hashlib.sha256(b"short").hexdigest()
+    assert result.hashes.status.code == "ok"
+    assert result.warnings[-1].code == "byte_count_mismatch"
+    assert manifest["status"]["code"] == "byte_count_mismatch"
+    assert manifest["bytes_requested"] == result.bytes_requested
+    assert manifest["bytes_written"] == result.bytes_written
+    assert manifest["hashes"]["sha256"] == result.hashes.sha256
+
+
+def test_missing_output_after_write_returns_structured_verification_failure(monkeypatch):
+    def write_then_remove_output(path: Path, data: bytes) -> None:
+        with path.open("xb") as output:
+            output.write(data)
+        path.unlink()
+
+    monkeypatch.setattr(
+        file_export_module,
+        "_write_bytes_exclusive",
+        write_then_remove_output,
+    )
+
+    with _export_fixture_directory("file-export-missing-after-write") as directory:
+        result = export_file(_stub_file_entry(), directory / "exports")
+        manifest = json.loads(Path(str(result.manifest_path)).read_text(encoding="utf-8"))
+
+    assert result.status.code == "export_verification_failed"
+    assert result.bytes_requested == 13
+    assert result.bytes_written is None
+    assert result.hashes.sha256 is None
+    assert result.hashes.status.code == "hash_failed"
+    assert result.warnings[-1].code == "export_verification_failed"
+    assert manifest["status"]["code"] == "export_verification_failed"
+    assert manifest["bytes_written"] is None
+    assert manifest["hashes"]["sha256"] is None
+    assert manifest["hashes"]["status"]["code"] == "hash_failed"
 
 
 def test_missing_provider_content_returns_structured_status_without_writing():
@@ -128,6 +215,8 @@ def test_missing_provider_content_returns_structured_status_without_writing():
     assert not Path(str(result.output_path)).exists()
     assert not Path(str(result.manifest_path)).exists()
     assert result.content_source.status.code == "content_source_unavailable"
+    assert result.hashes.sha256 is None
+    assert result.hashes.status.code == "hash_not_computed"
     assert result.warnings[0].code == "content_source_unavailable"
 
 
@@ -175,6 +264,8 @@ def test_unsafe_destination_overlapping_source_is_rejected_before_write():
     assert result.destination_status.code == "unsafe_destination"
     assert result.output_path is None
     assert result.manifest_path is None
+    assert result.hashes.sha256 is None
+    assert result.hashes.status.code == "hash_not_computed"
     assert result.warnings[0].code == "unsafe_destination"
 
 

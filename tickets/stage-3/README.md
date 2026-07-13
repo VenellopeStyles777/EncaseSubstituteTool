@@ -10,7 +10,7 @@ Stage 3 should build on Stage 2 filesystem/file metadata results. Deleted-file r
 | --- | --- | --- |
 | S3-T01 | Done | Export result and manifest contract |
 | S3-T02 | Done | Fixture/stub file export service |
-| S3-T03 | Draft | Export hashing and byte-count verification |
+| S3-T03 | Done | Export hashing and byte-count verification |
 | S3-T04 | Draft | Case-store audit integration for exports |
 | S3-T05 | Draft | Deleted-file recovery research and conditional plan |
 | S3-T06 | Draft | Stage 3 docs and review handoff |
@@ -36,4 +36,4 @@ Recommended sequence:
 5. Keep S3-T05 documentation/planning-only unless real adapter support exists.
 6. Use S3-T06 as the final Stage 3 documentation and review handoff.
 
-Do not hand any Stage 3 ticket after S3-T02 to the implementation agent until its individual ticket file and prompt are reviewed for the current code state. S3-T01 and S3-T02 are reviewed and done.
+Do not hand any Stage 3 ticket after S3-T03 to the implementation agent until its individual ticket file and prompt are reviewed for the current code state. S3-T01 through S3-T03 are reviewed and done; S3-T04 is the next ticket to prepare.

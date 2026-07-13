@@ -9,9 +9,9 @@ Current Stage 2 API surface:
 - Raw/text/hex preview callable over explicit preview-provider bytes.
 - Fixture/stub file export callable over an explicit export content provider.
 
-These callables are backend-only and JSON-friendly. They do not provide UI, executable packaging, hashing, search, reporting, real EWF byte parsing, real partition parsing, real filesystem parsing, deleted recovery, or automatic case-store persistence.
+These callables are backend-only and JSON-friendly. They do not provide UI, executable packaging, broader hash/signature analysis, search, reporting, real EWF byte parsing, real partition parsing, real filesystem parsing, deleted recovery, or automatic case-store persistence.
 
-Stage 3 note: S3-T02 adds the first write-capable export callable for explicit fixture/stub/provider-backed raw bytes. It does not compute hashes, persist audit events, recover deleted files, parse real filesystems, or use preview-rendered text/hex as export bytes.
+Stage 3 note: S3-T03 verifies the written fixture/stub/provider-backed export artifact by reading it back for byte count and SHA-256. It does not persist audit events, recover deleted files, parse real filesystems, run broader hash/signature analysis, or use preview-rendered text/hex as export bytes.
 
 ## S1-T04 Intake Command
 
@@ -131,8 +131,21 @@ Current S3-T02 behavior:
 
 - writes the exported file and a sibling JSON manifest when the destination is explicit and safe;
 - preserves S3-T01 source provenance and content-source identity in the returned `ExportResult` and manifest;
-- records byte counts from provider bytes and written output length;
-- keeps hashes at `hash_not_computed` for S3-T03;
+- records provider byte counts before S3-T03 verification;
 - refuses missing content, non-file entries, missing destinations, source/destination overlap, unsafe output names, and existing output/manifest files through structured statuses.
 
-S3-T02 does not compute SHA-256, add audit persistence, recover deleted files, add UI/export commands, parse real evidence/filesystems, or require native forensic dependencies.
+S3-T02 does not add audit persistence, recover deleted files, add UI/export commands, parse real evidence/filesystems, or require native forensic dependencies.
+
+## S3-T03 Export Hashing And Byte-Count Verification
+
+`export_file()` now verifies a successful write by reopening the exported output file, streaming its bytes through SHA-256, and recording the byte count observed on disk. The returned `ExportResult` and persisted manifest agree on `bytes_requested`, `bytes_written`, `hashes.sha256`, `hashes.status`, final status, and warnings.
+
+Current S3-T03 behavior:
+
+- computes SHA-256 from the written output file, not from provider bytes alone and not from preview text/hex;
+- compares the written byte count with the provider byte count when known;
+- returns structured `byte_count_mismatch` when the written size differs from expected provider bytes;
+- returns structured `export_verification_failed` with hash status `hash_failed` when the output cannot be read back after writing;
+- preserves S3-T02 destination safety, exclusive write, overwrite refusal, and partial-artifact cleanup behavior.
+
+S3-T03 does not add MD5/SHA-1 production hashing, known-file matching, file signature analysis, extension mismatch checks, image verification, audit integration, deleted recovery, UI, real parser work, or required native dependencies.

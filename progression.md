@@ -12,6 +12,12 @@ YYYY-MM-DD
 - Next:
 ```
 
+2026-07-13
+- Completed: implemented and reviewed S3-T03 export hashing and byte-count verification by reading the written output file after export, computing SHA-256 from the artifact bytes, recording on-disk byte count, comparing it with provider byte count, and keeping result/manifest verification fields in agreement.
+- Learned: the existing S3-T01 `ExportHashSummary` contract was sufficient for S3-T03; no parallel hash result shape or Stage 4 hash-analysis scope was needed.
+- Blocked by: nothing for S3-T03.
+- Next: prepare S3-T04 for implementation handoff when requested, keeping audit integration explicit and optional. Final review test run: `python -m pytest` reported 93 passed in 4.04s.
+
 2026-07-08
 - Completed: expanded Stage 1 targets, created app skeleton folders, split research into topic files, added VS Code agent prompt, and added agent workflow documentation.
 - Learned: Git is initialized on `main` with `origin` configured, but this sandbox has read-only access to `.git` and cannot stage/commit.
@@ -365,3 +371,9 @@ YYYY-MM-DD
 - Learned: the export write path now refuses overwrites atomically, honors safe requested output names, and cleans up partial output/manifest artifacts on generic write failures.
 - Blocked by: nothing for S3-T02.
 - Next: prepare S3-T03 for implementation handoff when requested, keeping it focused on SHA-256 and byte-count verification for the accepted export path.
+
+2026-07-13
+- Completed: reviewed and tightened S3-T03 against the accepted S3-T02 export path, marked S3-T03 ready, and created the paste-ready VS Code implementation prompt.
+- Learned: S3-T03 should verify the written output file, update result and manifest hashes/byte counts in agreement, and keep broader hash/signature analysis in Stage 4.
+- Blocked by: nothing for S3-T03 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-13-s3-t03-export-hashing.md`, then review the resulting implementation before S3-T04 is made ready.

@@ -12,6 +12,28 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-13 - S3-T03 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- `app/backend/api/file_export.py` now verifies successful output writes by reopening the exported artifact, streaming bytes through SHA-256, and counting bytes from disk.
+- Returned `ExportResult` and persisted manifest JSON agree on `bytes_requested`, `bytes_written`, `hashes.sha256`, `hashes.status`, final status, and warnings.
+- Structured post-write verification failures cover `byte_count_mismatch` and `export_verification_failed`; missing/unreadable output uses hash status `hash_failed`.
+- Existing S3-T02 destination safety, exclusive create writes, overwrite refusal, and generic write-failure cleanup behavior remain in place.
+- S3-T03 stayed in scope and did not add MD5/SHA-1 production hashing, known-file matching, file signatures, extension mismatch checks, image verification, audit integration, deleted recovery, UI, real parser work, native dependency requirements, or preview-rendered export bytes.
+
+Tests:
+
+- `python -m pytest`: 93 passed in 4.04s.
+
+Residual notes:
+
+- S3-T04 is the next Stage 3 implementation gate and should remain optional/explicit case-store audit integration only.
+- Broader hash/signature analysis remains Stage 4.
+
 ## 2026-07-13 - S3-T02 Fixture/Stub Export Service Handoff
 
 Result: ready for research/review agent review.
