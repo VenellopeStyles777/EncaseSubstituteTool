@@ -52,6 +52,7 @@ Initial feature groups to track:
 | Filesystem adapter boundary | 2 | Done | Untested | S2-T04; stub entries and pytsk3 dependency-safe skeleton. |
 | Directory listing and file metadata | 2 | Done | Untested | S2-T05; backend root listing over filesystem adapter entries. |
 | Raw/text/hex preview foundation | 2 | Done | Untested | S2-T06; bounded stub-provider raw/text/hex previews. |
+| Stage 2 documentation handoff | 2 | Done | Untested | S2-T07; documentation/review wrap-up only. Stage 2 final review handoff is ready. |
 | Export manifest contract | 3 | Planned | Untested | S3-T01. |
 | Fixture/stub file export service | 3 | Planned | Untested | S3-T02. |
 | Export hashing and byte-count verification | 3 | Planned | Untested | S3-T03. |
@@ -62,4 +63,4 @@ Initial feature groups to track:
 | Reporting/workflow | 6 | Planned | Untested | Not started. |
 | Desktop UI/executable packaging | Later | Deferred | Untested | CLI/manual testing comes first. |
 
-Manual testing note: Stage 1 has automated tests but has not been manually exercised by the user as an app workflow. Keep the manual-test column at `Untested` until the user confirms a manual run.
+Manual testing note: Stage 1 and Stage 2 have automated tests but have not been manually exercised by the user as an app workflow. Keep the manual-test column at `Untested` until the user confirms a manual run.

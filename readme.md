@@ -6,7 +6,7 @@ Current project idea: build an EnCase-like forensic analysis application focused
 
 ## Current Status
 
-Stage 1 is complete. It provides a backend-first E01 intake foundation:
+Stage 2 is complete at the documentation/review-handoff level. The project currently provides a backend-first forensic browsing foundation:
 
 - Python backend package skeleton.
 - E01 segment discovery for `.E01/.E02/.E03...` sibling files.
@@ -14,6 +14,11 @@ Stage 1 is complete. It provides a backend-first E01 intake foundation:
 - Structured dependency-unavailable behavior for missing `pyewf`/libewf.
 - JSON intake command/callable.
 - Minimal SQLite schema for cases, evidence sources, and audit events.
+- Read-only local file byte-stream abstraction for tiny generated files.
+- Whole-image volume discovery boundary.
+- Filesystem adapter boundary with deterministic stub entries and dependency-safe `pytsk3` skeleton behavior.
+- Backend directory listing/file metadata callable over adapter entries.
+- Bounded raw/text/hex preview callable over explicit preview-provider bytes.
 
 Run tests from the repository root:
 
@@ -29,9 +34,26 @@ python -m app.backend.api.intake path\to\sample.E01
 
 Use `--adapter stub` for dependency-free synthetic metadata checks.
 
-Current limitations: Stage 1 does not parse real EWF bytes, parse filesystems, provide a UI, or automatically persist intake results to the case store. Real forensic libraries are optional and not required for tests.
+Use the Stage 2 backend callables from Python:
 
-Next planned stage: Stage 2 volume/filesystem browsing MVP. Stage 2 should add fixture strategy, image/byte-stream abstractions, volume discovery, filesystem adapter boundaries, and one backend browsable tree or stubbed equivalent. It should still avoid UI and private evidence.
+```python
+from app.backend.api import list_directory, preview_file, run_e01_intake
+from app.backend.forensic_core import (
+    LocalFileImageStream,
+    StubFilesystemAdapter,
+    discover_volumes,
+)
+```
+
+What is real versus stubbed today:
+
+- Real local-file behavior: `LocalFileImageStream` can describe and bounded-read tiny local files in read-only binary mode.
+- Stubbed behavior: whole-image volume discovery can wrap a readable non-empty stream as one volume; filesystem listing uses the deterministic `StubFilesystemAdapter` unless a future adapter supplies real entries.
+- Synthetic preview-provider content: `preview_file()` does not extract bytes from real filesystems. The default `StubPreviewProvider` maps the stub `/hello.txt` entry to synthetic `Hello, world!` bytes.
+
+Current limitations: Stage 2 does not parse real EWF bytes, verify real images, parse real partition tables, parse real filesystems, extract real file content, provide a UI/executable, export/recover files, hash files, search, report, or automatically persist Stage 2 results to the case store. Real forensic libraries are optional and not required for tests.
+
+Next stage: Stage 3 export/recovery foundation is in planning. The Stage 3 VS Code onboarding prompt is ready, but the Stage 3 tickets are Draft until each ticket is expanded before implementation. Stage 3 should add safe fixture/stub/provider-backed export contracts, manifests, hashes, provenance, and audit hooks without assuming real deleted-file recovery is available.
 
 Primary planning files:
 

@@ -1,6 +1,6 @@
 # S3-T04 - Case-Store Audit Integration For Exports
 
-Status: Ready
+Status: Draft
 
 Stage: Stage 3 - Export and recovery foundation
 

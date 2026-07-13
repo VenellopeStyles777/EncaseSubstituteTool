@@ -12,6 +12,87 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-13 - Stage 3 Ticket Readiness Review
+
+Result: ticket expansion needed before implementation.
+
+Findings:
+
+- No code issues reviewed in this pass; this was onboarding/ticketing review only.
+- The Stage 3 ticket files existed but were too high-level compared with the Stage 2 ticket prompts.
+- Leaving the tickets marked `Ready` risked sending the implementation agent into export work without enough contract detail, status names, test expectations, or scope boundaries.
+- The Stage 3 tickets are now marked `Draft` until each ticket is expanded.
+- A Stage 3 VS Code familiarization prompt was added at `prompts/vscode-agent/2026-07-13-stage-3-familiarization.md`.
+
+Recommended next action:
+
+- Expand S3-T01 into a detailed contract-only prompt before any Stage 3 code is written.
+- S3-T01 should define export request/result/manifest/status/warning/content-source structures and serialization tests.
+- S3-T01 should not write files, compute real hashes, add audit events, implement deleted recovery, add UI, add real parsers, or require native dependencies.
+
+Review stance for Stage 3:
+
+- Export bytes must come from an explicit content-source/provider boundary.
+- Preview-rendered text/hex must not be used as export bytes.
+- Stage 2 filesystem metadata entries must not be treated as byte-bearing objects.
+- Destination safety checks must be centralized and heavily tested once file writing begins.
+- Manifests must identify whether bytes are stubbed, generated fixture bytes, provider-backed, or later real parser bytes.
+
+## S2-T07 Review Expectations
+
+- Documentation should accurately describe completed Stage 2 behavior and test commands.
+- Docs should clearly separate real behavior from stubbed/synthetic/provider-backed behavior.
+- Docs should not claim real EWF byte parsing, real partition parsing, real filesystem parsing, UI work, export/recovery, hashing, search, or reporting.
+- `Goal.md`, `readme.md`, `plan.md`, `functionality.md`, `progression.md`, `tickets/stage-2/`, and backend docs should agree on Stage 2 status.
+- S2-T07 should not add new app behavior or begin Stage 3.
+
+## 2026-07-09 - Stage 2 Final Review Handoff
+
+Result: ready for final Stage 2 review.
+
+Implemented in Stage 2:
+
+- Fixture/dependency strategy for pure stubs, tiny generated files, and optional local-only forensic fixtures.
+- Read-only `LocalFileImageStream` for tiny local files and bounded byte reads.
+- Whole-image volume discovery boundary.
+- Filesystem adapter boundary with deterministic stub entries and dependency-safe `pytsk3` skeleton behavior.
+- Backend directory listing/file metadata callable over adapter entries.
+- Bounded raw/text/hex preview callable over explicit provider bytes.
+- Documentation updates that separate real local-file behavior, stubbed filesystem/listing behavior, and synthetic preview-provider content.
+
+Final review checklist:
+
+- Confirm docs do not claim real EWF byte parsing, real image verification, real partition parsing, real filesystem parsing, or real file extraction.
+- Confirm `pyewf`, libewf, `pytsk3`, and The Sleuth Kit remain optional for default tests.
+- Confirm Stage 2 API results are not described as automatically persisted to the case store.
+- Confirm no export/recovery, hashing/signature analysis, search/timeline, reporting, UI, executable packaging, S2-T08, or Stage 3 work was introduced.
+- Confirm manual-test fields remain `Untested` until the user explicitly reports manual testing.
+
+Tests:
+
+- `python -m pytest`: 67 passed.
+
+## 2026-07-09 - Stage 2 Final Review
+
+Result: Stage 2 approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- Documentation accurately describes Stage 2 as a backend browsing/preview foundation using real local-file byte-stream behavior, stubbed volume/filesystem/listing behavior, and synthetic preview-provider bytes.
+- Docs clearly state that real EWF byte parsing, image verification, partition parsing, filesystem parsing, real file extraction, UI, export/recovery, hashing/signatures, search/timeline, reporting, executable packaging, and automatic Stage 2 result persistence are not implemented.
+- Dependency notes keep `pyewf`, libewf, `pytsk3`, and The Sleuth Kit optional for default tests.
+- Manual-test fields remain `Untested`, as expected.
+- S2-T07 stayed docs/status-only and did not begin Stage 3.
+
+Tests:
+
+- `python -m pytest`: 67 passed.
+
+Residual notes:
+
+- `tickets/README.md` had one stale Stage 2 status line saying "planned next"; this review corrected it to Stage 2 complete at handoff and Stage 3 planned next.
+
 ## S2-T06 Review Expectations
 
 - Preview code should use bounded, read-only reads from a stub or tiny generated preview source.

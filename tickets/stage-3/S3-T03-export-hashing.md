@@ -1,6 +1,6 @@
 # S3-T03 - Export Hashing And Byte-Count Verification
 
-Status: Ready
+Status: Draft
 
 Stage: Stage 3 - Export and recovery foundation
 

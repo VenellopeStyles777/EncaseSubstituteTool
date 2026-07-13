@@ -1,6 +1,6 @@
 # S3-T06 - Stage 3 Docs And Review Handoff
 
-Status: Ready
+Status: Draft
 
 Stage: Stage 3 - Export and recovery foundation
 

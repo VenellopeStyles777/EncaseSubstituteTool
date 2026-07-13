@@ -8,9 +8,9 @@ Suggested first planning format:
 | --- | --- | --- | --- |
 | 0 | Decide stack and create app skeleton | Done | Python backend-first direction selected; planning docs and skeleton folders exist. |
 | 1 | Build E01 evidence intake spike | Done | S1-T01 through S1-T06 complete. Stage 1 is a backend intake foundation, not real EWF/filesystem parsing. |
-| 2 | Add volume/filesystem browsing MVP | In Progress | S2-T06 adds a bounded raw/text/hex preview foundation over stub or tiny generated content. Stage 2 docs handoff remains upcoming. |
-| 3 | Add export/recovery foundation | Planned | Export selected fixture/stub files with manifest, hashes, provenance, and audit hooks. Deleted recovery remains conditional. |
-| 4 | Add hashing and signature checks | Not started | Make this reproducible and testable after export/filesystem foundations exist. |
+| 2 | Add volume/filesystem browsing MVP | Done | S2-T01 through S2-T07 complete. Stage 2 is a backend fixture/stub browsing foundation, not real EWF/partition/filesystem parsing. |
+| 3 | Add export/recovery foundation | Planning | Stage 3 onboarding prompt exists. Tickets are Draft pending expansion before implementation handoff. Export selected fixture/stub/provider-backed files with manifest, hashes, provenance, and audit hooks. Deleted recovery remains conditional. |
+| 4 | Add hashing and signature checks | Not started | Rough plan recorded below. Make this reproducible and testable after export/filesystem foundations exist. |
 
 ## Stage 1 Work Targets
 
@@ -74,7 +74,7 @@ S2-T01 fixture/dependency direction:
 - Default tests should use pure stubs for adapter boundaries and structured status/error shapes.
 - Tiny generated files under ignored workspace paths may be used for raw byte-stream and preview tests.
 - Real raw, EWF, or pytsk3/The Sleuth Kit integration fixtures must remain optional, local-only, and skipped unless explicitly configured.
-- `pytsk3`, The Sleuth Kit, `pyewf`, and libewf remain optional for early Stage 2; missing dependencies should produce structured unavailable status instead of failing default tests.
+- `pytsk3`, The Sleuth Kit, `pyewf`, and libewf remain optional for Stage 2; missing dependencies should produce structured unavailable status instead of failing default tests.
 
 Stage 2 definition of done:
 
@@ -83,6 +83,14 @@ Stage 2 definition of done:
 - Missing native dependencies are visible and structured.
 - No UI is required.
 - Docs honestly separate real fixture-backed behavior from stubbed behavior.
+
+Stage 2 handoff status:
+
+- Real local-file backed behavior: `LocalFileImageStream` describes and reads tiny local files in read-only mode with bounded offset/length handling.
+- Stubbed behavior: volume discovery currently supports whole-image volume results; filesystem metadata and directory listing use deterministic adapter entries unless a later real adapter is added.
+- Synthetic preview-provider behavior: raw/text/hex preview renders bytes supplied by an explicit provider, with the default stub provider serving synthetic `/hello.txt` content.
+- Deferred: real EWF byte streams, image verification, partition parsing, real filesystem parsing, real file extraction, export/recovery, hashing/signatures, search/timeline, reporting, UI, executable packaging, and automatic case-store persistence for Stage 2 API results.
+- Dependency policy: `pyewf`, libewf, `pytsk3`, and The Sleuth Kit remain optional; default tests must continue to pass without them.
 
 ## Stage 3 Ticket Outline
 
@@ -95,12 +103,44 @@ Tickets live under `tickets/stage-3/`:
 - S3-T05: deleted-file recovery research and conditional plan.
 - S3-T06: Stage 3 documentation and review handoff.
 
+Stage 3 ticket readiness review, 2026-07-13:
+
+- The Stage 3 tickets are currently Draft starter outlines, not implementation-ready tickets.
+- A Stage 3 VS Code familiarization prompt now exists at `prompts/vscode-agent/2026-07-13-stage-3-familiarization.md`.
+- The implementation agent should use that prompt to get oriented and should not begin S3-T01 until the research/review agent expands S3-T01 into a detailed ticket-specific prompt.
+- S3-T01 should be contract-only: export request/result/manifest/status/warning/content-source structures and serialization tests, with no export file writes.
+- S3-T02 should introduce the actual fixture/stub/provider-backed export service and destination safety checks.
+- S3-T03 should add SHA-256 and byte-count verification after the write path exists.
+- S3-T04 should add optional case-store audit hooks only when explicit case/evidence context is supplied.
+- S3-T05 should remain documentation/planning unless real adapter support for deleted-file recovery exists.
+
 Stage 3 definition of done:
 
 - Backend can export a selected fixture/stub file to an output directory.
 - Export results include manifest/provenance and hash information.
 - Tests prove source/evidence paths are not modified.
 - Deleted-file recovery remains clearly scoped to filesystem support.
+
+## Stage 4 Rough Plan
+
+Stage 4 should begin only after Stage 3 has a reviewed export result/manifest shape and at least one safe fixture/stub/provider-backed export workflow.
+
+Likely Stage 4 ticket sequence:
+
+- Define hash job/result contracts for per-file content supplied by explicit content providers, not filesystem metadata alone.
+- Add SHA-256/MD5/SHA-1 calculation for provider-backed file bytes, keeping broader evidence-image verification separate.
+- Store hash-analysis results in JSON-friendly shapes with source provenance, provider identity, byte count, status, warnings, and timestamps.
+- Add file signature/magic-byte detection for bounded provider-backed bytes.
+- Add extension mismatch flags only when both file name/extension metadata and detected signature are available.
+- Sketch known-file database import/matching as an optional later Stage 4 or Stage 4B task; do not require NSRL-scale data in default tests.
+- Add optional case-store persistence only after standalone result shapes are reviewed.
+
+Stage 4 guardrails:
+
+- Do not require real EWF/filesystem parsers or native dependencies for default tests.
+- Do not hash preview-rendered text/hex as if it were source file content.
+- Do not claim whole-evidence verification unless the image/adapter layer actually exposes verified evidence bytes and expected hashes.
+- Keep long-running/background job orchestration minimal until the result contracts are stable.
 
 ## Manual Testing And Executable Timing
 
@@ -117,6 +157,6 @@ Recommended timing:
 
 Packaging guidance:
 
-- Do not prioritize `.exe` packaging during early Stage 2.
+- Do not prioritize `.exe` packaging during Stage 2.
 - Keep Stage 2 and Stage 3 as Python CLI/manual commands.
 - Revisit packaging after backend contracts stabilize and native dependency direction is clearer.

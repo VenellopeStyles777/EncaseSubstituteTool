@@ -1,6 +1,6 @@
 # S3-T02 - Fixture/Stub File Export Service
 
-Status: Ready
+Status: Draft
 
 Stage: Stage 3 - Export and recovery foundation
 

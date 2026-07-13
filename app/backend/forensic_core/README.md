@@ -17,6 +17,13 @@ Stage 2 target:
 - Filesystem adapter boundary.
 - Directory metadata and preview foundations.
 
+Stage 2 handoff summary:
+
+- Real local-file backed behavior is limited to `LocalFileImageStream` metadata and bounded reads from tiny local files.
+- Volume discovery currently produces a whole-image volume for a readable non-empty stream and does not parse real partition tables.
+- Filesystem browsing is adapter-boundary based. The default deterministic tree is stubbed; `pytsk3` remains optional and real parsing is not implemented.
+- Preview bytes come from an explicit preview provider. The default provider supplies synthetic bytes for the stub `/hello.txt` entry and does not extract content from a real filesystem.
+
 ## S1-T02 Segment Discovery
 
 `discover_e01_segments(path)` accepts a selected first segment path such as `sample.E01` and discovers sibling files with the same base name and `.E##` extensions.
@@ -129,6 +136,6 @@ Current behavior:
 - supports `raw`, `text`, and `hex` modes;
 - preserves source path, volume id, volume offset/length, file id/path/name/type, read-only assertion, provider name, offsets, requested length, returned byte count, source content size, truncation flag, status, and warnings;
 - uses JSON-friendly raw byte values, UTF-8 text with visible replacement warnings, and deterministic lowercase hex;
-- returns structured statuses for `ok`, `preview_truncated`, `file_not_found`, `path_not_file`, `unsupported_preview_mode`, and `invalid_range`.
+- returns structured statuses for `ok`, `preview_truncated`, `content_unavailable`, `file_not_found`, `path_not_file`, `unsupported_preview_mode`, and `invalid_range`.
 
 S2-T06 does not perform real filesystem byte extraction. The current stub filesystem entries remain metadata-only; preview bytes come from an explicit stub provider. S2-T06 also does not export/recover files, compute hashes, add UI, persist case data, parse real filesystems, or require native dependencies.

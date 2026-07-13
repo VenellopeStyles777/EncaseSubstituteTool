@@ -305,3 +305,27 @@ YYYY-MM-DD
 - Learned: the preview foundation now handles both syntactically invalid ranges and content-size-invalid offsets as structured statuses.
 - Blocked by: nothing for S2-T06.
 - Next: commit S2-T06 after user approval, then prepare S2-T07 Stage 2 documentation and review handoff.
+
+2026-07-09
+- Completed: confirmed S2-T06 was committed and pushed/merged as `4e8273b stage 2: add file preview`.
+- Learned: S2-T07 should reconcile top-level and backend docs so Stage 2 is described as a stub/fixture-backed backend browsing foundation, not real EWF/filesystem parsing.
+- Blocked by: nothing for S2-T07 planning.
+- Next: hand S2-T07 to the Stage 2 VS Code agent.
+
+2026-07-09
+- Completed: implemented S2-T07 documentation and Stage 2 review handoff updates across top-level docs, backend docs, fixture/dependency notes, functionality status, ticket status, progression, and review guidance.
+- Learned: Stage 2 is review-ready as a backend foundation with real read-only local-file byte streams, whole-image volume results, stubbed filesystem metadata/listing, and synthetic provider-backed preview bytes.
+- Blocked by: nothing for S2-T07; Stage 3 has not started.
+- Next: hand S2-T07 and the full Stage 2 documentation package off for final review before any Stage 3 work. Final test run: `python -m pytest` reported 67 passed.
+
+2026-07-09
+- Completed: performed final S2-T07 review, corrected the stale Stage 2 status in `tickets/README.md`, and marked Stage 2 complete at the documentation/review-handoff level.
+- Learned: the Stage 2 docs now consistently separate real local-file byte-stream behavior, stubbed volume/filesystem/listing behavior, and synthetic preview-provider bytes.
+- Blocked by: nothing for Stage 2 final handoff.
+- Next: commit S2-T07 after user approval, then start Stage 3 planning/ticketing.
+
+2026-07-13
+- Completed: reviewed Stage 3 onboarding materials and ticket readiness, created the Stage 3 VS Code familiarization prompt, marked Stage 3 tickets as Draft until expanded, and updated Stage 3/Stage 4 planning notes.
+- Learned: Stage 3 must begin with export contracts and content-source clarity before any file-writing work; the existing Stage 3 tickets were useful outlines but not detailed enough for implementation handoff.
+- Blocked by: no blocker for onboarding; S3-T01 still needs expansion before coding begins.
+- Next: expand S3-T01 into a detailed contract-only implementation prompt, then hand that single ticket to the coding agent after review/user approval.

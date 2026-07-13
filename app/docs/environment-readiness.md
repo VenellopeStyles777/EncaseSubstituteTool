@@ -6,7 +6,7 @@ Last checked: 2026-07-09
 
 ## Summary
 
-The repository, Git remote, and normal Python environment are ready for Stage 1 review and early Stage 2 documentation/stub work.
+The repository, Git remote, and normal Python environment are ready for Stage 2 review and dependency-free backend tests.
 
 Earlier on 2026-07-09, `python` resolved only to the Microsoft Store app execution alias. That has since been fixed.
 
@@ -23,10 +23,10 @@ Git:
 
 Python:
 
-- Status: ready for Stage 1.
+- Status: ready for Stage 2 backend tests.
 - `python --version`: Python 3.14.6.
 - `python -m pip --version`: pip 26.1.2.
-- `python -m pytest`: 22 passed during S1-T06 handoff.
+- `python -m pytest`: 67 passed during S2-T07 handoff.
 - Pytest version observed: 9.1.1.
 - Earlier warning: pytest could not create one cache path under `.pytest_cache`; tests still passed.
 - Follow-up: project config now disables pytest's optional cache provider. Current S1-T06 test run completed without that warning.
@@ -45,14 +45,14 @@ Node/UI tooling:
 
 - `node` is not available in the normal shell.
 - `npm` is not available in the normal shell.
-- This is acceptable for Stage 1 because the project is backend-first and UI work is postponed.
+- This is acceptable through Stage 2 because the project is backend-first and UI work is postponed.
 
 Native build tooling:
 
 - `cmake` is not available.
 - `cl` / Microsoft C++ compiler is not available in the normal shell.
 - `rustc` and `cargo` are not available.
-- This is acceptable for S1-T01 and S1-T02.
+- This is acceptable through Stage 2 because native forensic dependencies remain optional.
 - These may matter later for native forensic dependencies, pyewf/pytsk3 builds, Tauri, or packaging.
 
 Forensic Python libraries:
@@ -60,9 +60,9 @@ Forensic Python libraries:
 - `pyewf`: not installed.
 - `pytsk3`: not installed.
 - `python-magic`: not installed.
-- This is expected for now. Stage 1 should include stub/fallback adapters and should not block on these libraries.
+- This is expected for now. Stage 1 and Stage 2 include stub/fallback adapters and should not block on these libraries.
 
-## Recommended Setup Before Reviewing Stage 1
+## Recommended Setup Before Reviewing Stage 2
 
 Verify from the project root:
 
@@ -112,12 +112,12 @@ Stage 2 and later:
 
 ## Stage 2 Dependency Policy
 
-Required for early Stage 2 tests:
+Required for Stage 2 tests:
 
 - Python 3.11+.
 - `pytest`.
 
-Not required for early Stage 2 tests:
+Not required for Stage 2 tests:
 
 - Real raw disk images.
 - Real E01/EWF evidence.
@@ -132,6 +132,14 @@ Optional for later Stage 2 integration checks:
 - Tiny local raw or EWF training fixtures kept outside Git.
 
 Stage 2 implementation should introduce dependency boundaries before requiring native forensic packages. Missing `pytsk3`, The Sleuth Kit, `pyewf`, or libewf must produce structured adapter/dependency status and skip optional integration behavior instead of causing default test failures. Normal `python -m pytest` should remain runnable without private evidence or native forensic dependencies.
+
+## Stage 2 Final Dependency Notes
+
+- Default tests use stubs, generated tiny local files, and synthetic provider bytes.
+- `LocalFileImageStream` reads tiny local files, but no default test requires a real forensic image.
+- `Pytsk3FilesystemAdapter` is a dependency-status skeleton only. Missing or importable `pytsk3` must not make default tests fail.
+- `PyewfEwfReaderAdapter` remains a metadata-reader skeleton only. Missing or importable `pyewf` must not be treated as complete real EWF parsing.
+- Stage 2 does not require Node, Rust, CMake, Visual C++ tools, `pyewf`, libewf, `pytsk3`, The Sleuth Kit, real EWF images, real raw disk images, or real filesystem images.
 
 ## Review Note
 

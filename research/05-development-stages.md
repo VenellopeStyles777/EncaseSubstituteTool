@@ -37,11 +37,15 @@ Stage 2 - Filesystem browser MVP:
 - Browse one supported filesystem first, preferably NTFS or FAT/exFAT depending on library support and available fixtures.
 - Show directory tree, file list, metadata, and raw/hex preview.
 
+Current status: complete at the backend foundation and documentation handoff level. The implemented behavior is a dependency-safe foundation with read-only local byte streams, whole-image volume results, stub filesystem entries/listing, and provider-backed preview. It does not parse real EWF bytes, real partitions, real filesystems, or real file content.
+
 Stage 3 - Export and recovery:
 
 - Export selected active files.
 - Preserve hashes and provenance.
 - Add deleted-file listing/recovery where the filesystem library supports it.
+
+Current planning stance: start with export contracts and manifests before writing files. Export must use explicit content-source/provider bytes, not preview-rendered text/hex and not filesystem metadata alone. Deleted-file recovery remains conditional on a future adapter exposing recoverable deleted-file bytes.
 
 Stage 4 - Hash and signature analysis:
 
@@ -49,6 +53,8 @@ Stage 4 - Hash and signature analysis:
 - Add file signature/magic-byte detection.
 - Add extension mismatch flags.
 - Add NSRL-style known-file import and matching.
+
+Rough sequencing: define result contracts first, hash explicit provider-backed bytes, add bounded signature detection, then add extension mismatch and optional known-file matching. Do not claim whole-evidence verification unless the image/adapter layer supports it.
 
 Stage 5 - Search, filters, and timeline:
 
