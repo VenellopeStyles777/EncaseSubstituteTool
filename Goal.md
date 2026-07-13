@@ -46,8 +46,8 @@ Out of initial scope:
 0. Foundation: initialize Git, choose stack, create skeleton, add test/lint commands, define docs structure. Status: complete.
 1. Evidence intake: prove segmented E01 discovery, adapter boundaries, JSON intake output, case-store schema, and dependency-safe behavior. Status: complete.
 2. Volume/filesystem view: establish image/byte-stream fixtures, discover whole-image volumes, and browse a stubbed filesystem with metadata and bounded preview output. Status: complete as of S2-T07 final review.
-3. Export/recovery: export selected files with provenance and lay groundwork for deleted-file recovery where supported. Status: planned next.
-4. Hash/signature analysis: add file hashing, known-file matching, file type detection, and mismatch flags.
+3. Export/recovery: export selected files with provenance and lay groundwork for deleted-file recovery where supported. Status: planning; Stage 3 tickets are Draft pending expansion before implementation.
+4. Hash/signature analysis: add file hashing, known-file matching, file type detection, and mismatch flags. Status: rough plan only; begin after Stage 3 export contracts and safe export workflow are reviewed.
 5. Search/timeline: add filename search, metadata filters, full-text search, and timestamp timeline.
 6. Reporting/workflow: bookmarks, examiner notes, audit log, and report generation.
 7. Advanced features: carving, artifact parsers, archive expansion, shadow copies, encryption detection, OCR, and optional AI triage.
@@ -162,6 +162,34 @@ Stage 3 acceptance criteria:
 - Export output includes a manifest with source path/id, evidence id when available, output path, byte count, hash, and timestamp.
 - Tests prove exports do not write into evidence/source fixture directories.
 - Deleted-file recovery limitations are explicit.
+
+Stage 3 planning note, 2026-07-13:
+
+- The first Stage 3 VS Code implementation chat should start with `prompts/vscode-agent/2026-07-13-stage-3-familiarization.md`.
+- The Stage 3 ticket files are currently Draft starter outlines and should be expanded one at a time before implementation.
+- S3-T01 should define export contracts only. It should not write exported files, compute real hashes, add audit persistence, or start deleted recovery.
+- Stage 3 must keep preview, metadata, and export content separated: rendered preview output is not an export byte source.
+
+## Stage 4 Detailed Targets
+
+Stage 4 goal: add reproducible file hash and signature-analysis foundations after Stage 3 has reviewed export/content-source contracts.
+
+Targets:
+
+- Define hash/signature request, result, warning, and status structures.
+- Calculate per-file hashes from explicit content providers, starting with SHA-256 and adding MD5/SHA-1 where useful for forensic comparison workflows.
+- Preserve provenance for every hash/signature result: source path, evidence id when available, volume id, file id/path, content provider, byte count, parser/source status, and timestamp.
+- Add file signature/magic-byte detection for bounded bytes.
+- Add extension mismatch flags only when metadata and detected signature are both available.
+- Keep known-file database matching optional and fixture-sized for default tests.
+- Avoid whole-image verification claims unless the evidence adapter exposes the necessary bytes and expected verification values.
+
+Stage 4 acceptance criteria:
+
+- Hash/signature tests run without private evidence, large fixtures, native forensic dependencies, or network access.
+- Hash results are JSON-serializable and preserve byte count, algorithm, digest, status, and provenance.
+- Signature results distinguish detected type, unknown type, unsupported content, and insufficient bytes through structured statuses.
+- Documentation separates per-file provider-backed hashing from real evidence-image verification.
 
 ## Recommended First Technical Direction
 

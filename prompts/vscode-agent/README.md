@@ -13,6 +13,7 @@ Current major onboarding prompts:
 
 - `2026-07-09-stage-1-ticketing-start.md`: Stage 1 implementation onboarding.
 - `2026-07-09-stage-2-familiarization.md`: Stage 2 implementation onboarding.
+- `2026-07-13-stage-3-familiarization.md`: Stage 3 implementation onboarding.
 
 Each prompt should name:
 

@@ -53,7 +53,7 @@ What is real versus stubbed today:
 
 Current limitations: Stage 2 does not parse real EWF bytes, verify real images, parse real partition tables, parse real filesystems, extract real file content, provide a UI/executable, export/recover files, hash files, search, report, or automatically persist Stage 2 results to the case store. Real forensic libraries are optional and not required for tests.
 
-Next planned stage: Stage 3 export/recovery foundation. It should add safe fixture/stub export contracts, manifests, hashes, provenance, and audit hooks without assuming real deleted-file recovery is available.
+Next stage: Stage 3 export/recovery foundation is in planning. The Stage 3 VS Code onboarding prompt is ready, but the Stage 3 tickets are Draft until each ticket is expanded before implementation. Stage 3 should add safe fixture/stub/provider-backed export contracts, manifests, hashes, provenance, and audit hooks without assuming real deleted-file recovery is available.
 
 Primary planning files:
 

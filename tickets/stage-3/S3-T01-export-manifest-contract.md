@@ -1,6 +1,6 @@
 # S3-T01 - Export Result And Manifest Contract
 
-Status: Ready
+Status: Draft
 
 Stage: Stage 3 - Export and recovery foundation
 

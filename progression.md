@@ -323,3 +323,9 @@ YYYY-MM-DD
 - Learned: the Stage 2 docs now consistently separate real local-file byte-stream behavior, stubbed volume/filesystem/listing behavior, and synthetic preview-provider bytes.
 - Blocked by: nothing for Stage 2 final handoff.
 - Next: commit S2-T07 after user approval, then start Stage 3 planning/ticketing.
+
+2026-07-13
+- Completed: reviewed Stage 3 onboarding materials and ticket readiness, created the Stage 3 VS Code familiarization prompt, marked Stage 3 tickets as Draft until expanded, and updated Stage 3/Stage 4 planning notes.
+- Learned: Stage 3 must begin with export contracts and content-source clarity before any file-writing work; the existing Stage 3 tickets were useful outlines but not detailed enough for implementation handoff.
+- Blocked by: no blocker for onboarding; S3-T01 still needs expansion before coding begins.
+- Next: expand S3-T01 into a detailed contract-only implementation prompt, then hand that single ticket to the coding agent after review/user approval.

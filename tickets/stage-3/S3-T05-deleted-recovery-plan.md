@@ -1,6 +1,6 @@
 # S3-T05 - Deleted-File Recovery Research And Conditional Plan
 
-Status: Ready
+Status: Draft
 
 Stage: Stage 3 - Export and recovery foundation
 

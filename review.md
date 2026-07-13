@@ -12,6 +12,32 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-13 - Stage 3 Ticket Readiness Review
+
+Result: ticket expansion needed before implementation.
+
+Findings:
+
+- No code issues reviewed in this pass; this was onboarding/ticketing review only.
+- The Stage 3 ticket files existed but were too high-level compared with the Stage 2 ticket prompts.
+- Leaving the tickets marked `Ready` risked sending the implementation agent into export work without enough contract detail, status names, test expectations, or scope boundaries.
+- The Stage 3 tickets are now marked `Draft` until each ticket is expanded.
+- A Stage 3 VS Code familiarization prompt was added at `prompts/vscode-agent/2026-07-13-stage-3-familiarization.md`.
+
+Recommended next action:
+
+- Expand S3-T01 into a detailed contract-only prompt before any Stage 3 code is written.
+- S3-T01 should define export request/result/manifest/status/warning/content-source structures and serialization tests.
+- S3-T01 should not write files, compute real hashes, add audit events, implement deleted recovery, add UI, add real parsers, or require native dependencies.
+
+Review stance for Stage 3:
+
+- Export bytes must come from an explicit content-source/provider boundary.
+- Preview-rendered text/hex must not be used as export bytes.
+- Stage 2 filesystem metadata entries must not be treated as byte-bearing objects.
+- Destination safety checks must be centralized and heavily tested once file writing begins.
+- Manifests must identify whether bytes are stubbed, generated fixture bytes, provider-backed, or later real parser bytes.
+
 ## S2-T07 Review Expectations
 
 - Documentation should accurately describe completed Stage 2 behavior and test commands.
