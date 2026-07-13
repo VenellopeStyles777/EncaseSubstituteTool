@@ -12,9 +12,80 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-13 - S3-T01 Export Manifest Contract Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `app/backend/forensic_core/export_manifest.py` defines Stage 3 export contract structures for request, result, manifest, status, warning, source provenance, content-source identity, and hash placeholders.
+- Export source provenance preserves Stage 2-style fields including source path, volume id/offset/length, file id/path/name, filesystem type, adapter name, read-only assertion, allocation/deleted state, optional case/evidence ids, and timestamps.
+- Content-source identity explicitly records provider name, source kind, read-only assertion, synthetic flag, content size, parser fields, and source status.
+- Result/manifest structures include nullable destination/output/manifest paths, nullable byte counts, SHA-256 placeholder fields, destination safety status, UTC timestamps, warnings, and stable JSON serialization helpers.
+- Tests cover serialization, JSON dumping, provenance, synthetic content-source labeling, placeholder hash/byte-count fields, warning serialization, non-ok statuses, and UTC timestamp format.
+
+Tests:
+
+- `python -m pytest`: 73 passed.
+
+Scope intentionally not implemented:
+
+- No file export or manifest file writing.
+- No hash computation.
+- No destination-overlap or source-path safety enforcement beyond placeholder/status fields.
+- No case-store audit integration.
+- No deleted-file recovery.
+- No preview-rendered text/hex used as export bytes.
+- No UI, search, reporting, real EWF parsing, real partition parsing, real filesystem parsing, native dependency requirement, commit, or push.
+
+## 2026-07-13 - S3-T01 Review
+
+Result: changes requested.
+
+Findings:
+
+- [P2] `app/backend/forensic_core/export_manifest.py`: `ExportResult.source_read_only` and `ExportManifest.source_read_only` default to `True` independently of `ExportSourceProvenance.read_only`. A caller can construct a result/manifest from a non-read-only source and accidentally serialize `"source_read_only": true` by omission. Because read-only source handling is a forensic integrity assertion, the contract should derive this field from `source.read_only` or default it to a non-assertive value instead of optimistic `True`. Add regression coverage for a source entry with `read_only=False`.
+
+Tests:
+
+- `python -m pytest`: 73 passed.
+
+Verified good behavior:
+
+- S3-T01 stayed contract-only and did not write files or manifests.
+- Export content source identity is explicit and distinct from preview rendering.
+- Result/manifest structures preserve Stage 2 source provenance and JSON serialization.
+- Hash, byte-count, output path, manifest path, and destination-safety fields remain placeholders.
+- No audit integration, deleted recovery, UI, real parser work, native dependency requirement, or S3-T02 work was introduced.
+
+Required fix:
+
+- Make `source_read_only` impossible to overstate by default. Prefer deriving the serialized value from `source.read_only` in both result and manifest shapes.
+- Add a test proving a non-read-only source serializes as `source_read_only: false`.
+- Rerun `python -m pytest`.
+
+## 2026-07-13 - S3-T01 Re-Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- The previous read-only assertion finding is fixed. `ExportResult` and `ExportManifest` now serialize `source_read_only` from `source.read_only` when no explicit override is supplied.
+- Regression coverage verifies that a source entry with `read_only=False` serializes `source.read_only` and `source_read_only` as false in both result and manifest shapes.
+- S3-T01 remains contract-only and did not add file export, manifest writing, hash computation, destination safety enforcement, audit integration, deleted recovery, UI, or parser work.
+
+Tests:
+
+- `python -m pytest`: 74 passed.
+
+Residual notes:
+
+- S3-T02 should build on this contract by adding a separate export content provider/source and destination safety checks before any write.
+
 ## 2026-07-13 - Stage 3 Ticket Readiness Review
 
-Result: ticket expansion needed before implementation.
+Result: S3-T01 ready for implementation handoff; later Stage 3 tickets remain Draft.
 
 Findings:
 
@@ -23,10 +94,12 @@ Findings:
 - Leaving the tickets marked `Ready` risked sending the implementation agent into export work without enough contract detail, status names, test expectations, or scope boundaries.
 - The Stage 3 tickets are now marked `Draft` until each ticket is expanded.
 - A Stage 3 VS Code familiarization prompt was added at `prompts/vscode-agent/2026-07-13-stage-3-familiarization.md`.
+- Follow-up update: S3-T01 is now expanded and marked `Ready`, with a paste-ready implementation prompt at `prompts/vscode-agent/2026-07-13-s3-t01-export-manifest-contract.md`.
+- S3-T02 through S3-T06 are expanded as detailed stage plans, but remain `Draft` pending review after each preceding ticket.
 
 Recommended next action:
 
-- Expand S3-T01 into a detailed contract-only prompt before any Stage 3 code is written.
+- Hand S3-T01 to the coding agent using the dedicated prompt.
 - S3-T01 should define export request/result/manifest/status/warning/content-source structures and serialization tests.
 - S3-T01 should not write files, compute real hashes, add audit events, implement deleted recovery, add UI, add real parsers, or require native dependencies.
 

@@ -10,6 +10,8 @@ Current Stage 2 API surface:
 
 These callables are backend-only and JSON-friendly. They do not provide UI, executable packaging, export/recovery, hashing, search, reporting, real EWF byte parsing, real partition parsing, real filesystem parsing, or automatic case-store persistence.
 
+Stage 3 note: S3-T01 adds core export request/result/manifest contract structures in `app.backend.forensic_core`. It does not add a backend API command/callable yet, write export files, write manifest files, compute hashes, or persist audit events. A future Stage 3 ticket should add an API/service boundary only after the export content-source and destination-safety behavior is implemented.
+
 ## S1-T04 Intake Command
 
 Callable usage from Python:
@@ -105,3 +107,9 @@ Current S2-T06 behavior:
 - uses UTF-8 text decoding with visible replacement warnings for undecodable bytes.
 
 S2-T06 does not perform real filesystem byte extraction, parse evidence/filesystems, export files, hash files, write output, persist case-store data, or require native forensic dependencies.
+
+## S3-T01 Export Contract Note
+
+Export contracts now exist in `app.backend.forensic_core.export_manifest` for later service/API work. They preserve Stage 2 source provenance and identify the explicit export content source/provider, but all output path, manifest path, byte-count, destination-safety, and hash fields are placeholder-ready until later Stage 3 tickets implement actual export behavior.
+
+The API layer still has no export command. Stage 2 preview output remains a preview surface only; rendered text or hex must not be treated as export bytes.
