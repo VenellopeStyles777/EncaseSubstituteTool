@@ -24,6 +24,13 @@ Stage 2 handoff summary:
 - Filesystem browsing is adapter-boundary based. The default deterministic tree is stubbed; `pytsk3` remains optional and real parsing is not implemented.
 - Preview bytes come from an explicit preview provider. The default provider supplies synthetic bytes for the stub `/hello.txt` entry and does not extract content from a real filesystem.
 
+Stage 3 export-contract start:
+
+- `export_manifest.py` defines JSON-friendly export request, result, manifest, status, warning, content-source identity, source provenance, and hash-placeholder structures.
+- S3-T02 adds a backend API export service that writes only explicit provider-backed fixture/stub bytes to examiner-selected output directories.
+- S3-T03 verifies written export artifacts by reading the output file after writing, recording on-disk byte count, and computing SHA-256 into the existing `ExportHashSummary` contract.
+- Export content remains separate from Stage 2 metadata and preview rendering. Export bytes must come from an explicit export content source/provider, not from filesystem entries alone and not from rendered preview text or hex.
+
 ## S1-T02 Segment Discovery
 
 `discover_e01_segments(path)` accepts a selected first segment path such as `sample.E01` and discovers sibling files with the same base name and `.E##` extensions.
@@ -139,3 +146,53 @@ Current behavior:
 - returns structured statuses for `ok`, `preview_truncated`, `content_unavailable`, `file_not_found`, `path_not_file`, `unsupported_preview_mode`, and `invalid_range`.
 
 S2-T06 does not perform real filesystem byte extraction. The current stub filesystem entries remain metadata-only; preview bytes come from an explicit stub provider. S2-T06 also does not export/recover files, compute hashes, add UI, persist case data, parse real filesystems, or require native dependencies.
+
+## S3-T01 Export Result And Manifest Contract
+
+`export_manifest.py` provides the first Stage 3 export contract boundary:
+
+- `ExportSourceProvenance`: source fields copied from Stage 2-style filesystem entries, including source path, volume id/offset/length, file id/path/name, filesystem type, adapter name, read-only assertion, allocation/deleted state, optional evidence/case ids, and timestamps.
+- `ExportContentSourceIdentity`: explicit provider/source identity for future export bytes, including provider name, source kind such as `stub` or later `real_parser`, read-only assertion, synthetic flag, source content size, parser fields, and source status.
+- `ExportRequest`: request shape for a future export service, with destination fields and destination-safety status placeholders.
+- `ExportResult` and `ExportManifest`: result/manifest shapes with source provenance, content-source identity, output/manifest path placeholders, byte-count placeholders, SHA-256 placeholder, destination status, UTC timestamps, and warnings.
+- `ExportStatus`, `ExportWarning`, `ExportHashSummary`, `export_result_to_json()`, and `export_manifest_to_json()` support stable JSON serialization.
+
+Current S3-T01 behavior:
+
+- supports contract serialization only;
+- records `export_not_started`, `content_source_unavailable`, `destination_not_checked`, and `hash_not_computed` states without implying file writes or verification;
+- uses UTC ISO timestamps ending in `Z`;
+- keeps default tests dependency-free and free of real evidence.
+
+S3-T01 does not write exported files or manifest files, compute SHA-256, enforce destination safety, add an API command, persist audit events, implement deleted-file recovery, parse real EWF/partition/filesystem data, or use preview-rendered text/hex as export bytes.
+
+## S3-T02 Fixture/Stub File Export Service
+
+The backend API layer in `app/backend/api/file_export.py` provides the first write-capable Stage 3 export foundation:
+
+- `ExportContentProvider`: protocol for raw export byte providers, intentionally separate from preview providers.
+- `StubExportContentProvider`: dependency-free provider that maps the synthetic stub file `stub-file-hello` (`/hello.txt`) to raw `Hello, world!` bytes.
+- `export_file(entry_or_request, output_directory, ...)`: validates the source, destination, output name, and provider content; writes the output file and manifest when safe; returns an S3-T01 `ExportResult`.
+- `export_file_to_json(...)`: runs export and serializes the returned result as stable JSON.
+
+Current S3-T02 behavior:
+
+- requires an explicit output directory;
+- rejects output directories that overlap the known source/evidence path when that can be determined;
+- rejects path traversal, unsafe output names, directory/non-file entries, missing content, and existing output/manifest files with structured statuses;
+- writes a manifest from `ExportResult.to_manifest()` beside the exported file.
+
+S3-T02 does not parse real filesystems, extract real evidence bytes, add case-store audit integration, implement deleted-file recovery, add UI, or require native forensic dependencies.
+
+## S3-T03 Export Hashing And Byte-Count Verification
+
+The backend API export service now fills the S3-T01 hash and byte-count fields for written artifacts:
+
+- `bytes_requested` remains the provider byte count when known;
+- `bytes_written` is measured by reading the written output file after export;
+- `ExportHashSummary.sha256` is computed from the written output bytes;
+- `ExportHashSummary.status` is `ok` only when SHA-256 was computed from the exported artifact;
+- byte-count mismatches return structured `byte_count_mismatch` status and warnings;
+- unreadable or missing output after write returns structured `export_verification_failed` with hash status `hash_failed`.
+
+This is export-output verification only. Broader file hash analysis, MD5/SHA-1 production hashing, known-file matching, file signatures, extension mismatch checks, image verification, audit integration, deleted recovery, UI, and real parser work remain deferred.

@@ -12,6 +12,12 @@ YYYY-MM-DD
 - Next:
 ```
 
+2026-07-13
+- Completed: implemented and reviewed S3-T03 export hashing and byte-count verification by reading the written output file after export, computing SHA-256 from the artifact bytes, recording on-disk byte count, comparing it with provider byte count, and keeping result/manifest verification fields in agreement.
+- Learned: the existing S3-T01 `ExportHashSummary` contract was sufficient for S3-T03; no parallel hash result shape or Stage 4 hash-analysis scope was needed.
+- Blocked by: nothing for S3-T03.
+- Next: prepare S3-T04 for implementation handoff when requested, keeping audit integration explicit and optional. Final review test run: `python -m pytest` reported 93 passed in 4.04s.
+
 2026-07-08
 - Completed: expanded Stage 1 targets, created app skeleton folders, split research into topic files, added VS Code agent prompt, and added agent workflow documentation.
 - Learned: Git is initialized on `main` with `origin` configured, but this sandbox has read-only access to `.git` and cannot stage/commit.
@@ -327,5 +333,47 @@ YYYY-MM-DD
 2026-07-13
 - Completed: reviewed Stage 3 onboarding materials and ticket readiness, created the Stage 3 VS Code familiarization prompt, marked Stage 3 tickets as Draft until expanded, and updated Stage 3/Stage 4 planning notes.
 - Learned: Stage 3 must begin with export contracts and content-source clarity before any file-writing work; the existing Stage 3 tickets were useful outlines but not detailed enough for implementation handoff.
-- Blocked by: no blocker for onboarding; S3-T01 still needs expansion before coding begins.
-- Next: expand S3-T01 into a detailed contract-only implementation prompt, then hand that single ticket to the coding agent after review/user approval.
+- Blocked by: no blocker for onboarding; S3-T01 expansion was the next planning step.
+- Next: expand S3-T01 into a detailed contract-only implementation prompt, then hand that single ticket to the coding agent after review/user approval. This was completed in the following 2026-07-13 entry.
+
+2026-07-13
+- Completed: expanded all Stage 3 tickets with objectives, context, target files, required work, acceptance criteria, tests, documentation updates, review checklists, and handoff prompts; created the paste-ready S3-T01 VS Code implementation prompt.
+- Learned: S3-T01 can now safely begin as contract-only work, while S3-T02 through S3-T06 should remain Draft and be reviewed again after each preceding ticket changes the code shape.
+- Blocked by: nothing for S3-T01 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-13-s3-t01-export-manifest-contract.md`, then review the resulting implementation before S3-T02 is expanded to Ready.
+
+2026-07-13
+- Completed: implemented S3-T01 export result and manifest contract structures with JSON-friendly request/result/manifest/status/warning/content-source/source-provenance/hash-placeholder shapes; added focused serialization/provenance tests and updated Stage 3 docs/status notes.
+- Learned: Stage 3 can preserve Stage 2 metadata provenance while still making export bytes depend on a separate content-source identity. Byte counts, output paths, manifest paths, destination safety, and SHA-256 remain explicit placeholders until later tickets.
+- Blocked by: nothing for S3-T01 implementation; review is still pending.
+- Next: review S3-T01 before starting S3-T02. S3-T02 should add the actual fixture/stub export service and destination safety checks, not broaden S3-T01.
+
+2026-07-13
+- Completed: re-reviewed the S3-T01 read-only assertion fix and approved S3-T01.
+- Learned: export result/manifest read-only assertions now derive from source provenance by default, avoiding an optimistic true value when a source is not read-only.
+- Blocked by: nothing for S3-T01.
+- Next: prepare S3-T02 for implementation handoff, keeping it focused on explicit export content providers and destination safety checks before writing files.
+
+2026-07-13
+- Completed: reviewed and tightened S3-T02 against the landed S3-T01 contract, marked S3-T02 ready, and created the paste-ready VS Code implementation prompt.
+- Learned: S3-T02 should use the existing `ExportResult`/`ExportManifest` shapes directly, keep SHA-256 as `hash_not_computed`, and make destination safety run before any write.
+- Blocked by: nothing for S3-T02 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-13-s3-t02-file-export-service.md`, then review the resulting implementation before S3-T03 is made ready.
+
+2026-07-13
+- Completed: implemented S3-T02 fixture/stub file export service with a separate raw export content provider, destination safety checks, output/manifest writes, JSON helper, API exports, tests, and documentation updates.
+- Learned: the S3-T01 result/manifest contract can represent the first write workflow while still keeping hash computation deferred. Export must remain distinct from preview rendering; the stub provider supplies raw bytes directly.
+- Blocked by: nothing for S3-T02 implementation; review is pending.
+- Next: review S3-T02 before making S3-T03 ready. S3-T03 should add SHA-256 and byte-count verification only after this write path is accepted.
+
+2026-07-13
+- Completed: re-reviewed S3-T02 after the partial-artifact cleanup fix and approved it.
+- Learned: the export write path now refuses overwrites atomically, honors safe requested output names, and cleans up partial output/manifest artifacts on generic write failures.
+- Blocked by: nothing for S3-T02.
+- Next: prepare S3-T03 for implementation handoff when requested, keeping it focused on SHA-256 and byte-count verification for the accepted export path.
+
+2026-07-13
+- Completed: reviewed and tightened S3-T03 against the accepted S3-T02 export path, marked S3-T03 ready, and created the paste-ready VS Code implementation prompt.
+- Learned: S3-T03 should verify the written output file, update result and manifest hashes/byte counts in agreement, and keep broader hash/signature analysis in Stage 4.
+- Blocked by: nothing for S3-T03 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-13-s3-t03-export-hashing.md`, then review the resulting implementation before S3-T04 is made ready.

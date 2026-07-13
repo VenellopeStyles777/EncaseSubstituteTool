@@ -2,11 +2,11 @@
 
 Purpose: record the local tool/environment state for backend-first development.
 
-Last checked: 2026-07-09
+Last checked: 2026-07-13
 
 ## Summary
 
-The repository, Git remote, and normal Python environment are ready for Stage 2 review and dependency-free backend tests.
+The repository, Git remote, and normal Python environment are ready for Stage 3 S3-T01 contract work and dependency-free backend tests.
 
 Earlier on 2026-07-09, `python` resolved only to the Microsoft Store app execution alias. That has since been fixed.
 
@@ -23,10 +23,10 @@ Git:
 
 Python:
 
-- Status: ready for Stage 2 backend tests.
+- Status: ready for Stage 3 S3-T01 backend contract tests.
 - `python --version`: Python 3.14.6.
 - `python -m pip --version`: pip 26.1.2.
-- `python -m pytest`: 67 passed during S2-T07 handoff.
+- `python -m pytest`: 67 passed during Stage 3 ticket expansion.
 - Pytest version observed: 9.1.1.
 - Earlier warning: pytest could not create one cache path under `.pytest_cache`; tests still passed.
 - Follow-up: project config now disables pytest's optional cache provider. Current S1-T06 test run completed without that warning.
@@ -45,14 +45,14 @@ Node/UI tooling:
 
 - `node` is not available in the normal shell.
 - `npm` is not available in the normal shell.
-- This is acceptable through Stage 2 because the project is backend-first and UI work is postponed.
+- This is acceptable through Stage 3 because the project is backend-first and UI work is postponed.
 
 Native build tooling:
 
 - `cmake` is not available.
 - `cl` / Microsoft C++ compiler is not available in the normal shell.
 - `rustc` and `cargo` are not available.
-- This is acceptable through Stage 2 because native forensic dependencies remain optional.
+- This is acceptable through Stage 3 because native forensic dependencies remain optional.
 - These may matter later for native forensic dependencies, pyewf/pytsk3 builds, Tauri, or packaging.
 
 Forensic Python libraries:
@@ -60,9 +60,9 @@ Forensic Python libraries:
 - `pyewf`: not installed.
 - `pytsk3`: not installed.
 - `python-magic`: not installed.
-- This is expected for now. Stage 1 and Stage 2 include stub/fallback adapters and should not block on these libraries.
+- This is expected for now. Stage 1 and Stage 2 include stub/fallback adapters, and Stage 3 S3-T01 contract work should not block on these libraries.
 
-## Recommended Setup Before Reviewing Stage 2
+## Recommended Setup Before Stage 3 S3-T01
 
 Verify from the project root:
 
@@ -105,10 +105,27 @@ Optional:
 
 - `pyewf`/libewf. Missing `pyewf` produces structured dependency-unavailable output. Importable `pyewf` still does not provide real metadata extraction in Stage 1.
 
-Stage 2 and later:
+Stage 3 and later:
 
 - `pytsk3`, libewf/pyewf, native build tools, or packaged binaries may become important.
 - Decide those only after the basic backend contract is stable.
+
+## Stage 3 Dependency Policy
+
+Required for S3-T01 through the initial export foundation:
+
+- Python 3.11+.
+- `pytest`.
+
+Not required for default Stage 3 tests:
+
+- Real raw disk images.
+- Real E01/EWF evidence.
+- `pyewf`/libewf.
+- `pytsk3` or The Sleuth Kit.
+- Node, Rust, CMake, Visual C++ tools, or desktop UI tooling.
+
+S3-T01 is contract-only and should not write export files, compute hashes, add audit persistence, parse real evidence, or require native forensic dependencies. Later Stage 3 export-service tests should use workspace-local output directories and explicit stub/provider-backed bytes.
 
 ## Stage 2 Dependency Policy
 
