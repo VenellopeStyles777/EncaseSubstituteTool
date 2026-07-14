@@ -13,6 +13,30 @@ YYYY-MM-DD
 ```
 
 2026-07-14
+- Completed: reviewed S4-T01 hash/signature analysis contracts and marked the ticket done.
+- Learned: the implementation stayed contract-only and gives S4-T02 a clean explicit-provider result shape without blurring preview bytes, export-output verification, metadata-only entries, or future whole-image verification.
+- Blocked by: nothing for S4-T01; S4-T02 should remain separate and provider-backed only.
+- Next: commit S4-T01 after approval, then prepare S4-T02 when requested. Final review test run: `python -m pytest` reported 106 passed in 4.82s.
+
+2026-07-14
+- Completed: implemented S4-T01 as contract-only Stage 4 hash/signature analysis foundations, adding `content_analysis.py`, package exports, focused serialization/provenance tests, and docs/status updates.
+- Learned: the Stage 3 export provenance pattern maps cleanly to Stage 4, but the contracts must keep analysis content-source identity separate from preview rendering, filesystem metadata, export-output verification, and future whole-image verification.
+- Blocked by: nothing for S4-T01 implementation; hash calculation, signature detection, known-file matching, persistence, parser work, search/timeline, UI, deleted recovery, and carving remain deferred to later reviewed tickets.
+- Next: hand S4-T01 off for review before starting S4-T02. Final test run: `python -m pytest` reported 106 passed in 4.51s.
+
+2026-07-14
+- Completed: expanded Stage 4 from a draft outline into detailed S4-T00 through S4-T07 tickets, marked the review-agent risk audit as done, made S4-T01 ready as the contract-only first implementation ticket, added a rough Stage 5 search/timeline ticket folder, and reconciled the plan/review notes.
+- Learned: Stage 4 can safely start with provider-backed contracts and then calculations, but Stage 5 must still be gated by provenance-rich results and a clear reality-anchor decision so search/timeline do not amplify synthetic-only data.
+- Blocked by: nothing for planning; Stage 4 implementation should still wait for user approval and a single-ticket VS Code handoff.
+- Next: after user approval, hand the coding agent S4-T01 only, then review the actual diff and rerun `python -m pytest`.
+
+2026-07-14
+- Completed: added the Stage 4 review-agent familiarization packet, Stage 4 draft ticket/readiness outline, and future-stage roadmap carrying forward the project reflection about missing real evidence-backed file content.
+- Learned: the strongest near-term risk is not contract design but overbuilding analysis, search, timeline, reporting, or UI features on synthetic/stub/provider-backed bytes without a reality anchor.
+- Blocked by: nothing for the handoff docs; Stage 4 implementation should wait for review-agent familiarization and detailed tickets.
+- Next: archive this implementation chat and the review chat after confirming the Stage 4 review-agent handoff/risk notes are satisfactory. Verification after separating review/coding handoffs: `python -m pytest` reported 99 passed in 3.63s.
+
+2026-07-14
 - Completed: implemented and reviewed S3-T06 final Stage 3 documentation/review handoff by reconciling top-level, backend, ticket, fixture, environment, progression, review, and documentation-log status around the completed export foundation.
 - Learned: the final Stage 3 behavior is backend-only fixture/stub export from explicit provider bytes, with manifests, overwrite refusal, SHA-256/byte-count verification from written artifacts, optional explicit audit logging, and deleted recovery documented as unsupported with current adapters.
 - Blocked by: nothing for S3-T06 documentation; Stage 4 remains unstarted and should begin with explicit content-provider hash/signature contracts.

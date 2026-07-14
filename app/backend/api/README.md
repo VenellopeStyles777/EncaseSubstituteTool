@@ -13,6 +13,8 @@ These callables are backend-only and JSON-friendly. They do not provide UI, exec
 
 Stage 3 note: S3-T04 can optionally record export attempts in the case-store audit log when the caller supplies explicit audit context. It does not recover deleted files, parse real filesystems, run broader hash/signature analysis, or use preview-rendered text/hex as export bytes.
 
+Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis` only. There is no API callable yet that hashes files or detects signatures, and preview-rendered text/hex remains disallowed as source analysis content.
+
 ## S1-T04 Intake Command
 
 Callable usage from Python:

@@ -78,3 +78,37 @@ Purpose: record documentation changes, important source references, and decision
 - Marked S3-T06 done and Stage 3 complete in planning and ticket docs.
 - Confirmed S3-T06 did not change backend behavior, export APIs, tests, parser work, recovery/carving behavior, UI/search/reporting scope, native dependencies, or real evidence fixtures.
 - Left Stage 4 as the next planning target: hash/signature contracts over explicit content providers.
+
+## 2026-07-14 - Stage 4 Familiarization And Reflection Handoff
+
+- Added `prompts/stage-4-onboarding/stage-4-review-agent-familiarization-prompt.md` for the next Stage 4 research/review-agent chat.
+- Added `prompts/stage-4-onboarding/project-reflection-and-forward-risks.md` with the Stage 3 closing reflection.
+- Kept the review-agent packet separate from the coding-agent succession prompt under `prompts/vscode-agent/`.
+- Added `tickets/stage-4/README.md` with draft Stage 4 ticket order and guardrails.
+- Added `tickets/future/README.md` with cross-stage risks for Stage 4 through advanced features.
+- Recorded the project reflection that the weakest point is the missing real evidence-backed file-content path after metadata/listing.
+- Passed forward the recommendation that Stage 4 start with a content-source reality check before hash/signature behavior, and that later search/timeline/reporting/UI work must not present synthetic/stub data as real findings.
+- Verification after separating review/coding handoffs: `python -m pytest` reported 99 passed in 3.63s.
+
+## 2026-07-14 - S4-T01 Hash/Signature Contract Handoff
+
+- Added Stage 4 content-analysis contract docs and ticket status updates.
+- Documented that S4-T01 defines request/result/provenance/content-source/status/warning placeholders only.
+- Re-stated that no hashes are computed, no signatures are detected, preview-rendered text/hex is not analysis content, filesystem metadata is not byte-bearing, and Stage 3 export-output verification remains separate.
+- Verification after S4-T01 implementation: `python -m pytest` reported 106 passed in 4.51s.
+
+## 2026-07-14 - Stage 4 Ticket Expansion And Stage 5 Rough Plan
+
+- Expanded `tickets/stage-4/README.md` with the current-truth summary, detailed ticket order, guardrails, reality-anchor decision, and Stage 4 definition of done.
+- Added detailed Stage 4 ticket files S4-T00 through S4-T07.
+- Recorded S4-T00 as the completed review-agent familiarization/risk audit and S4-T01 as the ready contract-only implementation ticket.
+- Added `tickets/stage-5/README.md` with a rough search/timeline ticket sequence and guardrails.
+- Updated `tickets/README.md`, `tickets/future/README.md`, `plan.md`, `progression.md`, and `review.md` so the overall plan reflects the Stage 4 and Stage 5 ticket direction.
+
+## 2026-07-14 - S4-T01 Review
+
+- Reviewed S4-T01 hash/signature contract implementation.
+- Marked S4-T01 done in Stage 4 ticket and planning docs.
+- Confirmed S4-T01 is contract-only: no hashes computed, no signatures detected, no provider bytes read, no preview/export bytes analyzed, no metadata-as-bytes behavior, no export verification changes, no persistence, and no search/timeline work.
+- Confirmed `content_analysis.py` preserves source provenance and explicit analysis content-source identity for future synthetic, generated fixture, local-stream, export-provider, and real-parser bytes.
+- Verification: `python -m pytest` reported 106 passed in 4.82s.

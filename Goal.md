@@ -179,8 +179,11 @@ Stage 3 planning note, 2026-07-13:
 
 Stage 4 goal: add reproducible file hash and signature-analysis foundations after Stage 3 has reviewed export/content-source contracts.
 
+Stage 4 must begin from an uncomfortable but useful truth: the project does not yet have real filesystem file-content extraction. Hash/signature results must therefore be explicit about the content provider they analyze and must not imply real evidence-derived bytes unless a reviewed adapter supplies them.
+
 Targets:
 
+- Confirm the allowed Stage 4 content sources and fixture strategy before implementation.
 - Define hash/signature request, result, warning, and status structures.
 - Calculate per-file hashes from explicit content providers, starting with SHA-256 and adding MD5/SHA-1 where useful for forensic comparison workflows.
 - Preserve provenance for every hash/signature result: source path, evidence id when available, volume id, file id/path, content provider, byte count, parser/source status, and timestamp.
@@ -195,6 +198,15 @@ Stage 4 acceptance criteria:
 - Hash results are JSON-serializable and preserve byte count, algorithm, digest, status, and provenance.
 - Signature results distinguish detected type, unknown type, unsupported content, and insufficient bytes through structured statuses.
 - Documentation separates per-file provider-backed hashing from real evidence-image verification.
+
+Stage 4 review-agent handoff:
+
+- The Stage 4 coding agent should start with `prompts/vscode-agent/2026-07-14-stage-4-familiarization.md`.
+- The Stage 4 review/research side has read the project, inspected tests/code, run `python -m pytest`, and recorded the S4-T00 risk audit.
+- Detailed Stage 4 tickets now live under `tickets/stage-4/`; S4-T01 contract-only implementation is reviewed and done.
+- S4-T02 provider-backed hashing is the next Stage 4 ticket to prepare when requested.
+- A rough Stage 5 search/timeline ticket plan now lives under `tickets/stage-5/`.
+- The main carryover risk is the missing real evidence-backed content path. Stage 4 can build provider-backed hash/signature contracts, but future stages need a reality anchor before search, reports, timeline, or UI work imply real forensic extraction.
 
 ## Recommended First Technical Direction
 

@@ -1,5 +1,21 @@
 """Forensic core package for evidence-facing logic."""
 
+from app.backend.forensic_core.content_analysis import (
+    CONTENT_ANALYSIS_SCHEMA_VERSION,
+    AnalysisContentSourceIdentity,
+    AnalysisSourceProvenance,
+    AnalysisStatus,
+    AnalysisWarning,
+    HashAnalysisRequest,
+    HashAnalysisResult,
+    HashDigestResult,
+    SignatureAnalysisRequest,
+    SignatureAnalysisResult,
+    hash_analysis_request_to_json,
+    hash_analysis_result_to_json,
+    signature_analysis_request_to_json,
+    signature_analysis_result_to_json,
+)
 from app.backend.forensic_core.ewf_reader import (
     EwfMetadataResult,
     EwfReaderAdapter,
@@ -58,6 +74,11 @@ from app.backend.forensic_core.volume_discovery import (
 )
 
 __all__ = [
+    "AnalysisContentSourceIdentity",
+    "AnalysisSourceProvenance",
+    "AnalysisStatus",
+    "AnalysisWarning",
+    "CONTENT_ANALYSIS_SCHEMA_VERSION",
     "EwfMetadataResult",
     "EwfReaderAdapter",
     "EwfReaderWarning",
@@ -77,6 +98,9 @@ __all__ = [
     "FilesystemResult",
     "FilesystemStatus",
     "FilesystemWarning",
+    "HashAnalysisRequest",
+    "HashAnalysisResult",
+    "HashDigestResult",
     "ImageByteStream",
     "ImageReadResult",
     "ImageStreamInfo",
@@ -89,6 +113,8 @@ __all__ = [
     "SegmentDiscoveryResult",
     "SegmentInfo",
     "SegmentWarning",
+    "SignatureAnalysisRequest",
+    "SignatureAnalysisResult",
     "StubFilesystemAdapter",
     "StubEwfReaderAdapter",
     "VOLUME_DISCOVERY_SCHEMA_VERSION",
@@ -101,5 +127,9 @@ __all__ = [
     "discover_volumes",
     "export_manifest_to_json",
     "export_result_to_json",
+    "hash_analysis_request_to_json",
+    "hash_analysis_result_to_json",
+    "signature_analysis_request_to_json",
+    "signature_analysis_result_to_json",
     "utc_now",
 ]

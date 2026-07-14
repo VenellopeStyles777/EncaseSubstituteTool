@@ -67,3 +67,16 @@ For Stage 3 tickets:
 - Deleted-file recovery fixtures require a future real or generated filesystem fixture that documents deleted-entry metadata, recoverable ranges, expected completeness, and known hashes. Until then, deleted recovery remains planning-only.
 - Carving and unallocated-space recovery fixtures are deferred and should not be mixed into Stage 3 export-provider fixtures.
 - Real raw/EWF/filesystem fixtures remain optional local-only inputs until a reviewed ticket explicitly adds safe integration behavior.
+
+## Stage 4 Analysis Content-Source Guidance
+
+S4-T01 introduces hash/signature analysis contracts only. Default tests should continue to use metadata dictionaries and explicit content-source identities, not real evidence or native dependencies.
+
+For Stage 4 tickets:
+
+- Hash/signature analysis bytes must come from an explicit analysis content source/provider once behavior is implemented.
+- Filesystem metadata entries are not byte-bearing objects by themselves.
+- Preview-rendered text, preview hex, and preview raw JSON byte values are not source analysis content.
+- Export-output SHA-256 verifies written artifacts only and is separate from per-file analysis hashing.
+- Source kinds such as `synthetic`, `generated_fixture`, `local_stream`, `export_provider`, and future `real_parser` must be labeled honestly in analysis results.
+- S4-T01 contract tests should not read or write analysis bytes. Later generated/local-stream fixture tests must keep generated scratch data under ignored workspace paths such as `.test-artifacts/`.

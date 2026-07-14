@@ -19,7 +19,7 @@ The backend package can be imported cleanly:
 - `app.backend.analysis_workers`
 - `app.backend.api`
 
-Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. The project remains backend-first and has no UI/executable packaging yet.
+Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 has started with contract-only hash/signature analysis result shapes. The project remains backend-first and has no UI/executable packaging yet.
 
 ## Tests
 
@@ -110,4 +110,13 @@ Current Stage 3 limits:
 - No real filesystem byte extraction, deleted-file recovery, carving, unallocated-space scanning, UI, search, timeline, reporting, bookmarks, notes, or packaging is implemented.
 - Export audit rows require explicit `ExportAuditContext`; source provenance ids alone do not create case-store writes.
 
-Stage 4 should build hash/signature contracts on explicit content providers, avoid hashing preview text/hex as source content, avoid whole-image verification claims without adapter support, and keep known-file matching plus persistence optional until result contracts are reviewed.
+## Stage 4 Contract Foundation
+
+Implemented so far:
+
+- `app.backend.forensic_core.content_analysis` defines contract-only hash/signature analysis request/result/status/warning/source-provenance/content-source structures.
+- The contracts distinguish source kinds such as `synthetic`, `generated_fixture`, `local_stream`, `export_provider`, and future `real_parser`.
+- Hash result fields are placeholders; no digests are computed in S4-T01.
+- Signature result fields are placeholders; no file signatures are detected in S4-T01.
+
+Stage 4 must continue to analyze only explicit content providers, avoid hashing preview text/hex as source content, avoid whole-image verification claims without adapter support, and keep known-file matching plus persistence optional until result contracts are reviewed.

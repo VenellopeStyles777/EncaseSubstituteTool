@@ -59,8 +59,10 @@ Initial feature groups to track:
 | Export audit integration | 3 | Done | Untested | S3-T04 reviewed; audit is explicit opt-in through `ExportAuditContext`. |
 | Deleted-file recovery | 3 | Deferred | Untested | S3-T05 reviewed; recovery remains unsupported/deferred until a real adapter exposes recoverable deleted-file bytes. |
 | Stage 3 documentation handoff | 3 | Done | Untested | S3-T06 reviewed; documentation/review handoff only, no new behavior. |
-| Hash/signature analysis | 4 | Planned | Untested | Broader analysis stage; not Stage 3. |
-| Search/timeline | 5 | Planned | Untested | Not started. |
+| Reality-anchor content path | 4/Future | Planned | Untested | S4-T00 risk audit recorded the gap; S4-T01 must preserve source-kind/provider fields for synthetic, generated fixture, local-stream, and future real-parser bytes. |
+| Hash/signature analysis contracts | 4 | Done | Untested | S4-T01 reviewed; request/result/provenance/content-source placeholder contracts only. No hashes are computed and no signatures are detected. |
+| Provider-backed hash/signature behavior | 4 | Planned | Untested | S4-T02/S4-T03 are still draft; future behavior must use explicit analysis content providers only. |
+| Search/timeline | 5 | Planned | Untested | Rough Stage 5 tickets are drafted; search/timeline must wait for reviewed Stage 4 result contracts and preserve source/status/warning labels. |
 | Reporting/workflow | 6 | Planned | Untested | Not started. |
 | Desktop UI/executable packaging | Later | Deferred | Untested | CLI/manual testing comes first. |
 
