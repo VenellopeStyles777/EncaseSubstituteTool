@@ -9,7 +9,7 @@ Suggested first planning format:
 | 0 | Decide stack and create app skeleton | Done | Python backend-first direction selected; planning docs and skeleton folders exist. |
 | 1 | Build E01 evidence intake spike | Done | S1-T01 through S1-T06 complete. Stage 1 is a backend intake foundation, not real EWF/filesystem parsing. |
 | 2 | Add volume/filesystem browsing MVP | Done | S2-T01 through S2-T07 complete. Stage 2 is a backend fixture/stub browsing foundation, not real EWF/partition/filesystem parsing. |
-| 3 | Add export/recovery foundation | S3-T05 next | S3-T01 through S3-T04 are reviewed and done. Next is S3-T05 deleted-file recovery research and conditional plan. Later tickets remain Draft. |
+| 3 | Add export/recovery foundation | S3-T06 Draft | S3-T01 through S3-T05 are reviewed and done. S3-T06 final Stage 3 documentation and review handoff remains Draft. |
 | 4 | Add hashing and signature checks | Not started | Rough plan recorded below. Make this reproducible and testable after export/filesystem foundations exist. |
 
 ## Stage 1 Work Targets
@@ -105,14 +105,14 @@ Tickets live under `tickets/stage-3/`:
 
 Stage 3 ticket readiness review, 2026-07-13:
 
-- S3-T01 through S3-T04 are reviewed and done. S3-T05 and S3-T06 are expanded as stage plans but remain Draft pending review after each preceding ticket.
+- S3-T01 through S3-T05 are reviewed and done. S3-T06 is expanded as a stage plan but remains Draft pending final handoff preparation.
 - A Stage 3 VS Code familiarization prompt now exists at `prompts/vscode-agent/2026-07-13-stage-3-familiarization.md`.
 - The S3-T01 implementation prompt now exists at `prompts/vscode-agent/2026-07-13-s3-t01-export-manifest-contract.md`.
 - S3-T01 is contract-only: export request/result/manifest/status/warning/content-source structures and serialization tests, with no export file writes.
 - S3-T02 should introduce the actual fixture/stub/provider-backed export service and destination safety checks.
 - S3-T03 adds SHA-256 and byte-count verification after the write path exists.
 - S3-T04 adds optional case-store audit hooks only when explicit audit context is supplied.
-- S3-T05 should remain documentation/planning unless real adapter support for deleted-file recovery exists.
+- S3-T05 documents why deleted-file recovery remains unsupported/deferred because current adapters do not expose deleted entries plus recoverable bytes.
 
 Stage 3 definition of done:
 

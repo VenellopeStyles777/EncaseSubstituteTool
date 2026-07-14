@@ -57,7 +57,7 @@ Initial feature groups to track:
 | Fixture/stub file export service | 3 | Done | Untested | S3-T02 reviewed; exports explicit stub/provider bytes only. |
 | Export hashing and byte-count verification | 3 | Done | Untested | S3-T03 reviewed; verifies written export artifacts with SHA-256 and on-disk byte counts. Broader hash analysis remains Stage 4. |
 | Export audit integration | 3 | Done | Untested | S3-T04 reviewed; audit is explicit opt-in through `ExportAuditContext`. |
-| Deleted-file recovery | 3 | Planned | Untested | S3-T05 is planning/docs only unless a real adapter exposes recoverable bytes. |
+| Deleted-file recovery | 3 | Deferred | Untested | S3-T05 reviewed; recovery remains unsupported/deferred until a real adapter exposes recoverable deleted-file bytes. |
 | Hash/signature analysis | 4 | Planned | Untested | Broader analysis stage; not Stage 3. |
 | Search/timeline | 5 | Planned | Untested | Not started. |
 | Reporting/workflow | 6 | Planned | Untested | Not started. |

@@ -12,6 +12,50 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-13 - S3-T05 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- Documentation now distinguishes active allocated file export, deleted entry metadata, deleted-file recovery, carving/unallocated-space recovery, and unsupported or unrecoverable entries.
+- Current project truth is recorded: stub filesystem entries are allocated and not deleted; filesystem entries are metadata-only; preview/export providers supply synthetic bytes only for registered ids; current export is not deleted-file recovery; no real deleted-file recovery exists.
+- Future recovery requirements are documented for allocation/deleted state, recoverable ranges or explicit recovery content providers, completeness/confidence, overwritten/sparse/partial/unavailable warnings, filesystem-specific provenance, read-only source handling, and compatibility with export manifests, SHA-256/byte counts, and audit logging.
+- Future status/warning names include `deleted_recovery_unsupported`, `deleted_entry_metadata_only`, `recovery_content_unavailable`, `recovery_partial`, `recovery_not_attempted`, and `carving_deferred`.
+- S3-T05 stayed documentation/planning-only and did not add recovery APIs, fake deleted entries, fake recoverable deleted bytes, pytsk3 parsing, real EWF parsing, real partition parsing, real filesystem parsing, carving, unallocated-space scanning, UI, reporting, Stage 4 hash/signature analysis, or native dependency requirements.
+
+Tests:
+
+- `python -m pytest`: 99 passed in 6.72s.
+
+Residual notes:
+
+- Deleted-file recovery remains unsupported/deferred until a future real adapter exposes deleted entries and recoverable bytes.
+- S3-T06 is the next Stage 3 gate and should be limited to final documentation/review handoff.
+
+## 2026-07-13 - S3-T05 Deleted-File Recovery Plan Handoff
+
+Result: ready for implementation agent.
+
+Guardrails:
+
+- S3-T05 is documentation/planning-only with the current codebase.
+- Current `StubFilesystemAdapter` entries are allocated and not deleted; current providers supply synthetic bytes only for explicitly registered ids.
+- `Pytsk3FilesystemAdapter` is dependency/status scaffolding and does not parse real filesystems, deleted entries, or file content.
+- Do not implement recovery APIs, fake deleted entries, fake recoverable deleted bytes, carving, unallocated-space scanning, real parser work, UI, or native dependency requirements.
+- Docs should clearly distinguish active allocated file export, deleted entry metadata, deleted-file recovery, carving/unallocated-space recovery, and unsupported/unrecoverable entries.
+- Future recovery requirements should preserve provenance, read-only source handling, explicit content-source identity, completeness/confidence, and warnings for overwritten/sparse/unavailable ranges.
+
+Expected verification:
+
+- Update documentation/status files only unless a reviewed real adapter unexpectedly exists.
+- Run `python -m pytest`.
+
+Handoff prep verification:
+
+- `python -m pytest`: 99 passed in 3.70s.
+
 ## 2026-07-13 - S3-T04 Review
 
 Result: approved for commit.

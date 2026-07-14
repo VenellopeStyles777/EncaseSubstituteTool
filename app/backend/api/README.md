@@ -184,3 +184,17 @@ Current S3-T04 behavior:
 - `export_file_to_json()` accepts the same audit context and passes it through.
 
 S3-T04 uses the existing case-store schema and does not create cases or evidence sources automatically. Audit persistence errors are allowed to surface to the caller rather than being hidden as a successful audit.
+
+## S3-T05 Deleted-File Recovery Boundary
+
+The current export API does not perform deleted-file recovery. It exports bytes only from an explicit export content provider. A file entry with metadata such as `deleted=True` would still need a recovery-capable content source before export could proceed honestly.
+
+Current API truth:
+
+- `export_file()` is active provider-backed export, not deleted recovery.
+- Stage 2 filesystem entries are metadata-only.
+- Stub filesystem entries are allocated and not deleted.
+- Preview-rendered text/hex and filesystem metadata are not export or recovery bytes.
+- No API currently scans unallocated space, carves files, parses real filesystems, or recovers deleted content.
+
+Future deleted-recovery API work should return structured statuses such as `deleted_recovery_unsupported`, `deleted_entry_metadata_only`, `recovery_content_unavailable`, `recovery_partial`, `recovery_not_attempted`, and `carving_deferred` instead of treating unsupported recovery as success. Any recovered bytes should reuse the existing export result, manifest, SHA-256/byte-count verification, destination safety, and optional audit behavior.

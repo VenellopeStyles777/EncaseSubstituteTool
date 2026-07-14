@@ -29,6 +29,7 @@ Stage 3 export-contract start:
 - `export_manifest.py` defines JSON-friendly export request, result, manifest, status, warning, content-source identity, source provenance, and hash-placeholder structures.
 - S3-T02 adds a backend API export service that writes only explicit provider-backed fixture/stub bytes to examiner-selected output directories.
 - S3-T03 verifies written export artifacts by reading the output file after writing, recording on-disk byte count, and computing SHA-256 into the existing `ExportHashSummary` contract.
+- S3-T05 documents deleted-file recovery as unsupported/deferred with the current adapters.
 - Export content remains separate from Stage 2 metadata and preview rendering. Export bytes must come from an explicit export content source/provider, not from filesystem entries alone and not from rendered preview text or hex.
 
 ## S1-T02 Segment Discovery
@@ -108,11 +109,12 @@ S2-T03 does not parse real partition tables, parse filesystems, list directories
 Current behavior:
 
 - stub adapter returns deterministic root entries for `/Documents` and `/hello.txt`;
+- stub entries are allocated and not deleted;
 - pytsk3 adapter returns `dependency_unavailable` when `pytsk3` is missing;
 - importable pytsk3 remains `real_parser_not_implemented` until a later ticket intentionally adds real parsing;
 - tests do not require real evidence, real filesystems, `pytsk3`, or The Sleuth Kit.
 
-S2-T04 does not add a directory-listing command/workflow, parse real filesystems, render previews, export files, hash evidence, or require native forensic dependencies.
+S2-T04 does not add a directory-listing command/workflow, parse real filesystems, render previews, export files, recover deleted files, hash evidence, or require native forensic dependencies. `FilesystemEntry.allocated` and `FilesystemEntry.deleted` are metadata fields only; they do not expose recoverable byte ranges or content providers.
 
 ## S2-T05 Directory Listing And File Metadata View
 
@@ -196,3 +198,32 @@ The backend API export service now fills the S3-T01 hash and byte-count fields f
 - unreadable or missing output after write returns structured `export_verification_failed` with hash status `hash_failed`.
 
 This is export-output verification only. Broader file hash analysis, MD5/SHA-1 production hashing, known-file matching, file signatures, extension mismatch checks, image verification, audit integration, deleted recovery, UI, and real parser work remain deferred.
+
+## S3-T05 Deleted-File Recovery Plan
+
+Deleted-file recovery is not implemented in the current backend. The current distinction is:
+
+- Active allocated file export: S3-T02 through S3-T04 can export explicit provider-backed bytes for a selected file entry, write a manifest, verify SHA-256/byte count, and optionally audit the export.
+- Deleted entry metadata: a future filesystem adapter may report that a directory entry is deleted or unallocated, but metadata alone does not prove that file content is recoverable.
+- Deleted-file recovery: a future adapter must expose deleted-entry provenance plus recoverable content ranges or an explicit recovery content provider, then route recovered bytes through the existing export/manifest/hash/audit workflow.
+- Carving or unallocated-space recovery: scanning unallocated space for signatures/fragments is a separate later capability and is not part of Stage 3.
+- Unsupported or unrecoverable entries: if an adapter can see metadata but cannot supply reliable content, the result must be explicit rather than pretending recovery succeeded.
+
+Current project truth:
+
+- `StubFilesystemAdapter` returns only allocated, non-deleted synthetic entries.
+- Current filesystem entries are metadata-only and do not carry byte runs, extents, clusters, or recovery handles.
+- Preview and export bytes come from explicit synthetic providers only when a file id is registered.
+- Current export is active provider-backed export, not deleted-file recovery.
+- `Pytsk3FilesystemAdapter` does not parse real filesystems, deleted entries, or recoverable bytes.
+
+Future deleted-recovery adapters must provide:
+
+- allocation/deleted state and filesystem-specific provenance;
+- recoverable content ranges, extents, or an explicit content-source/provider identity;
+- completeness and confidence status;
+- warnings for overwritten, sparse, partial, unavailable, or conflicting ranges;
+- read-only source handling;
+- compatibility with existing export output, manifest, SHA-256/byte-count verification, and optional audit logging.
+
+Suggested future status/warning names include `deleted_recovery_unsupported`, `deleted_entry_metadata_only`, `recovery_content_unavailable`, `recovery_partial`, `recovery_not_attempted`, and `carving_deferred`.

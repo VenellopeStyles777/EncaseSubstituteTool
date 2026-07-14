@@ -13,10 +13,22 @@ YYYY-MM-DD
 ```
 
 2026-07-13
+- Completed: implemented and reviewed S3-T05 as documentation/planning only, clarifying active allocated export versus deleted-entry metadata, deleted-file recovery, carving/unallocated-space recovery, and unsupported or unrecoverable entries.
+- Learned: the current adapters remain metadata-only for filesystem entries; `StubFilesystemAdapter` has allocated non-deleted entries, and `Pytsk3FilesystemAdapter` does not parse real filesystems or expose deleted-entry content.
+- Blocked by: nothing for S3-T05 documentation; real deleted-file recovery is blocked on future adapter support for recoverable ranges or explicit recovery content providers.
+- Next: prepare S3-T06 as the final Stage 3 documentation/review handoff. Final review test run: `python -m pytest` reported 99 passed in 6.72s.
+
+2026-07-13
 - Completed: implemented and reviewed S3-T04 optional export audit integration with explicit `ExportAuditContext`, `file_export` audit events, structured export audit details, JSON pass-through, and in-memory SQLite coverage for success, no-context, provenance-only, default failed export, and explicitly audited failed export paths.
 - Learned: the existing `audit_events` table and `insert_audit_event()` helper were sufficient; no schema migration or automatic case/evidence creation was needed.
 - Blocked by: nothing for S3-T04.
 - Next: prepare S3-T05 for implementation handoff when requested, keeping it research/planning-focused unless real adapter support exists. Final review test run: `python -m pytest` reported 99 passed in 3.19s.
+
+2026-07-13
+- Completed: expanded S3-T05 into an implementation-ready documentation/planning ticket and created the paste-ready VS Code implementation prompt.
+- Learned: current filesystem adapters expose allocation/deleted metadata fields but no deleted entries with recoverable byte ranges or real content providers; S3-T05 should not implement recovery code.
+- Blocked by: nothing for S3-T05 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-13-s3-t05-deleted-recovery-plan.md`, then review the documentation changes before S3-T06 is made ready. Handoff prep test run: `python -m pytest` reported 99 passed in 3.70s.
 
 2026-07-13
 - Completed: implemented and reviewed S3-T03 export hashing and byte-count verification by reading the written output file after export, computing SHA-256 from the artifact bytes, recording on-disk byte count, comparing it with provider byte count, and keeping result/manifest verification fields in agreement.

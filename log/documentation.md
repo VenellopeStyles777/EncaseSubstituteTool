@@ -41,3 +41,19 @@ Purpose: record documentation changes, important source references, and decision
 - Confirmed audit rows require explicit `ExportAuditContext`; source provenance case/evidence ids alone do not write to the case store.
 - Confirmed successful and explicitly audited failed exports produce structured `file_export` audit details while standalone exports remain unaudited.
 - Left S3-T05 as the next Stage 3 ticket to prepare, limited to deleted-file recovery research and conditional planning unless real adapter support exists.
+
+## 2026-07-13 - S3-T05 Handoff Preparation
+
+- Expanded S3-T05 into an implementation-ready documentation/planning ticket after S3-T04 was committed and pushed.
+- Added `prompts/vscode-agent/2026-07-13-s3-t05-deleted-recovery-plan.md` as the paste-ready coding-agent prompt.
+- Marked S3-T05 ready in Stage 3 planning docs.
+- Confirmed current adapters do not expose recoverable deleted-file bytes, so S3-T05 must not implement recovery code.
+- Documented the required distinction between active file export, deleted entry metadata, deleted-file recovery, carving/unallocated-space recovery, and unsupported entries.
+
+## 2026-07-13 - S3-T05 Review
+
+- Reviewed S3-T05 deleted-file recovery documentation/planning.
+- Marked S3-T05 approved/done in Stage 3 ticket and planning docs.
+- Confirmed the docs keep current export separate from deleted-file recovery and state recovery is unsupported/deferred with the present adapters.
+- Confirmed no recovery APIs, fake deleted entries, fake recoverable deleted bytes, parser work, carving, unallocated-space scanning, UI, reporting, or Stage 4 analysis were added.
+- Left S3-T06 as the next Stage 3 ticket to prepare: final documentation and review handoff.
