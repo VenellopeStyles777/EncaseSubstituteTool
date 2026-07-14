@@ -159,3 +159,30 @@ Purpose: record documentation changes, important source references, and decision
 - Confirmed bounded signature detection stays separate from preview/export behavior and future whole-image verification.
 - Confirmed extension mismatch, known-file matching, persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, export-output changes, and Stage 5 work remain deferred.
 - Reviewer verification: `python -m pytest` reported 127 passed in 5.39s.
+
+## 2026-07-14 - S4-T04 Handoff Preparation
+
+- Expanded S4-T04 into an implementation-ready extension mismatch rules ticket.
+- Marked S4-T04 ready in Stage 4 planning docs.
+- Added the key guardrail that S4-T04 must consume reviewed signature results and metadata only, without provider byte reads or internal signature detection.
+- Re-stated that unknown, insufficient, unsupported, missing, and no-extension states must not be reported as mismatches.
+- Re-stated that known-file matching, persistence, search/timeline, UI/reporting, parser work, deleted recovery, carving, native dependencies, S4-T02/S4-T03 behavior changes, export-output changes, and Stage 5 work remain out of scope.
+- Added `prompts/vscode-agent/2026-07-14-s4-t04-extension-mismatch-rules.md` as the paste-ready coding-agent prompt.
+
+## 2026-07-14 - S4-T04 Extension Mismatch Implementation
+
+- Added extension mismatch result/rule contracts and evaluators in `content_analysis.py`.
+- Documented that S4-T04 consumes reviewed `SignatureAnalysisResult` objects plus file name/path metadata only, without provider byte reads or internal signature detection.
+- Added focused dependency-free coverage for match, mismatch, no-extension, missing metadata, non-ok signatures, unsupported detected types, non-file sources, provenance/warnings, JSON safety, and S4-T02/S4-T03 regression behavior.
+- Updated Stage 4, backend, fixture, functionality, progression, and review documentation for the S4-T04 handoff.
+- Final verification: `python -m pytest` reported 140 passed in 4.99s.
+
+## 2026-07-14 - S4-T04 Review
+
+- Marked S4-T04 reviewed and done.
+- Recorded no blocking findings in `review.md`.
+- Confirmed extension mismatch evaluation consumes existing S4-T03 signature results and file name/path metadata only.
+- Confirmed the evaluator does not accept providers, read bytes, or call signature detection internally.
+- Confirmed unknown, insufficient, failed, unsupported, missing, no-extension, and non-file states are not reported as mismatches.
+- Confirmed known-file matching, persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, S4-T02/S4-T03 behavior changes, export-output changes, and Stage 5 work remain deferred.
+- Reviewer verification: `python -m pytest` reported 140 passed in 3.14s.

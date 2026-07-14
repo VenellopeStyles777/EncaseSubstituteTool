@@ -13,6 +13,7 @@ CONTENT_ANALYSIS_SCHEMA_VERSION = "stage4.content_analysis.v1"
 DEFAULT_HASH_ALGORITHMS = ("sha256",)
 DEFAULT_SIGNATURE_MAX_BYTES = 4096
 SUPPORTED_HASH_ALGORITHMS = ("sha256", "md5", "sha1")
+_OK_STATUS_CODES = ("ok", "extension_match", "extension_mismatch")
 _HASH_FACTORIES = {
     "sha256": hashlib.sha256,
     "md5": hashlib.md5,
@@ -29,7 +30,7 @@ class AnalysisStatus:
 
     @property
     def ok(self) -> bool:
-        return self.code == "ok"
+        return self.code in _OK_STATUS_CODES
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -448,6 +449,67 @@ class SignatureAnalysisResult:
 
 
 @dataclass(frozen=True)
+class SignatureExtensionRule:
+    """Conservative extension allow-list for one detected signature type."""
+
+    detected_type: str
+    expected_extensions: tuple[str, ...]
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "detected_type": self.detected_type,
+            "expected_extensions": list(self.expected_extensions),
+        }
+
+
+@dataclass(frozen=True)
+class ExtensionMismatchResult:
+    """Result contract for extension/signature mismatch evaluation."""
+
+    source: AnalysisSourceProvenance
+    content_source: AnalysisContentSourceIdentity
+    signature_status: AnalysisStatus
+    status: AnalysisStatus = field(
+        default_factory=lambda: AnalysisStatus(
+            code="extension_not_checked",
+            message="Extension mismatch evaluation has not been run.",
+        )
+    )
+    detected_type: str | None = None
+    detected_signature: str | None = None
+    detected_mime_type: str | None = None
+    observed_extension: str | None = None
+    expected_extensions: tuple[str, ...] = field(default_factory=tuple)
+    mismatch: bool | None = None
+    signature_created_at: str | None = None
+    signature_completed_at: str | None = None
+    created_at: str = field(default_factory=lambda: utc_now())
+    completed_at: str | None = None
+    warnings: tuple[AnalysisWarning, ...] = field(default_factory=tuple)
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "schema_version": CONTENT_ANALYSIS_SCHEMA_VERSION,
+            "analysis_type": "extension_mismatch",
+            "status": self.status.to_dict(),
+            "source": self.source.to_dict(),
+            "content_source": self.content_source.to_dict(),
+            "signature_status": self.signature_status.to_dict(),
+            "detected_type": self.detected_type,
+            "detected_signature": self.detected_signature,
+            "detected_mime_type": self.detected_mime_type,
+            "observed_extension": self.observed_extension,
+            "expected_extensions": list(self.expected_extensions),
+            "mismatch": self.mismatch,
+            "signature_created_at": self.signature_created_at,
+            "signature_completed_at": self.signature_completed_at,
+            "created_at": self.created_at,
+            "completed_at": self.completed_at,
+            "warnings": [warning.to_dict() for warning in self.warnings],
+        }
+
+
+@dataclass(frozen=True)
 class FileSignatureDefinition:
     """Conservative magic-byte definition for bounded signature detection."""
 
@@ -519,6 +581,53 @@ SUPPORTED_FILE_SIGNATURES = (
         mime_type="application/x-msdownload",
     ),
 )
+
+
+SIGNATURE_EXTENSION_RULES = (
+    SignatureExtensionRule(detected_type="pdf", expected_extensions=(".pdf",)),
+    SignatureExtensionRule(detected_type="png", expected_extensions=(".png",)),
+    SignatureExtensionRule(
+        detected_type="jpeg",
+        expected_extensions=(".jpg", ".jpeg", ".jpe"),
+    ),
+    SignatureExtensionRule(detected_type="gif", expected_extensions=(".gif",)),
+    SignatureExtensionRule(
+        detected_type="zip",
+        expected_extensions=(
+            ".zip",
+            ".jar",
+            ".docx",
+            ".xlsx",
+            ".pptx",
+            ".odt",
+            ".ods",
+            ".odp",
+            ".apk",
+        ),
+    ),
+    SignatureExtensionRule(
+        detected_type="elf",
+        expected_extensions=(".elf", ".so", ".bin", ".run"),
+    ),
+    SignatureExtensionRule(
+        detected_type="mz_executable_candidate",
+        expected_extensions=(
+            ".exe",
+            ".dll",
+            ".sys",
+            ".scr",
+            ".com",
+            ".ocx",
+            ".cpl",
+            ".drv",
+        ),
+    ),
+)
+
+SUPPORTED_SIGNATURE_EXTENSIONS = {
+    rule.detected_type: rule.expected_extensions
+    for rule in SIGNATURE_EXTENSION_RULES
+}
 
 
 def hash_analysis_request_to_json(
@@ -763,6 +872,16 @@ def signature_analysis_result_to_json(
     return json.dumps(result.to_dict(), indent=indent, sort_keys=True)
 
 
+def extension_mismatch_result_to_json(
+    result: ExtensionMismatchResult,
+    *,
+    indent: int | None = 2,
+) -> str:
+    """Serialize an extension mismatch result contract as stable JSON."""
+
+    return json.dumps(result.to_dict(), indent=indent, sort_keys=True)
+
+
 def detect_file_signature(
     file_entry_or_request: (
         Mapping[str, object] | AnalysisSourceProvenance | SignatureAnalysisRequest
@@ -991,6 +1110,267 @@ def analyze_file_signature(
         evidence_id=evidence_id,
         case_id=case_id,
     )
+
+
+def evaluate_extension_mismatch(
+    signature_result: SignatureAnalysisResult,
+) -> ExtensionMismatchResult:
+    """Evaluate an existing signature result against filename metadata only.
+
+    S4-T04 deliberately does not accept providers and does not re-run
+    signature detection. It only compares reviewed S4-T03 result fields with
+    the copied source file name/path metadata already present on the result.
+    """
+
+    source = signature_result.source
+    detected_type = signature_result.detected_type
+    expected_extensions = SUPPORTED_SIGNATURE_EXTENSIONS.get(detected_type or "", ())
+
+    if source.entry_type != "file":
+        status = AnalysisStatus(
+            code="path_not_file",
+            message="Extension mismatch evaluation requires a file entry.",
+        )
+        return _extension_mismatch_result(
+            signature_result=signature_result,
+            status=status,
+            expected_extensions=expected_extensions,
+            warnings=signature_result.warnings
+            + (
+                AnalysisWarning(
+                    code="path_not_file",
+                    message=(
+                        "Directory or non-file entries cannot be checked for "
+                        "extension mismatch."
+                    ),
+                    path=source.file_path,
+                    source="content_analysis",
+                ),
+            ),
+        )
+
+    if signature_result.status.code != "ok":
+        status = AnalysisStatus(
+            code="signature_not_available",
+            message=(
+                "Extension mismatch was not evaluated because signature "
+                "detection did not complete successfully."
+            ),
+        )
+        return _extension_mismatch_result(
+            signature_result=signature_result,
+            status=status,
+            warnings=signature_result.warnings
+            + (
+                AnalysisWarning(
+                    code="signature_not_available",
+                    message=(
+                        "Signature result status was "
+                        f"{signature_result.status.code}."
+                    ),
+                    path=source.file_path,
+                    source="content_analysis",
+                ),
+            ),
+        )
+
+    if not detected_type:
+        status = AnalysisStatus(
+            code="signature_not_available",
+            message=(
+                "Extension mismatch was not evaluated because no detected "
+                "signature type was present."
+            ),
+        )
+        return _extension_mismatch_result(
+            signature_result=signature_result,
+            status=status,
+            warnings=signature_result.warnings
+            + (
+                AnalysisWarning(
+                    code="signature_not_available",
+                    message="Signature result did not include a detected type.",
+                    path=source.file_path,
+                    source="content_analysis",
+                ),
+            ),
+        )
+
+    if not expected_extensions:
+        status = AnalysisStatus(
+            code="unsupported_signature_type",
+            message=(
+                "Extension mismatch rules do not support this detected "
+                "signature type."
+            ),
+        )
+        return _extension_mismatch_result(
+            signature_result=signature_result,
+            status=status,
+            warnings=signature_result.warnings
+            + (
+                AnalysisWarning(
+                    code="unsupported_signature_type",
+                    message=(
+                        "No extension rule is defined for detected type "
+                        f"{detected_type}."
+                    ),
+                    path=source.file_path,
+                    source="content_analysis",
+                ),
+            ),
+        )
+
+    observed_extension, has_name_or_path = _observed_extension(source)
+    if not has_name_or_path:
+        status = AnalysisStatus(
+            code="file_name_unavailable",
+            message=(
+                "Extension mismatch was not evaluated because file name/path "
+                "metadata is unavailable."
+            ),
+        )
+        return _extension_mismatch_result(
+            signature_result=signature_result,
+            status=status,
+            expected_extensions=expected_extensions,
+            warnings=signature_result.warnings
+            + (
+                AnalysisWarning(
+                    code="file_name_unavailable",
+                    message="File name and file path metadata are unavailable.",
+                    path=source.file_path,
+                    source="content_analysis",
+                ),
+            ),
+        )
+
+    if observed_extension is None:
+        status = AnalysisStatus(
+            code="extension_missing",
+            message=(
+                "Extension mismatch was not evaluated because the file "
+                "metadata has no extension."
+            ),
+        )
+        return _extension_mismatch_result(
+            signature_result=signature_result,
+            status=status,
+            expected_extensions=expected_extensions,
+            warnings=signature_result.warnings
+            + (
+                AnalysisWarning(
+                    code="extension_missing",
+                    message="File name/path metadata does not include an extension.",
+                    path=source.file_path,
+                    source="content_analysis",
+                ),
+            ),
+        )
+
+    mismatch = observed_extension not in expected_extensions
+    if mismatch:
+        status = AnalysisStatus(
+            code="extension_mismatch",
+            message="Observed extension is not expected for the detected signature.",
+        )
+        warnings = signature_result.warnings + (
+            AnalysisWarning(
+                code="extension_mismatch",
+                message=(
+                    f"Observed extension {observed_extension} is not in the "
+                    "expected extension list for the detected signature."
+                ),
+                path=source.file_path,
+                source="content_analysis",
+            ),
+        )
+    else:
+        status = AnalysisStatus(
+            code="extension_match",
+            message="Observed extension matches the detected signature rule.",
+        )
+        warnings = signature_result.warnings
+
+    return _extension_mismatch_result(
+        signature_result=signature_result,
+        status=status,
+        observed_extension=observed_extension,
+        expected_extensions=expected_extensions,
+        mismatch=mismatch,
+        warnings=warnings,
+    )
+
+
+def check_extension_mismatch(
+    signature_result: SignatureAnalysisResult,
+) -> ExtensionMismatchResult:
+    """Alias for extension/signature mismatch evaluation."""
+
+    return evaluate_extension_mismatch(signature_result)
+
+
+def _extension_mismatch_result(
+    *,
+    signature_result: SignatureAnalysisResult,
+    status: AnalysisStatus,
+    observed_extension: str | None = None,
+    expected_extensions: tuple[str, ...] = (),
+    mismatch: bool | None = None,
+    warnings: tuple[AnalysisWarning, ...] = (),
+) -> ExtensionMismatchResult:
+    timestamp = utc_now()
+    return ExtensionMismatchResult(
+        source=signature_result.source,
+        content_source=signature_result.content_source,
+        signature_status=signature_result.status,
+        status=status,
+        detected_type=signature_result.detected_type,
+        detected_signature=signature_result.detected_signature,
+        detected_mime_type=signature_result.detected_mime_type,
+        observed_extension=observed_extension,
+        expected_extensions=expected_extensions,
+        mismatch=mismatch,
+        signature_created_at=signature_result.created_at,
+        signature_completed_at=signature_result.completed_at,
+        created_at=timestamp,
+        completed_at=timestamp,
+        warnings=warnings,
+    )
+
+
+def _observed_extension(
+    source: AnalysisSourceProvenance,
+) -> tuple[str | None, bool]:
+    has_name_or_path = False
+    for value in (source.file_name, source.file_path):
+        text = _stripped_optional_str(value)
+        if text is None:
+            continue
+        has_name_or_path = True
+        extension = _rightmost_extension(text)
+        if extension is not None:
+            return extension, True
+
+    return None, has_name_or_path
+
+
+def _rightmost_extension(value: str) -> str | None:
+    name = value.replace("\\", "/").rsplit("/", 1)[-1]
+    if not name:
+        return None
+
+    dot_index = name.rfind(".")
+    if dot_index <= 0 or dot_index == len(name) - 1:
+        return None
+    return name[dot_index:].lower()
+
+
+def _stripped_optional_str(value: str | None) -> str | None:
+    if value is None:
+        return None
+    text = value.strip()
+    return text or None
 
 
 def _source_from_signature_input(

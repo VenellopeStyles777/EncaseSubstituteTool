@@ -55,7 +55,7 @@ Current ticket folders:
 - `stage-1/`: E01 intake spike. Status: complete.
 - `stage-2/`: volume/filesystem browsing MVP. Status: complete at Stage 2 handoff.
 - `stage-3/`: export/recovery foundation. Status: complete; S3-T01 through S3-T06 done.
-- `stage-4/`: hash/signature foundations. Status: in progress; S4-T00 review-agent risk audit, S4-T01 contract ticket, S4-T02 provider-backed hashing, and S4-T03 file signature detection done.
+- `stage-4/`: hash/signature foundations. Status: in progress; S4-T00 review-agent risk audit, S4-T01 contract ticket, S4-T02 provider-backed hashing, S4-T03 file signature detection, and S4-T04 extension mismatch rules done.
 - `stage-5/`: search/timeline foundations. Status: rough draft; do not start until Stage 4 contracts and handoff are reviewed.
 - `future/`: cross-stage roadmap and weakest-point carryover notes.
 

@@ -12,6 +12,68 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-14 - S4-T04 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- `app/backend/forensic_core/content_analysis.py` adds extension mismatch contracts and evaluators through `SignatureExtensionRule`, `SIGNATURE_EXTENSION_RULES`, `SUPPORTED_SIGNATURE_EXTENSIONS`, `ExtensionMismatchResult`, `evaluate_extension_mismatch()`, `check_extension_mismatch()`, and `extension_mismatch_result_to_json()`.
+- The evaluator consumes an existing S4-T03 `SignatureAnalysisResult` plus copied file name/path metadata only; it does not accept providers, read bytes, or call `detect_file_signature()` internally.
+- Conservative rules cover PDF, PNG, JPEG extension variants, GIF, ZIP/container allow-list extensions, ELF, and MZ executable candidates.
+- Evaluated matches and mismatches use explicit `mismatch=False` or `True`; missing metadata, no extension, non-file sources, non-ok signature statuses, missing detected type, and unsupported detected types return structured not-evaluated results with `mismatch=None`.
+- Results preserve S4-T03 source provenance, content-source identity, signature status, detected type/signature/MIME fields, signature timestamps, source/provider warnings, and new mismatch warnings.
+- `extension_mismatch` is treated as a successful evaluation status while the finding is carried by `mismatch=True`; review accepted this convention because callers are not expected to infer the finding from `status.ok`.
+- S4-T04 stayed in scope and did not add known-file matching, case-store persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, S4-T02/S4-T03 behavior changes, export-output behavior changes, or Stage 5 work.
+
+Tests:
+
+- `python -m pytest`: 140 passed in 3.14s.
+
+Residual notes:
+
+- S4-T05 should remain fixture-sized and should not make synthetic/provider-backed hash results look like real evidence-backed known-file matches.
+
+## 2026-07-14 - S4-T04 Extension Mismatch Rules Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `app/backend/forensic_core/content_analysis.py` adds `SignatureExtensionRule`, `SIGNATURE_EXTENSION_RULES`, `SUPPORTED_SIGNATURE_EXTENSIONS`, `ExtensionMismatchResult`, `evaluate_extension_mismatch()`, `check_extension_mismatch()`, and `extension_mismatch_result_to_json()`.
+- The evaluator consumes an existing S4-T03 `SignatureAnalysisResult` and source file name/path metadata only. It does not accept providers, read bytes, or call `detect_file_signature()` internally.
+- Conservative rules cover PDF, PNG, JPEG extension variants, GIF, ZIP/container allow-list extensions, ELF, and MZ executable candidates.
+- Matching and mismatching evaluated states include explicit `mismatch=False` or `True`; missing metadata, no extension, non-file sources, non-ok signature statuses, missing detected type, and unsupported detected types return not-evaluated results with `mismatch=None`.
+- Results preserve source provenance, content-source identity, signature status, detected type/signature/MIME fields, signature timestamps, source/provider warnings, and new mismatch warnings.
+- `app/tests/test_content_analysis_extension_mismatch.py` covers case-insensitive matches, mismatches, JPEG variants, ZIP allow-list behavior, MZ matches/mismatches, missing/no-extension states, unknown/insufficient signatures, unsupported types, directory sources, provenance/warnings, JSON safety, and S4-T02/S4-T03 regression behavior.
+
+Scope intentionally not implemented:
+
+- No S4-T02 hashing changes, S4-T03 signature detection changes, provider byte reads, known-file matching, case-store persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, export-output changes, or Stage 5 work.
+
+Tests:
+
+- `python -m pytest`: 140 passed in 4.99s.
+
+## 2026-07-14 - S4-T04 Handoff Preparation
+
+Result: ready for implementation agent.
+
+Guardrails:
+
+- S4-T04 consumes reviewed S4-T03 `SignatureAnalysisResult` objects plus source metadata only.
+- Extension mismatch evaluation must not read provider bytes, accept an analysis provider, or call signature detection internally.
+- Evaluate only when the source is a file, the signature status is `ok`, a detected type exists, an extension rule exists, and file metadata includes an extension.
+- Unknown, insufficient, failed, unsupported, missing, and no-extension states should be structured not-evaluated results rather than mismatches.
+- Preserve S4-T03 source provenance, content-source identity, detected fields, source labels, timestamps, and warnings.
+- Include an explicit mismatch value instead of making callers infer findings only from status truthiness.
+- Do not add known-file matching, case-store persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, S4-T02/S4-T03 behavior changes, export-output changes, or Stage 5 work.
+
+Expected verification:
+
+- `python -m pytest`.
+
 ## 2026-07-14 - S4-T03 Review
 
 Result: approved for commit.

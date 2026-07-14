@@ -19,7 +19,7 @@ The backend package can be imported cleanly:
 - `app.backend.analysis_workers`
 - `app.backend.api`
 
-Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 now has hash/signature analysis result contracts, provider-backed hash calculation, and bounded provider-backed file signature detection over explicit analysis content providers. The project remains backend-first and has no UI/executable packaging yet.
+Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 now has hash/signature analysis result contracts, provider-backed hash calculation, bounded provider-backed file signature detection over explicit analysis content providers, and extension mismatch evaluation over reviewed signature results plus file metadata. The project remains backend-first and has no UI/executable packaging yet.
 
 ## Tests
 
@@ -39,7 +39,7 @@ python -m pip install pytest
 
 Current verification snapshot:
 
-- `python -m pytest`: 127 passed in 5.39s after the S4-T03 file signature detection review.
+- `python -m pytest`: 140 passed in 4.99s after the S4-T04 extension mismatch implementation handoff.
 - The project config routes pytest temporary files to `.test-artifacts/pytest-temp` and disables pytest's optional cache provider.
 
 ## Stage 1 Intake Command
@@ -123,5 +123,8 @@ Implemented so far:
 - `detect_file_signature(...)` and `analyze_file_signature(...)` inspect bounded prefixes from explicit Stage 4 analysis-provider bytes only.
 - The supported dependency-free signature table covers PDF, PNG, JPEG, GIF87a/GIF89a, ZIP header variants, ELF, and conservative MZ executable candidates.
 - Invalid max-byte, directory/non-file, metadata-only, missing-content, provider-exception, insufficient partial-signature, and unknown-signature paths return structured non-ok `SignatureAnalysisResult` objects.
+- `evaluate_extension_mismatch(...)` and `check_extension_mismatch(...)` compare reviewed `SignatureAnalysisResult` fields with file name/path metadata only.
+- Extension mismatch results preserve source provenance, content-source identity, signature status and detected fields, observed and expected extensions, explicit `mismatch` values, timestamps, and warnings.
+- Unknown, insufficient, failed, unsupported, missing-name, no-extension, and non-file states return structured not-evaluated results with `mismatch=None`.
 
-Stage 4 must continue to analyze only explicit content providers, avoid hashing or signature-checking preview text/hex or export artifacts as source analysis content, avoid whole-image verification claims without adapter support, and keep extension mismatch, known-file matching, persistence, search/timeline, and UI work for later reviewed tickets.
+Stage 4 must continue to analyze only explicit content providers for hashing/signature detection, avoid hashing or signature-checking preview text/hex or export artifacts as source analysis content, avoid whole-image verification claims without adapter support, and keep known-file matching, persistence, search/timeline, and UI work for later reviewed tickets.
