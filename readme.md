@@ -67,7 +67,7 @@ What is real versus stubbed today:
 
 Current limitations: the project does not parse real EWF bytes, verify real images, parse real partition tables, parse real filesystems, extract real filesystem content, provide a UI/executable, recover deleted files, carve unallocated space, search, report, or automatically create case/evidence records from export. Real forensic libraries are optional and not required for tests.
 
-Current handoff: S3-T01 through S3-T06 are reviewed and done. Stage 4 hash/signature analysis is next and should build on explicit content providers, not preview-rendered text/hex or filesystem metadata alone.
+Current handoff: S3-T01 through S3-T06 are reviewed and done. Stage 4 review-agent familiarization/risk audit is recorded, detailed Stage 4 tickets now live under `tickets/stage-4/`, and S4-T01 hash/signature contracts are reviewed and done. S4-T02 provider-backed hashing is the next Stage 4 ticket to prepare when requested. The main carryover risk is the lack of a real evidence-backed content path; future stages need a tiny generated or optional fixture-backed reality anchor before search/report/UI work implies real forensic extraction.
 
 Primary planning files:
 

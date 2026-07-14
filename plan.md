@@ -10,7 +10,8 @@ Suggested first planning format:
 | 1 | Build E01 evidence intake spike | Done | S1-T01 through S1-T06 complete. Stage 1 is a backend intake foundation, not real EWF/filesystem parsing. |
 | 2 | Add volume/filesystem browsing MVP | Done | S2-T01 through S2-T07 complete. Stage 2 is a backend fixture/stub browsing foundation, not real EWF/partition/filesystem parsing. |
 | 3 | Add export/recovery foundation | Done | S3-T01 through S3-T06 complete. Stage 3 is a backend fixture/stub export foundation, not real extraction or recovery. |
-| 4 | Add hashing and signature checks | Next | Rough plan recorded below. Make this reproducible and testable after export/content-provider foundations exist. |
+| 4 | Add hashing and signature checks | In Progress | S4-T01 contract implementation is reviewed/done; no hash calculation or signature detection behavior has started. |
+| 5 | Add search and timeline foundations | Rough | Rough ticket plan exists under `tickets/stage-5/`; do not start until Stage 4 contracts and handoff are reviewed. |
 
 ## Stage 1 Work Targets
 
@@ -123,19 +124,24 @@ Stage 3 definition of done:
 - Tests prove source/evidence paths are not modified.
 - Deleted-file recovery remains clearly scoped to filesystem support.
 
-## Stage 4 Rough Plan
+## Stage 4 Detailed Ticket Plan
 
 Stage 4 should begin only after Stage 3 has a reviewed export result/manifest shape and at least one safe fixture/stub/provider-backed export workflow.
 
-Likely Stage 4 ticket sequence:
+Stage 4 starts with familiarization and risk review, not implementation. The review-agent audit is recorded in `tickets/stage-4/S4-T00-review-agent-risk-audit.md` and `review.md`. Use `prompts/vscode-agent/2026-07-14-stage-4-familiarization.md` for the coding agent before S4-T01.
 
-- Define hash job/result contracts for per-file content supplied by explicit content providers, not filesystem metadata alone.
-- Add SHA-256/MD5/SHA-1 calculation for provider-backed file bytes, keeping broader evidence-image verification separate.
-- Store hash-analysis results in JSON-friendly shapes with source provenance, provider identity, byte count, status, warnings, and timestamps.
-- Add file signature/magic-byte detection for bounded provider-backed bytes.
-- Add extension mismatch flags only when both file name/extension metadata and detected signature are available.
-- Sketch known-file database import/matching as an optional later Stage 4 or Stage 4B task; do not require NSRL-scale data in default tests.
-- Add optional case-store persistence only after standalone result shapes are reviewed.
+Weakest-point carryover: the project has strong contracts and safe stubs, but no real evidence-backed content path. Stage 4 must keep provider identity explicit and should decide whether to add a tiny generated or optional fixture-backed reality anchor before Stage 5 search/timeline.
+
+Detailed Stage 4 ticket sequence:
+
+- S4-T00: review-agent familiarization and reality-anchor risk audit. Status: Done.
+- S4-T01: hash/signature request/result/status/warning contracts and provenance model. Status: Done.
+- S4-T02: provider-backed SHA-256 plus optional MD5/SHA-1 calculation for explicit content sources. Status: Draft.
+- S4-T03: file signature/magic-byte detection over bounded provider bytes. Status: Draft.
+- S4-T04: extension mismatch result rules where metadata and signature both exist. Status: Draft.
+- S4-T05: fixture-sized known-file matching plan or minimal implementation. Status: Draft.
+- S4-T06: optional case-store persistence plan for hash/signature results. Status: Draft.
+- S4-T07: Stage 4 documentation and review handoff. Status: Draft.
 
 Stage 4 guardrails:
 
@@ -143,6 +149,35 @@ Stage 4 guardrails:
 - Do not hash preview-rendered text/hex as if it were source file content.
 - Do not claim whole-evidence verification unless the image/adapter layer actually exposes verified evidence bytes and expected hashes.
 - Keep long-running/background job orchestration minimal until the result contracts are stable.
+
+## Stage 5 Rough Ticket Plan
+
+Stage 5 should wait for reviewed Stage 4 result contracts and documentation handoff. Its job is to define search and timeline foundations over explicit, provenance-rich records without hiding parser/source uncertainty.
+
+Rough Stage 5 ticket sequence:
+
+- S5-T00: Stage 5 readiness review and search/timeline risk audit.
+- S5-T01: search result and filter contract model.
+- S5-T02: filename and metadata search over existing listing/result shapes.
+- S5-T03: hash/signature result search and filtering.
+- S5-T04: timestamp normalization and timeline event contracts.
+- S5-T05: timeline assembly from metadata and analysis result timestamps.
+- S5-T06: full-text search reality check and deferred extraction plan.
+- S5-T07: Stage 5 documentation and review handoff.
+
+Stage 5 guardrails:
+
+- Do not implement full-text search until text extraction is explicit, provider-backed, and honestly labeled.
+- Do not hide dependency-unavailable, parser-not-implemented, synthetic-provider, partial, unsupported, or failed states.
+- Do not imply real filesystem coverage when searching stub metadata.
+- Preserve source path, evidence id when available, volume id, file id/path, provider/source identity, parser/source status, warnings, and timestamp context in results.
+- Keep UI/reporting, real parser work, deleted recovery, carving, and required native dependencies out of Stage 5 unless a later reviewed ticket changes scope.
+
+## Forward Stage Risks
+
+- Stage 5 search/timeline should not become search over synthetic provider data only. Results need source/provenance/status/warnings, and full-text search should wait for real text extraction or explicit provider-backed text with clear synthetic/generated labels.
+- Stage 6 reporting/workflow must preserve uncertainty. Reports should distinguish real parser output, generated fixtures, synthetic providers, unsupported results, partial results, and failed analysis.
+- Stage 7 advanced features such as carving, artifact parsing, shadow copies, encryption detection, OCR, and AI triage should remain deferred until real fixture strategy, optional integration tests, and manual workflows are stronger.
 
 ## Manual Testing And Executable Timing
 
@@ -161,4 +196,4 @@ Packaging guidance:
 
 - Do not prioritize `.exe` packaging during Stage 2.
 - Keep Stage 2 and Stage 3 as Python CLI/manual commands.
-- Revisit packaging after backend contracts stabilize and native dependency direction is clearer.
+- Revisit packaging after backend contracts stabilize, native dependency direction is clearer, and at least one meaningful backend workflow has been manually tested.

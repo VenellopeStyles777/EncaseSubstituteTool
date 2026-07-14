@@ -12,6 +12,126 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-14 - S4-T01 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- `app/backend/forensic_core/content_analysis.py` adds contract-only Stage 4 hash/signature structures and does not read bytes, compute hashes, detect signatures, persist results, or invoke preview/export providers.
+- `AnalysisSourceProvenance` preserves Stage 2-style metadata without treating it as source content.
+- `AnalysisContentSourceIdentity` carries provider/source identity, source kind, read-only assertion, synthetic/generated flags, content size placeholder, parser/source names, version fields, and source status.
+- Hash result placeholders use nullable digests and `hash_not_computed`; signature result placeholders use nullable detection fields and `signature_not_checked`.
+- Package exports, tests, and docs were updated consistently.
+- S4-T01 stayed in scope and did not change Stage 3 export-output SHA-256 verification, claim whole-image verification, add known-file matching, add case-store persistence, start search/timeline/reporting/UI, add parser work, deleted recovery, carving, or native dependencies.
+
+Tests:
+
+- `python -m pytest`: 106 passed in 4.82s.
+
+Residual notes:
+
+- S4-T02 should build directly on these reviewed contracts and add provider-backed hash calculation only from explicit analysis content providers.
+- S4-T02 should keep MD5/SHA-1 optional and framed as comparison hashes, while SHA-256 remains the primary digest.
+
+## 2026-07-14 - S4-T01 Hash And Signature Contracts Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `app/backend/forensic_core/content_analysis.py` defines Stage 4 contract-only structures for hash/signature analysis requests, results, statuses, warnings, source provenance, content-source identity, digest placeholders, and signature placeholders.
+- `AnalysisSourceProvenance` can be built from Stage 2-style file-entry metadata while preserving optional case/evidence ids, volume provenance, file id/path/name, entry type, allocation/deleted state, filesystem/adapter names, read-only assertion, and timestamps.
+- `AnalysisContentSourceIdentity` explicitly labels provider name, source kind, read-only assertion, synthetic/generated flags, source content size, status, parser/source names, and versions.
+- Hash contracts preserve requested algorithms, nullable `bytes_analyzed`, and per-algorithm nullable digest placeholders with `hash_not_computed`.
+- Signature contracts preserve max bytes requested, nullable `bytes_inspected`, nullable detected type/signature/MIME placeholders, and `signature_not_checked`.
+- Package exports, focused tests, and documentation/status notes were added.
+
+Scope intentionally not implemented:
+
+- No hashes are computed.
+- No file signatures are detected.
+- No preview-rendered text/hex is used as source content.
+- No filesystem metadata entry is treated as byte-bearing.
+- No Stage 3 export-output SHA-256 behavior was changed.
+- No whole-image verification, known-file matching, case-store persistence, search, timeline, reporting, UI, real EWF parsing, partition parsing, filesystem parsing, deleted recovery, carving, native dependency, commit, or push was added.
+
+Tests:
+
+- `python -m pytest`: 106 passed in 4.51s.
+
+## 2026-07-14 - Stage 4 Ticket Planning And Risk Memo
+
+Result: ready to hand S4-T01 to the VS Code implementation agent after user approval.
+
+Current truth:
+
+- Real local byte access is limited to `LocalFileImageStream` reading tiny local files in read-only mode.
+- Real write behavior is limited to Stage 3 export artifacts and manifests written from explicit export-provider bytes.
+- Stage 3 SHA-256 verifies the written export artifact only; it is not per-file evidence analysis.
+- Case-store writes are explicit helper calls or explicit `ExportAuditContext`; source provenance ids alone do not persist anything.
+- EWF parsing, image verification, partition parsing, real filesystem parsing, real filesystem content extraction, deleted recovery, carving, UI, search, timeline, reporting, and packaging remain unimplemented.
+
+Stubbed or synthetic today:
+
+- `StubEwfReaderAdapter`, `StubFilesystemAdapter`, `StubPreviewProvider`, and `StubExportContentProvider` provide deterministic synthetic behavior for tests.
+- `PyewfEwfReaderAdapter` and `Pytsk3FilesystemAdapter` are dependency/status skeletons; importable native modules are still reported as not implemented.
+- Stub filesystem entries are metadata-only and do not provide file bytes by themselves.
+
+Tests prove:
+
+- Result contracts, JSON serialization, read-only assertions, dependency-unavailable status paths, preview bounds, destination safety, overwrite refusal, partial-write cleanup, SHA-256 from written export output, and explicit audit opt-in are covered.
+
+Tests do not prove:
+
+- Real evidence-derived file-content extraction.
+- Real EWF/partition/filesystem parsing.
+- Whole-image verification.
+- Deleted-file recovery or carving.
+- Hash/signature analysis over parsed evidence bytes.
+
+Highest-risk architectural gap:
+
+- The project can build correct Stage 4 contracts and provider-backed behavior, but synthetic/provider-backed success can easily look like real forensic analysis if provider identity and source status are not carried everywhere.
+
+Ticket plan:
+
+- `tickets/stage-4/` now contains detailed S4-T00 through S4-T07 tickets.
+- S4-T00 is the review-agent familiarization/risk audit and is recorded as done.
+- S4-T01 is ready as a contract-only implementation ticket.
+- S4-T02 through S4-T07 remain draft until each prior ticket lands and is reviewed.
+- `tickets/stage-5/README.md` now captures a rough Stage 5 search/timeline sequence and guardrails.
+
+Verification:
+
+- Baseline before planning edits: `python -m pytest` reported 99 passed in 6.46s.
+
+## 2026-07-14 - Project Reflection Before Stage 4
+
+Weakest point:
+
+- The project has strong contracts, provenance fields, status/warning discipline, and dependency-safe tests, but it still lacks a real evidence-to-file-content pipeline. Beyond tiny local byte-stream reads, the user-facing forensic workflows are stub/provider-backed. That is acceptable for the staged foundation, but it is the biggest risk if later stages start presenting hash, signature, search, timeline, or report output as if it came from parsed evidence.
+
+Most urgent improvement:
+
+- Establish a truthful content-source strategy before Stage 4 analysis expands. The next stage should first prove which bytes are being analyzed, where they came from, how synthetic/provider-backed bytes are labeled, and what would be required before results can claim real evidence-derived file content.
+
+Risks to pass forward:
+
+- Hash/signature analysis can become misleading if it hashes preview-rendered text/hex or synthetic stub bytes without clear source labels.
+- Search/timeline/reporting can amplify unsupported parser states if they index or report synthetic/stub data as findings.
+- UI or packaging too early would make the project feel more complete than it is.
+- Native dependency work could become a time sink unless default tests remain dependency-free and optional integration paths are isolated.
+- Audit/reporting workflows must preserve unsupported and partial states, not only successful findings.
+
+Recommendations for future stages:
+
+- Stage 4 should begin with content-source contracts and fixture policy, then add provider-backed hash/signature behavior.
+- Stage 5 search/timeline should wait for stable result contracts and should label synthetic/unsupported inputs clearly.
+- Stage 6 reporting should foreground provenance, parser status, unsupported recovery, and audit context.
+- Packaging/UI should wait until at least one manually tested backend workflow is useful and honest about what is real versus stubbed.
+
 ## 2026-07-14 - S3-T06 Review
 
 Result: approved for commit.

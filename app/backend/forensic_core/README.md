@@ -32,6 +32,12 @@ Stage 3 export-contract start:
 - S3-T05 documents deleted-file recovery as unsupported/deferred with the current adapters.
 - Export content remains separate from Stage 2 metadata and preview rendering. Export bytes must come from an explicit export content source/provider, not from filesystem entries alone and not from rendered preview text or hex.
 
+Stage 4 contract start:
+
+- `content_analysis.py` defines JSON-friendly hash/signature analysis request, result, status, warning, source-provenance, content-source identity, and placeholder digest/signature structures.
+- S4-T01 is contract-only. It does not read provider bytes, compute hashes, detect file signatures, persist analysis rows, or claim real evidence-derived analysis.
+- Per-file analysis content remains separate from Stage 2 preview rendering, Stage 3 export-output verification, and future whole-image verification.
+
 ## S1-T02 Segment Discovery
 
 `discover_e01_segments(path)` accepts a selected first segment path such as `sample.E01` and discovers sibling files with the same base name and `.E##` extensions.
@@ -198,6 +204,25 @@ The backend API export service now fills the S3-T01 hash and byte-count fields f
 - unreadable or missing output after write returns structured `export_verification_failed` with hash status `hash_failed`.
 
 This is export-output verification only. Broader file hash analysis, MD5/SHA-1 production hashing, known-file matching, file signatures, extension mismatch checks, image verification, audit integration, deleted recovery, UI, and real parser work remain deferred.
+
+## S4-T01 Hash And Signature Analysis Contracts
+
+`content_analysis.py` provides the first Stage 4 contract boundary:
+
+- `AnalysisSourceProvenance`: source fields copied from Stage 2-style filesystem entries, including source path, optional case/evidence ids, volume id/offset/length, file id/path/name, entry type, allocation/deleted state, filesystem type, adapter name, read-only assertion, and timestamps.
+- `AnalysisContentSourceIdentity`: explicit provider/source identity for future analysis bytes, including provider name, source kind such as `synthetic`, `generated_fixture`, `local_stream`, `export_provider`, or future `real_parser`, read-only assertion, synthetic/generated flags, source content size, source status, parser/source name, and version fields.
+- `HashAnalysisRequest`, `HashAnalysisResult`, and `HashDigestResult`: hash-analysis placeholders with requested algorithms, nullable bytes analyzed, per-algorithm nullable digests, status, warnings, and timestamps.
+- `SignatureAnalysisRequest` and `SignatureAnalysisResult`: signature-analysis placeholders with max bytes requested, nullable bytes inspected, nullable detected type/signature/MIME fields, status, warnings, and timestamps.
+- `AnalysisStatus`, `AnalysisWarning`, and JSON helpers support stable serialization.
+
+Current S4-T01 behavior:
+
+- defines contracts and serialization only;
+- records placeholder statuses such as `analysis_not_started`, `hash_not_computed`, `signature_not_checked`, `content_source_unavailable`, `metadata_only_source`, and `preview_rendering_not_allowed`;
+- labels synthetic and generated fixture source identities explicitly;
+- keeps default tests dependency-free and free of real evidence.
+
+S4-T01 does not compute hashes, detect signatures, read preview/export/provider bytes, treat filesystem metadata as byte-bearing, change Stage 3 export verification, claim whole-image verification, add known-file matching, persist analysis results, add UI/search/timeline/reporting, parse real evidence/filesystems, recover deleted files, carve data, or require native dependencies.
 
 ## S3-T05 Deleted-File Recovery Plan
 
