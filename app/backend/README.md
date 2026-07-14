@@ -19,7 +19,7 @@ The backend package can be imported cleanly:
 - `app.backend.analysis_workers`
 - `app.backend.api`
 
-Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 now has hash/signature analysis result contracts plus provider-backed hash calculation over explicit analysis content providers. The project remains backend-first and has no UI/executable packaging yet.
+Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 now has hash/signature analysis result contracts, provider-backed hash calculation, and bounded provider-backed file signature detection over explicit analysis content providers. The project remains backend-first and has no UI/executable packaging yet.
 
 ## Tests
 
@@ -39,7 +39,7 @@ python -m pip install pytest
 
 Current verification snapshot:
 
-- `python -m pytest`: 116 passed in 4.21s after the S4-T02 provider-backed hashing review.
+- `python -m pytest`: 127 passed in 5.39s after the S4-T03 file signature detection review.
 - The project config routes pytest temporary files to `.test-artifacts/pytest-temp` and disables pytest's optional cache provider.
 
 ## Stage 1 Intake Command
@@ -110,7 +110,7 @@ Current Stage 3 limits:
 - No real filesystem byte extraction, deleted-file recovery, carving, unallocated-space scanning, UI, search, timeline, reporting, bookmarks, notes, or packaging is implemented.
 - Export audit rows require explicit `ExportAuditContext`; source provenance ids alone do not create case-store writes.
 
-## Stage 4 Hash Analysis Foundation
+## Stage 4 Hash And Signature Analysis Foundation
 
 Implemented so far:
 
@@ -120,6 +120,8 @@ Implemented so far:
 - `StubAnalysisContentProvider` supplies dependency-free synthetic/generated test bytes through a Stage 4 analysis provider that is separate from preview and export providers.
 - SHA-256 is computed by default; MD5 and SHA-1 are computed only when explicitly requested as comparison hashes.
 - Unsupported, empty, malformed, directory/non-file, metadata-only, missing-content, and provider-exception paths return structured non-ok `HashAnalysisResult` objects.
-- Signature result fields are placeholders; no file signatures are detected yet.
+- `detect_file_signature(...)` and `analyze_file_signature(...)` inspect bounded prefixes from explicit Stage 4 analysis-provider bytes only.
+- The supported dependency-free signature table covers PDF, PNG, JPEG, GIF87a/GIF89a, ZIP header variants, ELF, and conservative MZ executable candidates.
+- Invalid max-byte, directory/non-file, metadata-only, missing-content, provider-exception, insufficient partial-signature, and unknown-signature paths return structured non-ok `SignatureAnalysisResult` objects.
 
-Stage 4 must continue to analyze only explicit content providers, avoid hashing preview text/hex or export artifacts as source analysis content, avoid whole-image verification claims without adapter support, and keep signature detection, known-file matching, persistence, search/timeline, and UI work for later reviewed tickets.
+Stage 4 must continue to analyze only explicit content providers, avoid hashing or signature-checking preview text/hex or export artifacts as source analysis content, avoid whole-image verification claims without adapter support, and keep extension mismatch, known-file matching, persistence, search/timeline, and UI work for later reviewed tickets.

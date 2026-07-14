@@ -6,7 +6,7 @@ Stage 4 builds on Stage 3 export/content-provider boundaries, but it must remain
 
 ## Stage 4 Status
 
-Status: In Progress. S4-T01 contract implementation and S4-T02 provider-backed hashing are reviewed and done; S4-T03 file signature detection is the next ticket to prepare when requested.
+Status: In Progress. S4-T01 contract implementation, S4-T02 provider-backed hashing, and S4-T03 file signature detection are reviewed and done; S4-T04 extension mismatch rules are the next ticket to prepare when requested.
 
 The Stage 4 review-agent familiarization and risk audit is complete. Continue one reviewed ticket at a time so hash, signature, known-file, and persistence work do not blur together.
 
@@ -50,7 +50,7 @@ Not proved today:
 | [S4-T00](S4-T00-review-agent-risk-audit.md) | Done | Stage 4 review-agent familiarization and reality-anchor risk audit |
 | [S4-T01](S4-T01-hash-signature-contracts.md) | Done | Hash/signature request/result/status/warning contracts and provenance model |
 | [S4-T02](S4-T02-provider-backed-hashing.md) | Done | Provider-backed SHA-256 plus optional MD5/SHA-1 calculation for explicit content sources |
-| [S4-T03](S4-T03-file-signature-detection.md) | Draft | File signature/magic-byte detection over bounded provider bytes |
+| [S4-T03](S4-T03-file-signature-detection.md) | Done | File signature/magic-byte detection over bounded provider bytes |
 | [S4-T04](S4-T04-extension-mismatch-rules.md) | Draft | Extension mismatch result rules where metadata and signature both exist |
 | [S4-T05](S4-T05-known-file-matching.md) | Draft | Fixture-sized known-file matching plan or minimal implementation |
 | [S4-T06](S4-T06-case-store-persistence-plan.md) | Draft | Optional case-store persistence plan for hash/signature results |

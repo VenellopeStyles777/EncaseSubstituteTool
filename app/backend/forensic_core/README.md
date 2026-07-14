@@ -37,6 +37,7 @@ Stage 4 contract start:
 - `content_analysis.py` defines JSON-friendly hash/signature analysis request, result, status, warning, source-provenance, content-source identity, and placeholder digest/signature structures.
 - S4-T01 is contract-only. It does not read provider bytes, compute hashes, detect file signatures, persist analysis rows, or claim real evidence-derived analysis.
 - S4-T02 adds a Stage 4 analysis content provider boundary and provider-backed hash calculation from explicit provider bytes only.
+- S4-T03 adds bounded file signature detection from explicit Stage 4 analysis provider bytes only.
 - Per-file analysis content remains separate from Stage 2 preview rendering, Stage 3 export-output verification, and future whole-image verification.
 
 ## S1-T02 Segment Discovery
@@ -245,6 +246,28 @@ Current S4-T02 behavior:
 - labels synthetic and generated fixture bytes with `synthetic_content` or `generated_fixture_content` warnings.
 
 S4-T02 does not detect file signatures, add extension mismatch checks, match known-file sets, persist analysis results, change Stage 3 export-output verification, use preview-rendered text/hex, use export providers or written export artifacts as analysis bytes, claim whole-image verification, parse real evidence/filesystems, recover deleted files, carve data, add UI/search/timeline/reporting, or require native dependencies.
+
+## S4-T03 File Signature Detection
+
+`content_analysis.py` now provides bounded provider-backed file signature detection:
+
+- `FileSignatureDefinition`: one conservative magic-byte definition.
+- `SUPPORTED_FILE_SIGNATURES`: dependency-free table for PDF, PNG, JPEG, GIF87a/GIF89a, ZIP header variants, ELF, and MZ executable candidates.
+- `detect_file_signature(...)` and `analyze_file_signature(...)`: inspect only `AnalysisContent.data[:max_bytes]` and return `SignatureAnalysisResult`.
+
+Current S4-T03 behavior:
+
+- reuses the S4-T02 `AnalysisContentProvider` boundary;
+- validates `max_bytes` before provider reads;
+- rejects directory/non-file entries before provider reads;
+- reports `metadata_only_source` when no provider is supplied;
+- reports `content_source_unavailable` when the provider has no bytes;
+- reports `content_provider_error` without raw tracebacks when a provider raises;
+- reports `insufficient_signature_bytes` for a bounded prefix that is only a partial known signature;
+- reports `unknown_signature` when enough inspected bytes do not match the supported table;
+- preserves source provenance, content-source identity, source kind/status, max bytes requested, bytes inspected, read-only assertion, timestamps, and warnings.
+
+MZ results are labeled as `mz_executable_candidate`, not as validated PE files. S4-T03 does not add extension mismatch checks, known-file matching, MIME database integration, persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, export-output behavior changes, or Stage 5 work.
 
 ## S3-T05 Deleted-File Recovery Plan
 

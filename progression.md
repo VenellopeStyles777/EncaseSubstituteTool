@@ -13,6 +13,24 @@ YYYY-MM-DD
 ```
 
 2026-07-14
+- Completed: reviewed S4-T03 provider-backed file signature detection and marked it done.
+- Learned: the implementation keeps signature detection bounded to explicit Stage 4 provider bytes, rejects invalid limits before provider reads, and stays conservative for unknown, partial, and MZ candidate results.
+- Blocked by: nothing for S4-T03; extension mismatch, known-file matching, persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, and Stage 5 work remain deferred.
+- Next: prepare S4-T04 extension mismatch rules when requested. Final review test run: `python -m pytest` reported 127 passed in 5.39s.
+
+2026-07-14
+- Completed: implemented S4-T03 provider-backed file signature detection with `FileSignatureDefinition`, `SUPPORTED_FILE_SIGNATURES`, `detect_file_signature()`, `analyze_file_signature()`, package exports, focused signature tests, and docs/status updates.
+- Learned: bounded detection can stay conservative by treating partial known prefixes as `insufficient_signature_bytes` and unrelated prefixes as `unknown_signature`, while preserving the S4-T02 provider identity and source labels.
+- Blocked by: nothing for S4-T03 implementation; extension mismatch, known-file matching, persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, and Stage 5 work remain deferred.
+- Next: hand S4-T03 off for review before starting S4-T04. Final verification: `python -m pytest` reported 127 passed in 4.41s.
+
+2026-07-14
+- Completed: expanded S4-T03 into an implementation-ready file signature detection ticket and prepared the VS Code coding-agent prompt.
+- Learned: S4-T03 should reuse the S4-T02 analysis content provider boundary, inspect only a bounded prefix, and keep signature detection separate from extension mismatch and known-file matching.
+- Blocked by: nothing for S4-T03 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-14-s4-t03-file-signature-detection.md`, then review the resulting implementation before preparing S4-T04.
+
+2026-07-14
 - Completed: reviewed S4-T02 provider-backed hashing and marked it done.
 - Learned: the implementation keeps analysis hashing on explicit Stage 4 provider bytes, rejects bad algorithm requests before provider reads, and preserves S4-T01 provenance/content-source identity without reusing preview/export paths.
 - Blocked by: nothing for S4-T02; signature detection, extension mismatch, known-file matching, persistence, search/timeline, UI, real parser work, deleted recovery, carving, and native dependencies remain deferred.

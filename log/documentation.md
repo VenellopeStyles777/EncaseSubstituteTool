@@ -135,3 +135,27 @@ Purpose: record documentation changes, important source references, and decision
 - Confirmed provider-backed hashing stays separate from preview/export behavior and from future whole-image verification.
 - Confirmed signature detection, extension mismatch, known-file matching, persistence, search/timeline, UI, real parser work, deleted recovery, carving, native dependencies, export-output changes, and Stage 5 work remain deferred.
 - Reviewer verification: `python -m pytest` reported 116 passed in 4.21s.
+
+## 2026-07-14 - S4-T03 Handoff Preparation
+
+- Expanded S4-T03 into an implementation-ready file signature detection ticket.
+- Marked S4-T03 ready in Stage 4 planning docs.
+- Added the key guardrail that S4-T03 must reuse the explicit Stage 4 analysis provider boundary and inspect bounded provider bytes only.
+- Re-stated that extension mismatch, known-file matching, persistence, search/timeline, UI, parser work, deleted recovery, carving, native dependencies, export-output changes, and Stage 5 work remain out of scope.
+- Added `prompts/vscode-agent/2026-07-14-s4-t03-file-signature-detection.md` as the paste-ready coding-agent prompt.
+
+## 2026-07-14 - S4-T03 File Signature Detection Implementation
+
+- Added bounded, provider-backed detection for PDF, PNG, JPEG, GIF87a/GIF89a, ZIP header variants, ELF, and conservative MZ executable candidates.
+- Added structured non-ok handling for invalid limits, non-file entries, metadata-only inputs, unavailable content, provider failures, partial known signatures, and unknown signatures.
+- Added focused dependency-free coverage for signature matches, bounds, failures, provenance, source labels, JSON safety, and S4-T02 hashing regression behavior.
+- Updated Stage 4, backend, fixture, functionality, progression, and review documentation for the S4-T03 handoff.
+- Final verification: `python -m pytest` reported 127 passed in 4.41s.
+
+## 2026-07-14 - S4-T03 Review
+
+- Marked S4-T03 reviewed and done.
+- Recorded no blocking findings in `review.md`.
+- Confirmed bounded signature detection stays separate from preview/export behavior and future whole-image verification.
+- Confirmed extension mismatch, known-file matching, persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, export-output changes, and Stage 5 work remain deferred.
+- Reviewer verification: `python -m pytest` reported 127 passed in 5.39s.

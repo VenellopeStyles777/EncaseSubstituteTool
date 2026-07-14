@@ -82,3 +82,6 @@ For Stage 4 tickets:
 - S4-T01 contract tests should not read or write analysis bytes. Later generated/local-stream fixture tests must keep generated scratch data under ignored workspace paths such as `.test-artifacts/`.
 - S4-T02 hash tests may use `StubAnalysisContentProvider` with tiny in-memory bytes, but those bytes must be labeled as `synthetic` or `generated_fixture` through the analysis content-source identity.
 - S4-T02 must not reuse `StubPreviewProvider`, `StubExportContentProvider`, preview-rendered text/hex/raw JSON byte values, or written export artifacts as implicit analysis content.
+- S4-T03 signature tests may use `StubAnalysisContentProvider` with tiny in-memory magic-byte samples for PDF, PNG, JPEG, GIF, ZIP, ELF, and MZ candidate coverage.
+- S4-T03 signature tests must inspect bounded provider bytes only and must label synthetic or generated fixture bytes through the analysis content-source identity.
+- S4-T03 must not use preview-rendered text/hex/raw JSON byte values, preview providers, export providers, written export artifacts, or filesystem metadata as signature source content.

@@ -11,6 +11,7 @@ from typing import Iterable, Mapping, Protocol
 
 CONTENT_ANALYSIS_SCHEMA_VERSION = "stage4.content_analysis.v1"
 DEFAULT_HASH_ALGORITHMS = ("sha256",)
+DEFAULT_SIGNATURE_MAX_BYTES = 4096
 SUPPORTED_HASH_ALGORITHMS = ("sha256", "md5", "sha1")
 _HASH_FACTORIES = {
     "sha256": hashlib.sha256,
@@ -446,6 +447,80 @@ class SignatureAnalysisResult:
         }
 
 
+@dataclass(frozen=True)
+class FileSignatureDefinition:
+    """Conservative magic-byte definition for bounded signature detection."""
+
+    detected_type: str
+    detected_signature: str
+    magic: bytes
+    mime_type: str | None = None
+
+
+SUPPORTED_FILE_SIGNATURES = (
+    FileSignatureDefinition(
+        detected_type="png",
+        detected_signature="png_header",
+        magic=b"\x89PNG\r\n\x1a\n",
+        mime_type="image/png",
+    ),
+    FileSignatureDefinition(
+        detected_type="gif",
+        detected_signature="gif87a_header",
+        magic=b"GIF87a",
+        mime_type="image/gif",
+    ),
+    FileSignatureDefinition(
+        detected_type="gif",
+        detected_signature="gif89a_header",
+        magic=b"GIF89a",
+        mime_type="image/gif",
+    ),
+    FileSignatureDefinition(
+        detected_type="pdf",
+        detected_signature="pdf_header",
+        magic=b"%PDF-",
+        mime_type="application/pdf",
+    ),
+    FileSignatureDefinition(
+        detected_type="zip",
+        detected_signature="zip_local_file_header",
+        magic=b"PK\x03\x04",
+        mime_type="application/zip",
+    ),
+    FileSignatureDefinition(
+        detected_type="zip",
+        detected_signature="zip_empty_archive",
+        magic=b"PK\x05\x06",
+        mime_type="application/zip",
+    ),
+    FileSignatureDefinition(
+        detected_type="zip",
+        detected_signature="zip_spanned_archive_marker",
+        magic=b"PK\x07\x08",
+        mime_type="application/zip",
+    ),
+    FileSignatureDefinition(
+        detected_type="elf",
+        detected_signature="elf_header",
+        magic=b"\x7fELF",
+        mime_type="application/x-elf",
+    ),
+    FileSignatureDefinition(
+        detected_type="jpeg",
+        detected_signature="jpeg_soi",
+        magic=b"\xff\xd8\xff",
+        mime_type="image/jpeg",
+    ),
+    FileSignatureDefinition(
+        detected_type="mz_executable_candidate",
+        detected_signature="mz_header_candidate",
+        magic=b"MZ",
+        mime_type="application/x-msdownload",
+    ),
+)
+
+
 def hash_analysis_request_to_json(
     request: HashAnalysisRequest,
     *,
@@ -686,6 +761,366 @@ def signature_analysis_result_to_json(
     """Serialize a signature analysis result contract as stable JSON."""
 
     return json.dumps(result.to_dict(), indent=indent, sort_keys=True)
+
+
+def detect_file_signature(
+    file_entry_or_request: (
+        Mapping[str, object] | AnalysisSourceProvenance | SignatureAnalysisRequest
+    ),
+    *,
+    provider: AnalysisContentProvider | None = None,
+    max_bytes: object | None = None,
+    evidence_id: str | None = None,
+    case_id: str | None = None,
+) -> SignatureAnalysisResult:
+    """Detect file signatures from a bounded provider-backed byte prefix."""
+
+    source = _source_from_signature_input(
+        file_entry_or_request,
+        evidence_id=evidence_id,
+        case_id=case_id,
+    )
+    requested_max_bytes = _requested_signature_max_bytes(
+        file_entry_or_request,
+        max_bytes,
+    )
+    normalized_max_bytes, validation_status, validation_warning = (
+        _normalize_signature_max_bytes(requested_max_bytes, source)
+    )
+    content_source = _initial_content_source_identity(
+        provider,
+        source,
+        _signature_request_content_source(file_entry_or_request),
+    )
+
+    if validation_status is not None:
+        return _signature_result(
+            source=source,
+            content_source=content_source,
+            max_bytes_requested=normalized_max_bytes,
+            status=validation_status,
+            warnings=(validation_warning,),
+        )
+
+    if source.entry_type != "file":
+        status = AnalysisStatus(
+            code="path_not_file",
+            message="Signature analysis requires a file entry.",
+        )
+        return _signature_result(
+            source=source,
+            content_source=content_source,
+            max_bytes_requested=normalized_max_bytes,
+            status=status,
+            warnings=(
+                AnalysisWarning(
+                    code="path_not_file",
+                    message=(
+                        "Directory or non-file entries cannot be signature-checked."
+                    ),
+                    path=source.file_path,
+                    source="content_analysis",
+                ),
+            ),
+        )
+
+    if provider is None:
+        status = AnalysisStatus(
+            code="metadata_only_source",
+            message="Filesystem metadata alone is not analysis content.",
+        )
+        return _signature_result(
+            source=source,
+            content_source=_content_source_with_status(
+                content_source,
+                status=status,
+                source_content_size=None,
+            ),
+            max_bytes_requested=normalized_max_bytes,
+            status=status,
+            warnings=(
+                AnalysisWarning(
+                    code="metadata_only_source",
+                    message=(
+                        "No explicit Stage 4 analysis content provider was supplied."
+                    ),
+                    path=source.file_path,
+                    source="content_analysis",
+                ),
+            ),
+        )
+
+    try:
+        content = provider.get_content(source)
+    except Exception as error:
+        status = AnalysisStatus(
+            code="content_provider_error",
+            message=(
+                "Analysis content provider failed before signature detection: "
+                f"{type(error).__name__}."
+            ),
+        )
+        return _signature_result(
+            source=source,
+            content_source=_content_source_with_status(
+                content_source,
+                status=status,
+                source_content_size=None,
+            ),
+            max_bytes_requested=normalized_max_bytes,
+            status=status,
+            warnings=(
+                AnalysisWarning(
+                    code="content_provider_error",
+                    message="Analysis content provider raised an exception.",
+                    path=source.file_path,
+                    source="analysis_content_provider",
+                ),
+            ),
+        )
+
+    if content is None:
+        status = AnalysisStatus(
+            code="content_source_unavailable",
+            message="Analysis content provider has no raw bytes for this file entry.",
+        )
+        return _signature_result(
+            source=source,
+            content_source=_content_source_with_status(
+                content_source,
+                status=status,
+                source_content_size=None,
+            ),
+            max_bytes_requested=normalized_max_bytes,
+            status=status,
+            warnings=(
+                AnalysisWarning(
+                    code="content_source_unavailable",
+                    message="No raw analysis content is registered for this file entry.",
+                    path=source.file_path,
+                    source="analysis_content_provider",
+                ),
+            ),
+        )
+
+    inspected_prefix = content.data[:normalized_max_bytes]
+    signature = _detect_supported_signature(inspected_prefix)
+    content_source = content.to_content_source_identity()
+    if signature is not None:
+        status = AnalysisStatus(
+            code="ok",
+            message=(
+                "File signature detected from explicit analysis provider bytes."
+            ),
+        )
+        return _signature_result(
+            source=source,
+            content_source=content_source,
+            max_bytes_requested=normalized_max_bytes,
+            status=status,
+            bytes_inspected=len(inspected_prefix),
+            detected_type=signature.detected_type,
+            detected_signature=signature.detected_signature,
+            detected_mime_type=signature.mime_type,
+            warnings=content.warnings,
+        )
+
+    partial_signature = _matching_partial_signature(inspected_prefix)
+    if partial_signature is not None:
+        status = AnalysisStatus(
+            code="insufficient_signature_bytes",
+            message="More bytes are required to make this signature decision.",
+        )
+        return _signature_result(
+            source=source,
+            content_source=content_source,
+            max_bytes_requested=normalized_max_bytes,
+            status=status,
+            bytes_inspected=len(inspected_prefix),
+            warnings=content.warnings
+            + (
+                AnalysisWarning(
+                    code="insufficient_signature_bytes",
+                    message=(
+                        "Inspected bytes are only a partial known signature prefix."
+                    ),
+                    path=source.file_path,
+                    source="content_analysis",
+                ),
+            ),
+        )
+
+    status = AnalysisStatus(
+        code="unknown_signature",
+        message="No supported file signature was detected in the bounded prefix.",
+    )
+    return _signature_result(
+        source=source,
+        content_source=content_source,
+        max_bytes_requested=normalized_max_bytes,
+        status=status,
+        bytes_inspected=len(inspected_prefix),
+        warnings=content.warnings
+        + (
+            AnalysisWarning(
+                code="unknown_signature",
+                message="Bounded prefix did not match a supported signature.",
+                path=source.file_path,
+                source="content_analysis",
+            ),
+        ),
+    )
+
+
+def analyze_file_signature(
+    file_entry_or_request: (
+        Mapping[str, object] | AnalysisSourceProvenance | SignatureAnalysisRequest
+    ),
+    *,
+    provider: AnalysisContentProvider | None = None,
+    max_bytes: object | None = None,
+    evidence_id: str | None = None,
+    case_id: str | None = None,
+) -> SignatureAnalysisResult:
+    """Alias for bounded provider-backed file signature detection."""
+
+    return detect_file_signature(
+        file_entry_or_request,
+        provider=provider,
+        max_bytes=max_bytes,
+        evidence_id=evidence_id,
+        case_id=case_id,
+    )
+
+
+def _source_from_signature_input(
+    file_entry_or_request: (
+        Mapping[str, object] | AnalysisSourceProvenance | SignatureAnalysisRequest
+    ),
+    *,
+    evidence_id: str | None,
+    case_id: str | None,
+) -> AnalysisSourceProvenance:
+    if isinstance(file_entry_or_request, SignatureAnalysisRequest):
+        return file_entry_or_request.source
+    if isinstance(file_entry_or_request, AnalysisSourceProvenance):
+        return file_entry_or_request
+    return AnalysisSourceProvenance.from_file_entry(
+        file_entry_or_request,
+        evidence_id=evidence_id,
+        case_id=case_id,
+    )
+
+
+def _requested_signature_max_bytes(
+    file_entry_or_request: (
+        Mapping[str, object] | AnalysisSourceProvenance | SignatureAnalysisRequest
+    ),
+    max_bytes: object | None,
+) -> object:
+    if max_bytes is not None:
+        return max_bytes
+    if isinstance(file_entry_or_request, SignatureAnalysisRequest):
+        return file_entry_or_request.max_bytes_requested
+    return DEFAULT_SIGNATURE_MAX_BYTES
+
+
+def _signature_request_content_source(
+    file_entry_or_request: (
+        Mapping[str, object] | AnalysisSourceProvenance | SignatureAnalysisRequest
+    ),
+) -> AnalysisContentSourceIdentity | None:
+    if isinstance(file_entry_or_request, SignatureAnalysisRequest):
+        return file_entry_or_request.content_source
+    return None
+
+
+def _normalize_signature_max_bytes(
+    requested_value: object,
+    source: AnalysisSourceProvenance,
+) -> tuple[int, AnalysisStatus | None, AnalysisWarning | None]:
+    if not isinstance(requested_value, int) or isinstance(requested_value, bool):
+        status = AnalysisStatus(
+            code="invalid_analysis_request",
+            message="Signature max bytes must be a positive integer.",
+        )
+        return (
+            0,
+            status,
+            AnalysisWarning(
+                code=status.code,
+                message=status.message,
+                path=source.file_path,
+                source="content_analysis",
+            ),
+        )
+
+    normalized = requested_value
+    if normalized <= 0:
+        status = AnalysisStatus(
+            code="invalid_analysis_request",
+            message="Signature max bytes must be greater than zero.",
+        )
+        return (
+            normalized,
+            status,
+            AnalysisWarning(
+                code=status.code,
+                message=status.message,
+                path=source.file_path,
+                source="content_analysis",
+            ),
+        )
+
+    return normalized, None, None
+
+
+def _detect_supported_signature(
+    inspected_prefix: bytes,
+) -> FileSignatureDefinition | None:
+    for signature in SUPPORTED_FILE_SIGNATURES:
+        if inspected_prefix.startswith(signature.magic):
+            return signature
+    return None
+
+
+def _matching_partial_signature(
+    inspected_prefix: bytes,
+) -> FileSignatureDefinition | None:
+    for signature in SUPPORTED_FILE_SIGNATURES:
+        if len(inspected_prefix) < len(signature.magic) and signature.magic.startswith(
+            inspected_prefix
+        ):
+            return signature
+    return None
+
+
+def _signature_result(
+    *,
+    source: AnalysisSourceProvenance,
+    content_source: AnalysisContentSourceIdentity,
+    max_bytes_requested: int,
+    status: AnalysisStatus,
+    bytes_inspected: int | None = None,
+    detected_type: str | None = None,
+    detected_signature: str | None = None,
+    detected_mime_type: str | None = None,
+    warnings: tuple[AnalysisWarning, ...] = (),
+) -> SignatureAnalysisResult:
+    timestamp = utc_now()
+    return SignatureAnalysisResult(
+        source=source,
+        content_source=content_source,
+        max_bytes_requested=max_bytes_requested,
+        status=status,
+        bytes_inspected=bytes_inspected,
+        detected_type=detected_type,
+        detected_signature=detected_signature,
+        detected_mime_type=detected_mime_type,
+        created_at=timestamp,
+        completed_at=timestamp,
+        warnings=warnings,
+    )
 
 
 def _source_from_hash_input(
