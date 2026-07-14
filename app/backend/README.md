@@ -19,7 +19,7 @@ The backend package can be imported cleanly:
 - `app.backend.analysis_workers`
 - `app.backend.api`
 
-Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. The project remains backend-first and has no UI/executable packaging yet.
+Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. The project remains backend-first and has no UI/executable packaging yet.
 
 ## Tests
 
@@ -37,9 +37,9 @@ If `pytest` is not installed:
 python -m pip install pytest
 ```
 
-Current Stage 2 verification on 2026-07-09:
+Current Stage 3 verification:
 
-- `python -m pytest`: 67 passed.
+- `python -m pytest`: 99 passed in 4.42s for the final S3-T06 review run.
 - The project config routes pytest temporary files to `.test-artifacts/pytest-temp` and disables pytest's optional cache provider.
 
 ## Stage 1 Intake Command
@@ -83,6 +83,31 @@ Not implemented yet:
 - Real EWF byte parsing or image verification.
 - Real partition table parsing.
 - Real filesystem parsing or real file extraction.
-- Export/recovery, hashing, signature, search, reporting, UI, or executable packaging workflows.
+- Deleted-file recovery, carving, Stage 4 hash/signature analysis, search, reporting, UI, or executable packaging workflows.
 - Automatic persistence from intake JSON or Stage 2 API results into SQLite.
 - Required native forensic dependencies; `pyewf`, libewf, `pytsk3`, and The Sleuth Kit remain optional.
+
+## Stage 3 Export Foundation
+
+Implemented:
+
+- Export result, manifest, content-source, source-provenance, status, warning, and hash-summary contract structures.
+- `export_file(...)` for writing explicit export-provider bytes for Stage 2-style file entries or `ExportRequest` objects.
+- `export_file_to_json(...)` for running export and serializing the returned result.
+- `StubExportContentProvider`, which supplies synthetic `Hello, world!` bytes for `stub-file-hello`.
+- Destination checks that require an explicit output directory, reject source/evidence overlap when known, reject unsafe output names, and refuse output/manifest overwrites.
+- Manifest writing beside the exported artifact.
+- SHA-256 and byte-count verification by reading the written output file after export.
+- Optional `ExportAuditContext` for explicit case-store audit rows with `action="file_export"`.
+- Deleted-file recovery documentation that keeps recovery unsupported/deferred until a real adapter exposes recoverable deleted-file bytes.
+
+Current Stage 3 limits:
+
+- Export bytes come only from explicit providers, not from filesystem metadata and not from preview-rendered text/hex.
+- The default export provider is synthetic/stub-backed and does not prove real filesystem extraction.
+- Export-output SHA-256 verifies the written artifact only; broader file hash/signature analysis remains Stage 4.
+- No real EWF, partition, or filesystem parser is implemented.
+- No real filesystem byte extraction, deleted-file recovery, carving, unallocated-space scanning, UI, search, timeline, reporting, bookmarks, notes, or packaging is implemented.
+- Export audit rows require explicit `ExportAuditContext`; source provenance ids alone do not create case-store writes.
+
+Stage 4 should build hash/signature contracts on explicit content providers, avoid hashing preview text/hex as source content, avoid whole-image verification claims without adapter support, and keep known-file matching plus persistence optional until result contracts are reviewed.

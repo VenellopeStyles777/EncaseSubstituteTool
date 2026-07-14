@@ -12,6 +12,18 @@ YYYY-MM-DD
 - Next:
 ```
 
+2026-07-14
+- Completed: implemented and reviewed S3-T06 final Stage 3 documentation/review handoff by reconciling top-level, backend, ticket, fixture, environment, progression, review, and documentation-log status around the completed export foundation.
+- Learned: the final Stage 3 behavior is backend-only fixture/stub export from explicit provider bytes, with manifests, overwrite refusal, SHA-256/byte-count verification from written artifacts, optional explicit audit logging, and deleted recovery documented as unsupported with current adapters.
+- Blocked by: nothing for S3-T06 documentation; Stage 4 remains unstarted and should begin with explicit content-provider hash/signature contracts.
+- Next: commit/push the approved Stage 3 final documentation handoff, then prepare Stage 4. Final review test run: `python -m pytest` reported 99 passed in 4.42s.
+
+2026-07-14
+- Completed: expanded S3-T06 into an implementation-ready documentation/review-handoff ticket and created the paste-ready VS Code implementation prompt.
+- Learned: the final Stage 3 pass should mainly reconcile stale documentation, especially top-level wording that still describes Stage 2 as the current project state.
+- Blocked by: nothing for S3-T06 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-14-s3-t06-stage-3-docs-review-handoff.md`, then review the final Stage 3 documentation changes before marking the stage complete. Handoff prep test run: `python -m pytest` reported 99 passed in 4.36s.
+
 2026-07-13
 - Completed: implemented and reviewed S3-T05 as documentation/planning only, clarifying active allocated export versus deleted-entry metadata, deleted-file recovery, carving/unallocated-space recovery, and unsupported or unrecoverable entries.
 - Learned: the current adapters remain metadata-only for filesystem entries; `StubFilesystemAdapter` has allocated non-deleted entries, and `Pytsk3FilesystemAdapter` does not parse real filesystems or expose deleted-entry content.

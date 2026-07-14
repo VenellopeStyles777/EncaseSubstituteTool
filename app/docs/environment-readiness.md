@@ -2,11 +2,11 @@
 
 Purpose: record the local tool/environment state for backend-first development.
 
-Last checked: 2026-07-13
+Last checked: 2026-07-14
 
 ## Summary
 
-The repository, Git remote, and normal Python environment are ready for Stage 3 S3-T06 documentation/review handoff preparation and dependency-free backend tests.
+The repository, Git remote, and normal Python environment are ready for Stage 4 planning and dependency-free backend tests after Stage 3 review.
 
 Earlier on 2026-07-09, `python` resolved only to the Microsoft Store app execution alias. That has since been fixed.
 
@@ -23,10 +23,10 @@ Git:
 
 Python:
 
-- Status: ready for Stage 3 S3-T06 documentation/review handoff preparation and backend tests.
+- Status: ready for Stage 4 planning and backend tests after Stage 3 review.
 - `python --version`: Python 3.14.6.
 - `python -m pip --version`: pip 26.1.2.
-- `python -m pytest`: 99 passed during the S3-T05 review.
+- `python -m pytest`: 99 passed in 4.42s during the final S3-T06 review.
 - Pytest version observed: 9.1.1.
 - Earlier warning: pytest could not create one cache path under `.pytest_cache`; tests still passed.
 - Follow-up: project config now disables pytest's optional cache provider. Current S1-T06 test run completed without that warning.
@@ -125,7 +125,7 @@ Not required for default Stage 3 tests:
 - `pytsk3` or The Sleuth Kit.
 - Node, Rust, CMake, Visual C++ tools, or desktop UI tooling.
 
-S3-T01 through S3-T05 are reviewed and done. S3-T05 is planning/docs only and does not add recovery code because no real filesystem adapter support exposes deleted entries and recoverable bytes. S3-T06 should remain a documentation/review handoff. Stage 3 export-service tests should use workspace-local output directories, in-memory SQLite for audit checks, and explicit stub/provider-backed bytes.
+S3-T01 through S3-T06 are reviewed and done. S3-T05 is planning/docs only and does not add recovery code because no real filesystem adapter support exposes deleted entries and recoverable bytes. S3-T06 remained a documentation/review handoff. Stage 3 export-service tests use workspace-local output directories, in-memory SQLite for audit checks, and explicit stub/provider-backed bytes.
 
 ## Stage 2 Dependency Policy
 

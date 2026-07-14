@@ -57,3 +57,24 @@ Purpose: record documentation changes, important source references, and decision
 - Confirmed the docs keep current export separate from deleted-file recovery and state recovery is unsupported/deferred with the present adapters.
 - Confirmed no recovery APIs, fake deleted entries, fake recoverable deleted bytes, parser work, carving, unallocated-space scanning, UI, reporting, or Stage 4 analysis were added.
 - Left S3-T06 as the next Stage 3 ticket to prepare: final documentation and review handoff.
+
+## 2026-07-14 - S3-T06 Handoff Preparation
+
+- Expanded S3-T06 into an implementation-ready final Stage 3 documentation/review-handoff ticket.
+- Added `prompts/vscode-agent/2026-07-14-s3-t06-stage-3-docs-review-handoff.md` as the paste-ready coding-agent prompt.
+- Marked S3-T06 ready in Stage 3 planning docs.
+- Documented the key guardrail: S3-T06 should reconcile docs and prepare Stage 4 notes without changing backend behavior or starting Stage 4 code.
+
+## 2026-07-14 - S3-T06 Documentation Handoff
+
+- Reconciled Stage 3 documentation across top-level, backend, ticket, fixture, environment, progression, review, and functionality docs.
+- Documented the final Stage 3 export workflow: explicit provider-backed bytes, safe selected destinations, overwrite refusal, manifests, SHA-256/byte-count verification from written artifacts, and optional explicit `ExportAuditContext` audit rows.
+- Re-stated that Stage 3 does not include real evidence parsing, real filesystem extraction, deleted recovery, carving, UI, search/timeline/reporting, packaging, or Stage 4 hash/signature analysis.
+- Added Stage 4 handoff guidance to build on explicit content providers and avoid preview-rendered text/hex or metadata-only filesystem entries as source content.
+
+## 2026-07-14 - S3-T06 Review
+
+- Reviewed and approved the final Stage 3 documentation/review handoff.
+- Marked S3-T06 done and Stage 3 complete in planning and ticket docs.
+- Confirmed S3-T06 did not change backend behavior, export APIs, tests, parser work, recovery/carving behavior, UI/search/reporting scope, native dependencies, or real evidence fixtures.
+- Left Stage 4 as the next planning target: hash/signature contracts over explicit content providers.

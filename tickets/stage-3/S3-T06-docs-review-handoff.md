@@ -1,6 +1,6 @@
 # S3-T06 - Stage 3 Docs And Review Handoff
 
-Status: Draft
+Status: Done
 
 Stage: Stage 3 - Export and recovery foundation
 
@@ -10,12 +10,21 @@ Reviewer: Research/review agent
 
 ## Objective
 
-Package the completed Stage 3 behavior, commands/callables, tests, limitations, and Stage 4 handoff notes for review.
+Package the completed Stage 3 behavior, tests, limitations, and Stage 4 handoff notes for final Stage 3 review.
 
-S3-T06 should not add new export behavior. It should reconcile docs and prepare the project for Stage 4 planning.
+S3-T06 is documentation/review-handoff only. It must not add new export behavior, new analysis behavior, new parser behavior, UI work, or native dependency requirements.
 
 ## Context To Read First
 
+- `prompts/vscode-agent/2026-07-13-stage-3-familiarization.md`
+- `prompts/vscode-agent/2026-07-14-s3-t06-stage-3-docs-review-handoff.md`
+- `tickets/stage-3/README.md`
+- `tickets/stage-3/S3-T01-export-manifest-contract.md`
+- `tickets/stage-3/S3-T02-file-export-service.md`
+- `tickets/stage-3/S3-T03-export-hashing.md`
+- `tickets/stage-3/S3-T04-export-audit-integration.md`
+- `tickets/stage-3/S3-T05-deleted-recovery-plan.md`
+- `tickets/stage-3/S3-T06-docs-review-handoff.md`
 - `Goal.md`
 - `readme.md`
 - `plan.md`
@@ -23,14 +32,43 @@ S3-T06 should not add new export behavior. It should reconcile docs and prepare 
 - `progression.md`
 - `review.md`
 - `workflow.md`
-- all `tickets/stage-3/S3-*.md`
-- Stage 3 implementation files and tests
+- `tickets/README.md`
 - `app/backend/README.md`
 - `app/backend/api/README.md`
 - `app/backend/forensic_core/README.md`
 - `app/backend/case_store/README.md`
 - `app/fixtures/README.md`
 - `app/docs/environment-readiness.md`
+- `log/documentation.md`
+- `app/backend/forensic_core/export_manifest.py`
+- `app/backend/api/file_export.py`
+- `app/tests/test_export_manifest.py`
+- `app/tests/test_file_export.py`
+
+## Current Stage 3 State
+
+S3-T01 through S3-T05 are reviewed, committed, and pushed.
+
+Implemented in Stage 3:
+
+- S3-T01: export request/result/manifest/content-source/provenance/hash contract structures.
+- S3-T02: fixture/stub export service that writes explicit provider-backed bytes to examiner-selected output directories and writes sibling manifests.
+- S3-T03: SHA-256 and byte-count verification from the written export artifact.
+- S3-T04: optional explicit case-store audit integration through `ExportAuditContext`.
+- S3-T05: deleted-file recovery boundary documentation, with recovery unsupported/deferred until a real adapter exposes recoverable deleted bytes.
+
+Current limitations to keep visible:
+
+- No real EWF byte parsing.
+- No real image verification.
+- No real partition parsing.
+- No real filesystem parsing.
+- No real filesystem byte extraction.
+- No deleted-file recovery or carving.
+- No UI or executable packaging.
+- No search, timeline, reporting, bookmarks, notes, or Stage 4 hash/signature analysis.
+- No automatic case/evidence creation from export.
+- No export CLI command unless one already exists in the codebase.
 
 ## Target Files/Folders
 
@@ -44,6 +82,7 @@ Likely files to modify:
 - `review.md`
 - `tickets/README.md`
 - `tickets/stage-3/README.md`
+- `tickets/stage-3/S3-T06-docs-review-handoff.md`
 - `app/backend/README.md`
 - `app/backend/api/README.md`
 - `app/backend/forensic_core/README.md`
@@ -51,29 +90,58 @@ Likely files to modify:
 - `app/fixtures/README.md`
 - `app/docs/environment-readiness.md`
 - `log/documentation.md`
-- possibly `prompts/stage-4-onboarding/` if the review agent requests a handoff package
+
+Do not modify code or tests unless you find a documentation-breaking inconsistency that cannot be explained without a small code/test correction. If that happens, pause and explain before changing code.
 
 ## Required Work
 
-- Reconcile all docs so they agree on what Stage 3 implemented.
-- Document export callables and any manual backend workflow.
+- Reconcile all docs so they agree on the final Stage 3 behavior and limitations.
+- Update stale top-level wording, especially any claim that Stage 2 is the current project state or that Stage 3 is merely ready to begin.
+- Document the Stage 3 backend export workflow:
+  - source file metadata comes from Stage 2-style entries;
+  - export bytes come from an explicit export content provider;
+  - current default export bytes are synthetic stub/provider bytes for `stub-file-hello`;
+  - output must be examiner/test-selected and separate from evidence/source paths;
+  - output and manifest are written with overwrite refusal;
+  - SHA-256 and byte count are verified from the written artifact;
+  - optional audit events require explicit `ExportAuditContext`.
+- Document callable-level usage where appropriate:
+  - `export_file(...)`;
+  - `export_file_to_json(...)`;
+  - `ExportAuditContext`;
+  - `StubExportContentProvider`;
+  - S3-T01 manifest/result helpers if useful.
 - Clearly separate:
-  - real file writes to examiner-selected output directories;
-  - provider-backed/stub/generated bytes;
-  - unsupported real filesystem extraction;
-  - unsupported deleted recovery;
-  - deferred Stage 4 hash/signature analysis.
-- Record final Stage 3 test results.
+  - real export file writes from real evidence parsing;
+  - provider-backed/stub/generated bytes from filesystem extraction;
+  - export-output SHA-256 verification from broader Stage 4 hash/signature analysis;
+  - active allocated export from deleted-file recovery;
+  - deleted-file recovery from carving/unallocated-space recovery.
 - Keep manual-test fields `Untested` unless the user explicitly reports a manual workflow run.
-- Update ticket statuses after review direction.
-- Add Stage 4 handoff notes around hash/signature analysis.
+- Update Stage 3 ticket/status docs so S3-T06 is the active review item after implementation.
+- Add a final Stage 3 handoff note for Stage 4:
+  - Stage 4 should build hash/signature contracts on explicit content providers;
+  - do not hash preview text/hex as source content;
+  - do not claim whole-image verification without adapter support;
+  - keep known-file matching and persistence optional until result contracts are reviewed.
+- Search for stale phrases such as:
+  - `Stage 2 is complete at the documentation/review-handoff level`;
+  - `Stage 3 export/recovery foundation is ready to begin`;
+  - `S3-T01 ready`;
+  - `S3-T06 Draft`;
+  - `S3-T05 implemented for review`.
+- Run the full dependency-free test suite and record the result.
 
 ## Acceptance Criteria
 
-- Stage 3 docs do not claim real EWF parsing, real partition parsing, real filesystem parsing, real deleted recovery, UI, search, or reporting.
-- Docs identify how export bytes are sourced and how manifests record provenance.
-- Docs state test command and final result.
-- Stage 4 next steps are clear but not implemented.
+- Top-level, backend, ticket, functionality, plan, progression, review, fixture, and environment docs agree on Stage 3 status.
+- Docs do not claim real EWF parsing, real partition parsing, real filesystem parsing, real filesystem extraction, real deleted recovery, carving, UI, search, timeline, reporting, bookmarks, or Stage 4 analysis.
+- Docs identify how export bytes are sourced and how manifests preserve provenance.
+- Docs state that current export hashing is SHA-256 verification of exported artifacts, not the broader hash-analysis stage.
+- Docs state that audit integration is explicit opt-in through `ExportAuditContext`.
+- Docs state that deleted-file recovery remains unsupported/deferred with current adapters.
+- Final test command and result are recorded in `progression.md` and `review.md`.
+- S3-T06 is marked `Review` when implementation is complete, not `Done`.
 
 ## Test Expectations
 
@@ -83,7 +151,7 @@ Run:
 python -m pytest
 ```
 
-Record the exact result in `progression.md` and `review.md`.
+Record the exact result in `progression.md`, `review.md`, and any relevant S3-T06 handoff note.
 
 ## Documentation Updates
 
@@ -91,14 +159,34 @@ This ticket is documentation/review handoff. Update every stale Stage 3 referenc
 
 ## Review Checklist
 
-- S3-T06 did not add Stage 4 code.
+- S3-T06 did not add or alter backend behavior.
+- S3-T06 did not start Stage 4 code.
 - Stage 3 status is accurate across top-level, backend, ticket, and functionality docs.
 - Limitations are visible and not softened.
 - Manual-test status remains accurate.
-- No new native dependencies or evidence fixtures were introduced.
+- No new native dependencies, evidence fixtures, output artifacts, UI work, search/reporting work, parser work, deleted recovery, or carving were introduced.
+
+## Implementation Handoff - 2026-07-14
+
+- Reconciled top-level, backend, ticket, functionality, fixture, environment, progression, review, and documentation-log files for final Stage 3 status.
+- Documented the current export workflow: Stage 2-style metadata input, explicit export content provider bytes, synthetic default `StubExportContentProvider` for `stub-file-hello`, examiner/test-selected output directories, overwrite refusal, sibling manifests, SHA-256/byte-count verification from the written artifact, and optional explicit `ExportAuditContext`.
+- Re-stated limitations: no real EWF/partition/filesystem parsing, no real filesystem extraction, no deleted recovery or carving, no UI/search/timeline/reporting/bookmark/note/packaging work, and no Stage 4 hash/signature implementation.
+- Added Stage 4 handoff guidance: build hash/signature contracts on explicit content providers, do not hash preview text/hex as source content, do not claim whole-image verification without adapter support, and keep known-file matching plus persistence optional until result contracts are reviewed.
+- No backend behavior or tests were changed.
+- Final test run: `python -m pytest` reported 99 passed in 3.80s.
+
+## Review Result - 2026-07-14
+
+- Approved for commit.
+- Confirmed S3-T06 stayed documentation/review-handoff only.
+- Confirmed final Stage 3 docs preserve the export-provider boundary, manifest/provenance/hash/audit limitations, deleted-recovery deferral, and Stage 4 handoff guidance.
+- Confirmed no backend behavior, export API, Stage 4 code, parser work, recovery/carving behavior, UI/search/reporting work, native dependency, or real evidence fixture was introduced.
+- Verification: `python -m pytest` reported 99 passed in 4.42s during final review.
 
 ## Handoff Prompt
 
 ```text
-Implement S3-T06 only after S3-T01 through S3-T05 are reviewed and accepted. This is documentation and review handoff only. Reconcile Stage 3 docs, record tests, document limitations, and prepare Stage 4 notes. Do not start Stage 4 code. Stop after S3-T06 and hand off for final Stage 3 review.
+Implement ticket S3-T06: Stage 3 Docs And Review Handoff.
+
+This is documentation/review-handoff only. Reconcile Stage 3 docs, record final tests, document current limitations, and prepare Stage 4 notes. Do not change backend behavior and do not start Stage 4 code. Stop after S3-T06 and hand off for final Stage 3 review.
 ```
