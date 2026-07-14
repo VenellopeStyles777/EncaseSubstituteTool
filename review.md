@@ -12,6 +12,71 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-14 - S4-T05 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- `app/backend/forensic_core/content_analysis.py` adds fixture-sized known-file matching through `KnownFileRecord`, `KnownFileMatchResult`, `match_known_file_hashes()`, `match_known_files()`, and `known_file_match_result_to_json()`.
+- The matcher consumes an existing S4-T02 `HashAnalysisResult` plus caller-supplied in-memory records only; it does not accept providers, read bytes, read known-file lists from disk/network, or calculate hashes internally.
+- SHA-256, MD5, and SHA-1 records are normalized with the same algorithm spelling rules as S4-T02, and digest comparison is case-insensitive.
+- Matching prefers SHA-256 for the top-level match fields while preserving all records that match available computed digests.
+- Results preserve source provenance, content-source identity, source kind/status, bytes analyzed, hash status, digest statuses, hash timestamps, source hash warnings, matched record metadata, and synthetic/generated context warnings.
+- Non-ok hashes, missing computed digests, invalid records, duplicate records, no-match states, and conflicting categories for the same digest are structured and tested.
+- `known_file_no_match` is treated as a successful evaluation status while the outcome is carried by `matched=False`; review accepted this convention because callers should use the explicit `matched` field.
+- S4-T05 stayed in scope and did not add case-store persistence, schema migrations, external datasets, known-file file readers, network access, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, S4-T02/S4-T03/S4-T04 behavior changes, export-output behavior changes, or Stage 5 work.
+
+Tests:
+
+- `python -m pytest app/tests/test_content_analysis_known_files.py`: 12 passed in 0.19s.
+- `python -m pytest`: 152 passed in 3.47s.
+
+Residual notes:
+
+- S4-T06 should decide persistence as a plan or carefully scoped implementation only after preserving these standalone result shapes and synthetic/generated source labels.
+
+## 2026-07-14 - S4-T05 Known-File Matching Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `app/backend/forensic_core/content_analysis.py` adds `KnownFileRecord`, `KnownFileMatchResult`, `match_known_file_hashes()`, `match_known_files()`, and `known_file_match_result_to_json()`.
+- The matcher consumes an existing S4-T02 `HashAnalysisResult` plus caller-supplied in-memory records only. It does not accept providers, read bytes, read known-file lists from disk/network, or calculate hashes internally.
+- SHA-256, MD5, and SHA-1 records are normalized with the same algorithm spelling rules as S4-T02, and digest comparison is case-insensitive.
+- Matching prefers SHA-256 for the top-level match fields while preserving all records that match available computed digests.
+- Results preserve source provenance, content-source identity, source kind/status, bytes analyzed, hash status, digest statuses, hash timestamps, source hash warnings, matched record metadata, and synthetic/generated context warnings.
+- Non-ok hashes, missing computed digests, invalid records, duplicate records, no-match states, and conflicting categories for the same digest are structured and tested.
+
+Scope intentionally not implemented:
+
+- No S4-T02 hash calculation changes, S4-T03 signature detection changes, S4-T04 extension mismatch changes, analysis provider argument, byte reads, known-file file readers, external datasets, NSRL import, case-store persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, export-output behavior changes, or Stage 5 work.
+
+Tests:
+
+- Focused S4-T05 run: `python -m pytest app/tests/test_content_analysis_known_files.py` reported 12 passed in 0.37s.
+- Full run: `python -m pytest` reported 152 passed in 5.97s.
+
+## 2026-07-14 - S4-T05 Handoff Preparation
+
+Result: ready for implementation agent.
+
+Guardrails:
+
+- S4-T05 consumes reviewed S4-T02 `HashAnalysisResult` objects plus tiny caller-supplied in-memory known-file records only.
+- The matcher must not accept an analysis provider, read bytes, read known-file data from disk/network, or call `hash_file_content()` / `calculate_hashes()` internally.
+- Preserve hash result source provenance, content-source identity, source kind/status, bytes analyzed, hash status, digest statuses, timestamps, and warnings.
+- Keep categories small and explicit: `known_good`, `known_bad`, and `known_unknown`.
+- Invalid records and conflicting categories should be structured and tested, not silently ignored or resolved.
+- Known-file matches against synthetic/generated provider bytes must keep those labels visible and must not be worded as real evidence-backed database matches.
+- Do not add case-store persistence, schema migrations, NSRL imports, large/external datasets, file readers, network access, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, S4-T02/S4-T03/S4-T04 behavior changes, or Stage 5 work.
+
+Expected verification:
+
+- `python -m pytest`.
+
 ## 2026-07-14 - S4-T04 Review
 
 Result: approved for commit.

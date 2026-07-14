@@ -126,5 +126,8 @@ Implemented so far:
 - `evaluate_extension_mismatch(...)` and `check_extension_mismatch(...)` compare reviewed `SignatureAnalysisResult` fields with file name/path metadata only.
 - Extension mismatch results preserve source provenance, content-source identity, signature status and detected fields, observed and expected extensions, explicit `mismatch` values, timestamps, and warnings.
 - Unknown, insufficient, failed, unsupported, missing-name, no-extension, and non-file states return structured not-evaluated results with `mismatch=None`.
+- `match_known_file_hashes(...)` and `match_known_files(...)` compare reviewed `HashAnalysisResult` digest values with tiny caller-supplied in-memory known-file records only.
+- Known-file match results preserve hash provenance, content-source identity, hash status, digest statuses, bytes analyzed, timestamps, matched record metadata, and synthetic/generated context warnings.
+- Non-ok hashes, missing computed digests, invalid records, duplicate records, no-match states, and conflicting categories for the same matched digest return structured results.
 
-Stage 4 must continue to analyze only explicit content providers for hashing/signature detection, avoid hashing or signature-checking preview text/hex or export artifacts as source analysis content, avoid whole-image verification claims without adapter support, and keep known-file matching, persistence, search/timeline, and UI work for later reviewed tickets.
+Stage 4 must continue to analyze only explicit content providers for hashing/signature detection, avoid hashing or signature-checking preview text/hex or export artifacts as source analysis content, avoid whole-image verification claims without adapter support, and keep known-file matching fixture-sized/in-memory until a later reviewed ticket adds persistence or larger datasets. Persistence, search/timeline, and UI work remain later reviewed tickets.

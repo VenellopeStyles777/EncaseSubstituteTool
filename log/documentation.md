@@ -2,6 +2,24 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-14 - S4-T05 Implementation Documentation
+
+- Documented S4-T05 fixture-sized known-file matching as implemented for review handoff.
+- Updated Stage 4 planning/status docs, backend/core/API notes, fixture policy, project README, progression, review handoff, and feature inventory.
+- Re-stated that S4-T05 consumes reviewed `HashAnalysisResult` objects and caller-supplied in-memory records only.
+- Re-stated that the matcher does not accept providers, read bytes, read known-file lists from disk/network, calculate hashes internally, import external datasets, persist results, or start Stage 5 work.
+
+## 2026-07-14 - S4-T05 Review
+
+- Marked S4-T05 reviewed and done.
+- Recorded no blocking findings in `review.md`.
+- Confirmed known-file matching consumes existing S4-T02 hash results and caller-supplied in-memory records only.
+- Confirmed the matcher does not accept providers, read bytes, read known-file lists from disk/network, or calculate hashes internally.
+- Confirmed invalid records, duplicate records, no-match states, missing computed digests, non-ok hashes, and conflicting categories are structured and tested.
+- Confirmed source provenance, content-source identity, hash status, digest statuses, hash timestamps, source warnings, matched record metadata, and synthetic/generated context warnings are preserved.
+- Confirmed persistence, schema migrations, external datasets, known-file file readers, network access, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, S4-T02/S4-T03/S4-T04 behavior changes, export-output changes, and Stage 5 work remain deferred.
+- Reviewer verification: focused S4-T05 run `python -m pytest app/tests/test_content_analysis_known_files.py` reported 12 passed in 0.19s; full run `python -m pytest` reported 152 passed in 3.47s.
+
 ## 2026-07-13 - Stage 3 Onboarding And Ticket Readiness
 
 - Added `prompts/vscode-agent/2026-07-13-stage-3-familiarization.md` for the Stage 3 VS Code Codex implementation agent.
@@ -186,3 +204,13 @@ Purpose: record documentation changes, important source references, and decision
 - Confirmed unknown, insufficient, failed, unsupported, missing, no-extension, and non-file states are not reported as mismatches.
 - Confirmed known-file matching, persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, S4-T02/S4-T03 behavior changes, export-output changes, and Stage 5 work remain deferred.
 - Reviewer verification: `python -m pytest` reported 140 passed in 3.14s.
+
+## 2026-07-14 - S4-T05 Handoff Preparation
+
+- Expanded S4-T05 into an implementation-ready fixture-sized known-file matching ticket.
+- Marked S4-T05 ready in Stage 4 planning docs.
+- Added the key guardrail that S4-T05 must consume reviewed `HashAnalysisResult` objects and caller-supplied in-memory known-file records only.
+- Re-stated that S4-T05 must not accept providers, read bytes, read known-file data from disk/network, or call hash calculation internally.
+- Re-stated that invalid/conflicting known-file records must be structured and that synthetic/generated source labels must remain visible in match results.
+- Re-stated that persistence, schema migrations, NSRL imports, large/external datasets, file readers, network access, search/timeline, UI/reporting, parser work, deleted recovery, carving, native dependencies, S4-T02/S4-T03/S4-T04 behavior changes, and Stage 5 work remain out of scope.
+- Added `prompts/vscode-agent/2026-07-14-s4-t05-known-file-matching.md` as the paste-ready coding-agent prompt.

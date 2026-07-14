@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import hashlib
 import json
+import math
 from typing import Iterable, Mapping, Protocol
 
 
@@ -13,12 +14,20 @@ CONTENT_ANALYSIS_SCHEMA_VERSION = "stage4.content_analysis.v1"
 DEFAULT_HASH_ALGORITHMS = ("sha256",)
 DEFAULT_SIGNATURE_MAX_BYTES = 4096
 SUPPORTED_HASH_ALGORITHMS = ("sha256", "md5", "sha1")
-_OK_STATUS_CODES = ("ok", "extension_match", "extension_mismatch")
+SUPPORTED_KNOWN_FILE_CATEGORIES = ("known_good", "known_bad", "known_unknown")
+_OK_STATUS_CODES = (
+    "ok",
+    "known_file_match",
+    "known_file_no_match",
+    "extension_match",
+    "extension_mismatch",
+)
 _HASH_FACTORIES = {
     "sha256": hashlib.sha256,
     "md5": hashlib.md5,
     "sha1": hashlib.sha1,
 }
+_KNOWN_FILE_ALGORITHM_PREFERENCE = SUPPORTED_HASH_ALGORITHMS
 
 
 @dataclass(frozen=True)
@@ -386,6 +395,87 @@ class HashAnalysisResult:
 
 
 @dataclass(frozen=True)
+class KnownFileRecord:
+    """Caller-supplied fixture-sized known-file hash record."""
+
+    algorithm: str
+    digest: str
+    category: str
+    dataset_name: str | None = None
+    dataset_version: str | None = None
+    record_id: str | None = None
+    file_name: str | None = None
+    metadata: Mapping[str, object] = field(default_factory=dict)
+    original_algorithm: str | None = None
+    original_digest: str | None = None
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "algorithm": self.algorithm,
+            "digest": self.digest,
+            "category": self.category,
+            "dataset_name": self.dataset_name,
+            "dataset_version": self.dataset_version,
+            "record_id": self.record_id,
+            "file_name": self.file_name,
+            "metadata": _json_safe_mapping(self.metadata),
+            "original_algorithm": self.original_algorithm,
+            "original_digest": self.original_digest,
+        }
+
+
+@dataclass(frozen=True)
+class KnownFileMatchResult:
+    """Result for matching reviewed hashes against caller records."""
+
+    source: AnalysisSourceProvenance
+    content_source: AnalysisContentSourceIdentity
+    hash_status: AnalysisStatus
+    requested_algorithms: tuple[str, ...]
+    digests: tuple[HashDigestResult, ...]
+    status: AnalysisStatus = field(
+        default_factory=lambda: AnalysisStatus(
+            code="known_file_not_checked",
+            message="Known-file matching has not been run.",
+        )
+    )
+    matched: bool | None = None
+    match_category: str | None = None
+    matched_algorithm: str | None = None
+    matched_digest: str | None = None
+    matched_records: tuple[KnownFileRecord, ...] = field(default_factory=tuple)
+    bytes_analyzed: int | None = None
+    hash_created_at: str | None = None
+    hash_completed_at: str | None = None
+    created_at: str = field(default_factory=lambda: utc_now())
+    completed_at: str | None = None
+    warnings: tuple[AnalysisWarning, ...] = field(default_factory=tuple)
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "schema_version": CONTENT_ANALYSIS_SCHEMA_VERSION,
+            "analysis_type": "known_file_match",
+            "status": self.status.to_dict(),
+            "source": self.source.to_dict(),
+            "content_source": self.content_source.to_dict(),
+            "hash_status": self.hash_status.to_dict(),
+            "requested_algorithms": list(self.requested_algorithms),
+            "bytes_analyzed": self.bytes_analyzed,
+            "digests": [digest.to_dict() for digest in self.digests],
+            "matched": self.matched,
+            "match_category": self.match_category,
+            "matched_algorithm": self.matched_algorithm,
+            "matched_digest": self.matched_digest,
+            "matched_records": [record.to_dict() for record in self.matched_records],
+            "hash_created_at": self.hash_created_at,
+            "hash_completed_at": self.hash_completed_at,
+            "created_at": self.created_at,
+            "completed_at": self.completed_at,
+            "warnings": [warning.to_dict() for warning in self.warnings],
+        }
+
+
+@dataclass(frozen=True)
 class SignatureAnalysisRequest:
     """JSON-friendly request contract for future file signature analysis."""
 
@@ -648,6 +738,164 @@ def hash_analysis_result_to_json(
     """Serialize a hash analysis result contract as stable JSON."""
 
     return json.dumps(result.to_dict(), indent=indent, sort_keys=True)
+
+
+def known_file_match_result_to_json(
+    result: KnownFileMatchResult,
+    *,
+    indent: int | None = 2,
+) -> str:
+    """Serialize a known-file match result contract as stable JSON."""
+
+    return json.dumps(result.to_dict(), indent=indent, sort_keys=True)
+
+
+def match_known_file_hashes(
+    hash_result: HashAnalysisResult,
+    known_files: Iterable[KnownFileRecord | Mapping[str, object]],
+) -> KnownFileMatchResult:
+    """Match reviewed digest results against caller-supplied records."""
+
+    if hash_result.status.code != "ok":
+        status = AnalysisStatus(
+            code="hash_not_available",
+            message=(
+                "Known-file matching was not evaluated because hash analysis "
+                "did not complete successfully."
+            ),
+        )
+        return _known_file_match_result(
+            hash_result=hash_result,
+            status=status,
+            warnings=hash_result.warnings
+            + (
+                AnalysisWarning(
+                    code="hash_not_available",
+                    message=f"Hash result status was {hash_result.status.code}.",
+                    path=hash_result.source.file_path,
+                    source="content_analysis",
+                ),
+            ),
+        )
+
+    computed_digests = _computed_hash_digests(hash_result)
+    if not computed_digests:
+        status = AnalysisStatus(
+            code="hash_digest_unavailable",
+            message="Known-file matching requires at least one computed digest.",
+        )
+        return _known_file_match_result(
+            hash_result=hash_result,
+            status=status,
+            warnings=hash_result.warnings
+            + (
+                AnalysisWarning(
+                    code="hash_digest_unavailable",
+                    message="Hash result did not include an ok digest value.",
+                    path=hash_result.source.file_path,
+                    source="content_analysis",
+                ),
+            ),
+        )
+
+    records, record_warnings = _known_file_records_from_input(
+        known_files,
+        hash_result.source,
+    )
+    if record_warnings:
+        status = AnalysisStatus(
+            code="invalid_known_file_record",
+            message="One or more known-file records are invalid.",
+        )
+        return _known_file_match_result(
+            hash_result=hash_result,
+            status=status,
+            warnings=hash_result.warnings + record_warnings,
+        )
+
+    matched_records_by_key: dict[tuple[str, str], list[KnownFileRecord]] = {}
+    matched_records: list[KnownFileRecord] = []
+    for record in records:
+        digest = computed_digests.get(record.algorithm)
+        if digest != record.digest:
+            continue
+        matched_records.append(record)
+        matched_records_by_key.setdefault((record.algorithm, digest), []).append(record)
+
+    if not matched_records:
+        status = AnalysisStatus(
+            code="known_file_no_match",
+            message="No caller-supplied known-file records matched computed digests.",
+        )
+        return _known_file_match_result(
+            hash_result=hash_result,
+            status=status,
+            matched=False,
+            warnings=hash_result.warnings,
+        )
+
+    primary_key = _primary_known_file_match_key(
+        matched_records_by_key,
+        computed_digests,
+    )
+    conflict_key = _conflicting_known_file_match_key(
+        matched_records_by_key,
+        computed_digests,
+    )
+    if conflict_key is not None:
+        status = AnalysisStatus(
+            code="conflicting_known_file_records",
+            message=(
+                "Matched known-file records for the same digest use conflicting "
+                "categories."
+            ),
+        )
+        return _known_file_match_result(
+            hash_result=hash_result,
+            status=status,
+            matched=None,
+            matched_algorithm=conflict_key[0],
+            matched_digest=conflict_key[1],
+            matched_records=tuple(matched_records),
+            warnings=hash_result.warnings
+            + _hash_match_context_warnings(hash_result)
+            + (
+                AnalysisWarning(
+                    code="conflicting_known_file_records",
+                    message=(
+                        "Caller-supplied records for the same computed digest "
+                        "contained more than one category."
+                    ),
+                    path=hash_result.source.file_path,
+                    source="known_file_records",
+                ),
+            ),
+        )
+
+    primary_records = tuple(matched_records_by_key[primary_key])
+    status = AnalysisStatus(
+        code="known_file_match",
+        message="Computed digest matched caller-supplied known-file records.",
+    )
+    return _known_file_match_result(
+        hash_result=hash_result,
+        status=status,
+        matched=True,
+        match_category=primary_records[0].category,
+        matched_algorithm=primary_key[0],
+        matched_digest=primary_key[1],
+        matched_records=tuple(matched_records),
+        warnings=hash_result.warnings + _hash_match_context_warnings(hash_result),
+    )
+
+
+def match_known_files(
+    hash_result: HashAnalysisResult,
+    known_files: Iterable[KnownFileRecord | Mapping[str, object]],
+) -> KnownFileMatchResult:
+    """Alias for known-file hash matching."""
+
+    return match_known_file_hashes(hash_result, known_files)
 
 
 def hash_file_content(
@@ -1310,6 +1558,347 @@ def check_extension_mismatch(
     return evaluate_extension_mismatch(signature_result)
 
 
+def _known_file_match_result(
+    *,
+    hash_result: HashAnalysisResult,
+    status: AnalysisStatus,
+    matched: bool | None = None,
+    match_category: str | None = None,
+    matched_algorithm: str | None = None,
+    matched_digest: str | None = None,
+    matched_records: tuple[KnownFileRecord, ...] = (),
+    warnings: tuple[AnalysisWarning, ...] = (),
+) -> KnownFileMatchResult:
+    timestamp = utc_now()
+    return KnownFileMatchResult(
+        source=hash_result.source,
+        content_source=hash_result.content_source,
+        hash_status=hash_result.status,
+        requested_algorithms=hash_result.requested_algorithms,
+        digests=hash_result.digests,
+        status=status,
+        matched=matched,
+        match_category=match_category,
+        matched_algorithm=matched_algorithm,
+        matched_digest=matched_digest,
+        matched_records=matched_records,
+        bytes_analyzed=hash_result.bytes_analyzed,
+        hash_created_at=hash_result.created_at,
+        hash_completed_at=hash_result.completed_at,
+        created_at=timestamp,
+        completed_at=timestamp,
+        warnings=warnings,
+    )
+
+
+def _computed_hash_digests(hash_result: HashAnalysisResult) -> dict[str, str]:
+    computed: dict[str, str] = {}
+    for digest in hash_result.digests:
+        algorithm = _normalize_hash_algorithm_name(digest.algorithm)
+        digest_value = _normalize_digest_value(digest.digest)
+        if (
+            algorithm is None
+            or digest_value is None
+            or digest.status.code != "ok"
+        ):
+            continue
+        computed.setdefault(algorithm, digest_value)
+    return computed
+
+
+def _known_file_records_from_input(
+    known_files: Iterable[KnownFileRecord | Mapping[str, object]],
+    source: AnalysisSourceProvenance,
+) -> tuple[tuple[KnownFileRecord, ...], tuple[AnalysisWarning, ...]]:
+    if isinstance(known_files, (KnownFileRecord, Mapping)):
+        raw_records = (known_files,)
+    else:
+        try:
+            raw_records = tuple(known_files)
+        except TypeError:
+            warning = _invalid_known_file_record_warning(
+                source,
+                0,
+                "Known-file records must be supplied as an iterable.",
+            )
+            return (), (warning,)
+
+    records: list[KnownFileRecord] = []
+    warnings: list[AnalysisWarning] = []
+    for index, raw_record in enumerate(raw_records):
+        record, warning = _known_file_record_from_input(
+            raw_record,
+            source,
+            index,
+        )
+        if warning is not None:
+            warnings.append(warning)
+            continue
+        if record is not None:
+            records.append(record)
+
+    return tuple(records), tuple(warnings)
+
+
+def _known_file_record_from_input(
+    raw_record: object,
+    source: AnalysisSourceProvenance,
+    index: int,
+) -> tuple[KnownFileRecord | None, AnalysisWarning | None]:
+    if isinstance(raw_record, KnownFileRecord):
+        raw_algorithm = raw_record.algorithm
+        raw_digest = raw_record.digest
+        raw_category = raw_record.category
+        metadata = raw_record.metadata
+        dataset_name = raw_record.dataset_name
+        dataset_version = raw_record.dataset_version
+        record_id = raw_record.record_id
+        file_name = raw_record.file_name
+        original_algorithm = raw_record.original_algorithm or raw_record.algorithm
+        original_digest = raw_record.original_digest or raw_record.digest
+    elif isinstance(raw_record, Mapping):
+        raw_algorithm = raw_record.get("algorithm")
+        raw_digest = raw_record.get("digest")
+        raw_category = raw_record.get("category")
+        metadata = _known_file_record_metadata(raw_record)
+        dataset_name = _optional_str(raw_record.get("dataset_name"))
+        dataset_version = _optional_str(raw_record.get("dataset_version"))
+        record_id = _optional_str(raw_record.get("record_id"))
+        file_name = _optional_str(raw_record.get("file_name"))
+        original_algorithm = _optional_str(raw_algorithm)
+        original_digest = _optional_str(raw_digest)
+    else:
+        return (
+            None,
+            _invalid_known_file_record_warning(
+                source,
+                index,
+                "Record must be a KnownFileRecord or mapping.",
+            ),
+        )
+
+    algorithm, algorithm_warning = _normalize_known_file_record_algorithm(
+        raw_algorithm,
+        source,
+        index,
+    )
+    if algorithm_warning is not None:
+        return None, algorithm_warning
+
+    digest, digest_warning = _normalize_known_file_record_digest(
+        raw_digest,
+        source,
+        index,
+    )
+    if digest_warning is not None:
+        return None, digest_warning
+
+    category, category_warning = _normalize_known_file_record_category(
+        raw_category,
+        source,
+        index,
+    )
+    if category_warning is not None:
+        return None, category_warning
+
+    return (
+        KnownFileRecord(
+            algorithm=algorithm or "",
+            digest=digest or "",
+            category=category or "",
+            dataset_name=dataset_name,
+            dataset_version=dataset_version,
+            record_id=record_id,
+            file_name=file_name,
+            metadata=_json_safe_mapping(metadata),
+            original_algorithm=original_algorithm,
+            original_digest=original_digest,
+        ),
+        None,
+    )
+
+
+def _known_file_record_metadata(record: Mapping[str, object]) -> dict[str, object]:
+    recognized_fields = {
+        "algorithm",
+        "digest",
+        "category",
+        "dataset_name",
+        "dataset_version",
+        "record_id",
+        "file_name",
+        "metadata",
+    }
+    metadata: dict[str, object] = {
+        str(key): value
+        for key, value in record.items()
+        if str(key) not in recognized_fields
+    }
+    record_metadata = record.get("metadata")
+    if isinstance(record_metadata, Mapping):
+        metadata.update({str(key): value for key, value in record_metadata.items()})
+    elif record_metadata is not None:
+        metadata["metadata"] = record_metadata
+    return metadata
+
+
+def _normalize_known_file_record_algorithm(
+    value: object,
+    source: AnalysisSourceProvenance,
+    index: int,
+) -> tuple[str | None, AnalysisWarning | None]:
+    if not isinstance(value, str) or not value.strip():
+        return (
+            None,
+            _invalid_known_file_record_warning(
+                source,
+                index,
+                "Record is missing a hash algorithm.",
+            ),
+        )
+    algorithm = _normalize_hash_algorithm_name(value)
+    if algorithm not in SUPPORTED_HASH_ALGORITHMS:
+        return (
+            None,
+            _invalid_known_file_record_warning(
+                source,
+                index,
+                "Record uses an unsupported hash algorithm.",
+            ),
+        )
+    return algorithm, None
+
+
+def _normalize_known_file_record_digest(
+    value: object,
+    source: AnalysisSourceProvenance,
+    index: int,
+) -> tuple[str | None, AnalysisWarning | None]:
+    digest = _normalize_digest_value(value)
+    if digest is None:
+        return (
+            None,
+            _invalid_known_file_record_warning(
+                source,
+                index,
+                "Record is missing a digest value.",
+            ),
+        )
+    return digest, None
+
+
+def _normalize_known_file_record_category(
+    value: object,
+    source: AnalysisSourceProvenance,
+    index: int,
+) -> tuple[str | None, AnalysisWarning | None]:
+    if not isinstance(value, str) or not value.strip():
+        return (
+            None,
+            _invalid_known_file_record_warning(
+                source,
+                index,
+                "Record is missing a known-file category.",
+            ),
+        )
+    category = value.strip().lower()
+    if category not in SUPPORTED_KNOWN_FILE_CATEGORIES:
+        return (
+            None,
+            _invalid_known_file_record_warning(
+                source,
+                index,
+                "Record category must be known_good, known_bad, or known_unknown.",
+            ),
+        )
+    return category, None
+
+
+def _normalize_hash_algorithm_name(value: object) -> str | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    return value.strip().lower().replace("-", "").replace("_", "")
+
+
+def _normalize_digest_value(value: object) -> str | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    return value.strip().lower()
+
+
+def _invalid_known_file_record_warning(
+    source: AnalysisSourceProvenance,
+    index: int,
+    message: str,
+) -> AnalysisWarning:
+    return AnalysisWarning(
+        code="invalid_known_file_record",
+        message=f"Known-file record {index}: {message}",
+        path=source.file_path,
+        source="known_file_records",
+    )
+
+
+def _primary_known_file_match_key(
+    matched_records_by_key: Mapping[tuple[str, str], list[KnownFileRecord]],
+    computed_digests: Mapping[str, str],
+) -> tuple[str, str]:
+    for algorithm in _KNOWN_FILE_ALGORITHM_PREFERENCE:
+        key = (algorithm, computed_digests.get(algorithm, ""))
+        if key in matched_records_by_key:
+            return key
+    return next(iter(matched_records_by_key))
+
+
+def _conflicting_known_file_match_key(
+    matched_records_by_key: Mapping[tuple[str, str], list[KnownFileRecord]],
+    computed_digests: Mapping[str, str],
+) -> tuple[str, str] | None:
+    for algorithm in _KNOWN_FILE_ALGORITHM_PREFERENCE:
+        key = (algorithm, computed_digests.get(algorithm, ""))
+        records = matched_records_by_key.get(key, ())
+        categories = {record.category for record in records}
+        if len(categories) > 1:
+            return key
+
+    for key, records in matched_records_by_key.items():
+        categories = {record.category for record in records}
+        if len(categories) > 1:
+            return key
+    return None
+
+
+def _hash_match_context_warnings(
+    hash_result: HashAnalysisResult,
+) -> tuple[AnalysisWarning, ...]:
+    warnings: list[AnalysisWarning] = []
+    if hash_result.content_source.synthetic:
+        warnings.append(
+            AnalysisWarning(
+                code="synthetic_hash_match_context",
+                message=(
+                    "Known-file match used a digest computed from synthetic "
+                    "analysis bytes, not parsed evidence bytes."
+                ),
+                path=hash_result.source.file_path,
+                source="content_analysis",
+            )
+        )
+    if hash_result.content_source.generated:
+        warnings.append(
+            AnalysisWarning(
+                code="generated_fixture_hash_match_context",
+                message=(
+                    "Known-file match used a digest computed from generated "
+                    "fixture bytes, not parsed evidence bytes."
+                ),
+                path=hash_result.source.file_path,
+                source="content_analysis",
+            )
+        )
+    return tuple(warnings)
+
+
 def _extension_mismatch_result(
     *,
     signature_result: SignatureAnalysisResult,
@@ -1817,3 +2406,29 @@ def _string_mapping(value: object) -> dict[str, str | None]:
     for key, item in value.items():
         result[str(key)] = None if item is None else str(item)
     return result
+
+
+def _json_safe_mapping(value: object) -> dict[str, object]:
+    if not isinstance(value, Mapping):
+        return {}
+
+    result: dict[str, object] = {}
+    for key, item in value.items():
+        result[str(key)] = _json_safe_value(item)
+    return result
+
+
+def _json_safe_value(value: object) -> object:
+    if value is None or isinstance(value, (str, int, bool)):
+        return value
+    if isinstance(value, float):
+        return value if math.isfinite(value) else str(value)
+    if isinstance(value, bytes):
+        return {"type": "bytes", "hex": value.hex()}
+    if isinstance(value, Mapping):
+        return _json_safe_mapping(value)
+    if isinstance(value, (list, tuple)):
+        return [_json_safe_value(item) for item in value]
+    if isinstance(value, set):
+        return [_json_safe_value(item) for item in sorted(value, key=str)]
+    return str(value)

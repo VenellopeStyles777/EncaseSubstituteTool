@@ -13,6 +13,24 @@ YYYY-MM-DD
 ```
 
 2026-07-14
+- Completed: reviewed S4-T05 fixture-sized known-file matching and marked the ticket done.
+- Learned: the implementation preserves reviewed hash provenance, digest statuses, source labels, and caller record metadata without adding byte reads, implicit hashing, disk/network known-file readers, persistence, or external datasets.
+- Blocked by: nothing for S4-T05; case-store persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, and Stage 5 work remain deferred.
+- Next: commit S4-T05 after approval, then prepare S4-T06 when requested. Final review runs: `python -m pytest app/tests/test_content_analysis_known_files.py` reported 12 passed in 0.19s, and `python -m pytest` reported 152 passed in 3.47s.
+
+2026-07-14
+- Completed: implemented S4-T05 fixture-sized known-file matching with JSON-safe known-file record/result contracts, package exports, focused tests, and docs/status updates.
+- Learned: matching can stay entirely on reviewed `HashAnalysisResult` digest values plus caller records, while preserving hash provenance, synthetic/generated labels, and warnings without opening any new byte source.
+- Blocked by: nothing for S4-T05 implementation; case-store persistence, external datasets, file readers, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, and Stage 5 work remain deferred.
+- Next: hand S4-T05 to the review agent, then only prepare S4-T06 after review approval. Final verification: `python -m pytest` reported 152 passed in 5.97s.
+
+2026-07-14
+- Completed: expanded S4-T05 into an implementation-ready fixture-sized known-file matching ticket and prepared the VS Code coding-agent prompt.
+- Learned: S4-T05 should match reviewed `HashAnalysisResult` digests against caller-supplied in-memory records only, preserving synthetic/generated labels and avoiding external datasets, persistence, byte reads, or implicit hash calculation.
+- Blocked by: nothing for S4-T05 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-14-s4-t05-known-file-matching.md`, then review the resulting implementation before preparing S4-T06.
+
+2026-07-14
 - Completed: reviewed S4-T04 extension mismatch rules and marked the ticket done.
 - Learned: the implementation keeps mismatch evaluation on reviewed signature-result metadata only, with explicit `mismatch` values and structured not-evaluated states for unknown, insufficient, unsupported, missing, no-extension, and non-file inputs.
 - Blocked by: nothing for S4-T04; known-file matching, persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, and Stage 5 work remain deferred.
