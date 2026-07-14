@@ -38,6 +38,8 @@ Stage 4 contract start:
 - S4-T01 is contract-only. It does not read provider bytes, compute hashes, detect file signatures, persist analysis rows, or claim real evidence-derived analysis.
 - S4-T02 adds a Stage 4 analysis content provider boundary and provider-backed hash calculation from explicit provider bytes only.
 - S4-T03 adds bounded file signature detection from explicit Stage 4 analysis provider bytes only.
+- S4-T04 adds extension mismatch evaluation over reviewed signature results and file name/path metadata only.
+- S4-T05 adds fixture-sized known-file matching over reviewed hash results and caller-supplied in-memory records only.
 - Per-file analysis content remains separate from Stage 2 preview rendering, Stage 3 export-output verification, and future whole-image verification.
 
 ## S1-T02 Segment Discovery
@@ -268,6 +270,45 @@ Current S4-T03 behavior:
 - preserves source provenance, content-source identity, source kind/status, max bytes requested, bytes inspected, read-only assertion, timestamps, and warnings.
 
 MZ results are labeled as `mz_executable_candidate`, not as validated PE files. S4-T03 does not add extension mismatch checks, known-file matching, MIME database integration, persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, export-output behavior changes, or Stage 5 work.
+
+## S4-T04 Extension Mismatch Rules
+
+`content_analysis.py` now provides extension/signature mismatch evaluation without adding another byte source:
+
+- `SignatureExtensionRule`, `SIGNATURE_EXTENSION_RULES`, and `SUPPORTED_SIGNATURE_EXTENSIONS` define a conservative dependency-free allow-list for detected signature types.
+- `ExtensionMismatchResult` records source provenance, content-source identity, signature status, detected type/signature/MIME fields, observed extension, expected extensions, explicit `mismatch`, timestamps, and warnings.
+- `evaluate_extension_mismatch(...)` and `check_extension_mismatch(...)` consume an existing `SignatureAnalysisResult`; they do not accept providers, read bytes, or call signature detection internally.
+- `extension_mismatch_result_to_json(...)` serializes the result shape as stable JSON.
+
+Current S4-T04 behavior:
+
+- normalizes a dot-prefixed lowercase extension from `source.file_name`, falling back to `source.file_path` when needed;
+- treats `.PDF` and other mixed-case extensions case-insensitively;
+- supports rules for PDF, PNG, JPEG variants, GIF, ZIP containers such as `.docx`, ELF, and conservative MZ executable candidates;
+- returns `extension_match` or `extension_mismatch` only when the source is a file, signature status is `ok`, a detected type is present, the detected type has a rule, and file metadata provides an extension;
+- returns not-evaluated states such as `path_not_file`, `signature_not_available`, `unsupported_signature_type`, `file_name_unavailable`, or `extension_missing` with `mismatch=None` when required inputs are missing.
+
+S4-T04 does not change S4-T02 hashing, S4-T03 signature detection, preview/export behavior, known-file matching, persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, export-output behavior, or Stage 5 work.
+
+## S4-T05 Fixture-Sized Known-File Matching
+
+`content_analysis.py` now provides a small known-file matching foundation without adding another byte source:
+
+- `KnownFileRecord` captures a caller-supplied known-file digest record with `known_good`, `known_bad`, or `known_unknown` category values plus dataset and metadata fields.
+- `KnownFileMatchResult` preserves the reviewed hash result's source provenance, content-source identity, hash status, digest statuses, bytes analyzed, timestamps, and warnings.
+- `match_known_file_hashes(...)` and `match_known_files(...)` consume only an existing `HashAnalysisResult` plus tiny caller-supplied in-memory records.
+- `known_file_match_result_to_json(...)` serializes the result as stable JSON-safe output.
+
+Current S4-T05 behavior:
+
+- matches only digest values already computed on the hash result;
+- supports SHA-256, MD5, and SHA-1 records with S4-T02-style algorithm normalization;
+- compares digests case-insensitively;
+- prefers SHA-256 for top-level match fields when multiple algorithms match, while preserving all matched records;
+- returns structured no-match, unavailable-hash, missing-digest, invalid-record, and conflicting-category statuses;
+- keeps synthetic/generated content-source labels and adds context warnings when a match came from synthetic or generated fixture hash bytes.
+
+S4-T05 does not accept analysis providers, read bytes, calculate hashes, read known-file lists from disk or network, import NSRL-scale datasets, persist results, add search/timeline behavior, change S4-T02/S4-T03/S4-T04 behavior, parse real evidence/filesystems, recover deleted files, carve data, require native dependencies, or start Stage 5 work.
 
 ## S3-T05 Deleted-File Recovery Plan
 

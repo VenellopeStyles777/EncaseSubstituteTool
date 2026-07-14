@@ -62,7 +62,9 @@ Initial feature groups to track:
 | Reality-anchor content path | 4/Future | Planned | Untested | S4-T00 risk audit recorded the gap; S4-T01 must preserve source-kind/provider fields for synthetic, generated fixture, local-stream, and future real-parser bytes. |
 | Hash/signature analysis contracts | 4 | Done | Untested | S4-T01 reviewed; request/result/provenance/content-source placeholder contracts only. No hashes are computed and no signatures are detected. |
 | Provider-backed hash behavior | 4 | Done | Untested | S4-T02 reviewed; hashes are computed only from explicit Stage 4 analysis content providers. SHA-256 is default, while MD5/SHA-1 are optional comparison hashes. |
-| Provider-backed signature behavior | 4 | Done | Untested | S4-T03 reviewed; magic-byte detection uses bounded explicit Stage 4 analysis provider bytes only. Extension mismatch remains S4-T04. |
+| Provider-backed signature behavior | 4 | Done | Untested | S4-T03 reviewed; magic-byte detection uses bounded explicit Stage 4 analysis provider bytes only. |
+| Extension mismatch rules | 4 | Done | Untested | S4-T04 reviewed; mismatch evaluation consumes reviewed signature results and file metadata only, with no provider byte reads. |
+| Known-file matching | 4 | Done | Untested | S4-T05 reviewed; matching consumes reviewed hash results and caller-supplied in-memory records only, with no external datasets, persistence, byte reads, or implicit hash calculation. |
 | Search/timeline | 5 | Planned | Untested | Rough Stage 5 tickets are drafted; search/timeline must wait for reviewed Stage 4 result contracts and preserve source/status/warning labels. |
 | Reporting/workflow | 6 | Planned | Untested | Not started. |
 | Desktop UI/executable packaging | Later | Deferred | Untested | CLI/manual testing comes first. |

@@ -25,6 +25,8 @@ Current major onboarding prompts:
 - `2026-07-14-s4-t01-hash-signature-contracts.md`: Stage 4 S4-T01 implementation prompt.
 - `2026-07-14-s4-t02-provider-backed-hashing.md`: Stage 4 S4-T02 implementation prompt.
 - `2026-07-14-s4-t03-file-signature-detection.md`: Stage 4 S4-T03 implementation prompt.
+- `2026-07-14-s4-t04-extension-mismatch-rules.md`: Stage 4 S4-T04 implementation prompt.
+- `2026-07-14-s4-t05-known-file-matching.md`: Stage 4 S4-T05 implementation prompt.
 - `2026-07-13-s3-t01-export-manifest-contract.md`: Stage 3 S3-T01 implementation prompt.
 - `2026-07-13-s3-t02-file-export-service.md`: Stage 3 S3-T02 implementation prompt.
 - `2026-07-13-s3-t03-export-hashing.md`: Stage 3 S3-T03 implementation prompt.

@@ -85,3 +85,6 @@ For Stage 4 tickets:
 - S4-T03 signature tests may use `StubAnalysisContentProvider` with tiny in-memory magic-byte samples for PDF, PNG, JPEG, GIF, ZIP, ELF, and MZ candidate coverage.
 - S4-T03 signature tests must inspect bounded provider bytes only and must label synthetic or generated fixture bytes through the analysis content-source identity.
 - S4-T03 must not use preview-rendered text/hex/raw JSON byte values, preview providers, export providers, written export artifacts, or filesystem metadata as signature source content.
+- S4-T04 extension mismatch tests should consume existing `SignatureAnalysisResult` objects plus file name/path metadata only. They should not add a provider, read fixture bytes, or call signature detection inside the mismatch evaluator.
+- S4-T04 should preserve synthetic/generated source labels from the signature result so mismatch output does not imply real parser evidence when the signature bytes came from stubs or generated fixtures.
+- S4-T05 known-file matching tests should use tiny in-memory known-file records only. They should consume existing `HashAnalysisResult` objects, avoid known-file files/databases/network access, and preserve synthetic/generated hash-source labels so a fixture digest match is not described as real evidence-derived database matching.

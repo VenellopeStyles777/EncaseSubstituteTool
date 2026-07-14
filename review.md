@@ -12,6 +12,133 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-14 - S4-T05 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- `app/backend/forensic_core/content_analysis.py` adds fixture-sized known-file matching through `KnownFileRecord`, `KnownFileMatchResult`, `match_known_file_hashes()`, `match_known_files()`, and `known_file_match_result_to_json()`.
+- The matcher consumes an existing S4-T02 `HashAnalysisResult` plus caller-supplied in-memory records only; it does not accept providers, read bytes, read known-file lists from disk/network, or calculate hashes internally.
+- SHA-256, MD5, and SHA-1 records are normalized with the same algorithm spelling rules as S4-T02, and digest comparison is case-insensitive.
+- Matching prefers SHA-256 for the top-level match fields while preserving all records that match available computed digests.
+- Results preserve source provenance, content-source identity, source kind/status, bytes analyzed, hash status, digest statuses, hash timestamps, source hash warnings, matched record metadata, and synthetic/generated context warnings.
+- Non-ok hashes, missing computed digests, invalid records, duplicate records, no-match states, and conflicting categories for the same digest are structured and tested.
+- `known_file_no_match` is treated as a successful evaluation status while the outcome is carried by `matched=False`; review accepted this convention because callers should use the explicit `matched` field.
+- S4-T05 stayed in scope and did not add case-store persistence, schema migrations, external datasets, known-file file readers, network access, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, S4-T02/S4-T03/S4-T04 behavior changes, export-output behavior changes, or Stage 5 work.
+
+Tests:
+
+- `python -m pytest app/tests/test_content_analysis_known_files.py`: 12 passed in 0.19s.
+- `python -m pytest`: 152 passed in 3.47s.
+
+Residual notes:
+
+- S4-T06 should decide persistence as a plan or carefully scoped implementation only after preserving these standalone result shapes and synthetic/generated source labels.
+
+## 2026-07-14 - S4-T05 Known-File Matching Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `app/backend/forensic_core/content_analysis.py` adds `KnownFileRecord`, `KnownFileMatchResult`, `match_known_file_hashes()`, `match_known_files()`, and `known_file_match_result_to_json()`.
+- The matcher consumes an existing S4-T02 `HashAnalysisResult` plus caller-supplied in-memory records only. It does not accept providers, read bytes, read known-file lists from disk/network, or calculate hashes internally.
+- SHA-256, MD5, and SHA-1 records are normalized with the same algorithm spelling rules as S4-T02, and digest comparison is case-insensitive.
+- Matching prefers SHA-256 for the top-level match fields while preserving all records that match available computed digests.
+- Results preserve source provenance, content-source identity, source kind/status, bytes analyzed, hash status, digest statuses, hash timestamps, source hash warnings, matched record metadata, and synthetic/generated context warnings.
+- Non-ok hashes, missing computed digests, invalid records, duplicate records, no-match states, and conflicting categories for the same digest are structured and tested.
+
+Scope intentionally not implemented:
+
+- No S4-T02 hash calculation changes, S4-T03 signature detection changes, S4-T04 extension mismatch changes, analysis provider argument, byte reads, known-file file readers, external datasets, NSRL import, case-store persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, export-output behavior changes, or Stage 5 work.
+
+Tests:
+
+- Focused S4-T05 run: `python -m pytest app/tests/test_content_analysis_known_files.py` reported 12 passed in 0.37s.
+- Full run: `python -m pytest` reported 152 passed in 5.97s.
+
+## 2026-07-14 - S4-T05 Handoff Preparation
+
+Result: ready for implementation agent.
+
+Guardrails:
+
+- S4-T05 consumes reviewed S4-T02 `HashAnalysisResult` objects plus tiny caller-supplied in-memory known-file records only.
+- The matcher must not accept an analysis provider, read bytes, read known-file data from disk/network, or call `hash_file_content()` / `calculate_hashes()` internally.
+- Preserve hash result source provenance, content-source identity, source kind/status, bytes analyzed, hash status, digest statuses, timestamps, and warnings.
+- Keep categories small and explicit: `known_good`, `known_bad`, and `known_unknown`.
+- Invalid records and conflicting categories should be structured and tested, not silently ignored or resolved.
+- Known-file matches against synthetic/generated provider bytes must keep those labels visible and must not be worded as real evidence-backed database matches.
+- Do not add case-store persistence, schema migrations, NSRL imports, large/external datasets, file readers, network access, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, S4-T02/S4-T03/S4-T04 behavior changes, or Stage 5 work.
+
+Expected verification:
+
+- `python -m pytest`.
+
+## 2026-07-14 - S4-T04 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- `app/backend/forensic_core/content_analysis.py` adds extension mismatch contracts and evaluators through `SignatureExtensionRule`, `SIGNATURE_EXTENSION_RULES`, `SUPPORTED_SIGNATURE_EXTENSIONS`, `ExtensionMismatchResult`, `evaluate_extension_mismatch()`, `check_extension_mismatch()`, and `extension_mismatch_result_to_json()`.
+- The evaluator consumes an existing S4-T03 `SignatureAnalysisResult` plus copied file name/path metadata only; it does not accept providers, read bytes, or call `detect_file_signature()` internally.
+- Conservative rules cover PDF, PNG, JPEG extension variants, GIF, ZIP/container allow-list extensions, ELF, and MZ executable candidates.
+- Evaluated matches and mismatches use explicit `mismatch=False` or `True`; missing metadata, no extension, non-file sources, non-ok signature statuses, missing detected type, and unsupported detected types return structured not-evaluated results with `mismatch=None`.
+- Results preserve S4-T03 source provenance, content-source identity, signature status, detected type/signature/MIME fields, signature timestamps, source/provider warnings, and new mismatch warnings.
+- `extension_mismatch` is treated as a successful evaluation status while the finding is carried by `mismatch=True`; review accepted this convention because callers are not expected to infer the finding from `status.ok`.
+- S4-T04 stayed in scope and did not add known-file matching, case-store persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, S4-T02/S4-T03 behavior changes, export-output behavior changes, or Stage 5 work.
+
+Tests:
+
+- `python -m pytest`: 140 passed in 3.14s.
+
+Residual notes:
+
+- S4-T05 should remain fixture-sized and should not make synthetic/provider-backed hash results look like real evidence-backed known-file matches.
+
+## 2026-07-14 - S4-T04 Extension Mismatch Rules Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `app/backend/forensic_core/content_analysis.py` adds `SignatureExtensionRule`, `SIGNATURE_EXTENSION_RULES`, `SUPPORTED_SIGNATURE_EXTENSIONS`, `ExtensionMismatchResult`, `evaluate_extension_mismatch()`, `check_extension_mismatch()`, and `extension_mismatch_result_to_json()`.
+- The evaluator consumes an existing S4-T03 `SignatureAnalysisResult` and source file name/path metadata only. It does not accept providers, read bytes, or call `detect_file_signature()` internally.
+- Conservative rules cover PDF, PNG, JPEG extension variants, GIF, ZIP/container allow-list extensions, ELF, and MZ executable candidates.
+- Matching and mismatching evaluated states include explicit `mismatch=False` or `True`; missing metadata, no extension, non-file sources, non-ok signature statuses, missing detected type, and unsupported detected types return not-evaluated results with `mismatch=None`.
+- Results preserve source provenance, content-source identity, signature status, detected type/signature/MIME fields, signature timestamps, source/provider warnings, and new mismatch warnings.
+- `app/tests/test_content_analysis_extension_mismatch.py` covers case-insensitive matches, mismatches, JPEG variants, ZIP allow-list behavior, MZ matches/mismatches, missing/no-extension states, unknown/insufficient signatures, unsupported types, directory sources, provenance/warnings, JSON safety, and S4-T02/S4-T03 regression behavior.
+
+Scope intentionally not implemented:
+
+- No S4-T02 hashing changes, S4-T03 signature detection changes, provider byte reads, known-file matching, case-store persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, export-output changes, or Stage 5 work.
+
+Tests:
+
+- `python -m pytest`: 140 passed in 4.99s.
+
+## 2026-07-14 - S4-T04 Handoff Preparation
+
+Result: ready for implementation agent.
+
+Guardrails:
+
+- S4-T04 consumes reviewed S4-T03 `SignatureAnalysisResult` objects plus source metadata only.
+- Extension mismatch evaluation must not read provider bytes, accept an analysis provider, or call signature detection internally.
+- Evaluate only when the source is a file, the signature status is `ok`, a detected type exists, an extension rule exists, and file metadata includes an extension.
+- Unknown, insufficient, failed, unsupported, missing, and no-extension states should be structured not-evaluated results rather than mismatches.
+- Preserve S4-T03 source provenance, content-source identity, detected fields, source labels, timestamps, and warnings.
+- Include an explicit mismatch value instead of making callers infer findings only from status truthiness.
+- Do not add known-file matching, case-store persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, S4-T02/S4-T03 behavior changes, export-output changes, or Stage 5 work.
+
+Expected verification:
+
+- `python -m pytest`.
+
 ## 2026-07-14 - S4-T03 Review
 
 Result: approved for commit.
