@@ -10,7 +10,7 @@ Suggested first planning format:
 | 1 | Build E01 evidence intake spike | Done | S1-T01 through S1-T06 complete. Stage 1 is a backend intake foundation, not real EWF/filesystem parsing. |
 | 2 | Add volume/filesystem browsing MVP | Done | S2-T01 through S2-T07 complete. Stage 2 is a backend fixture/stub browsing foundation, not real EWF/partition/filesystem parsing. |
 | 3 | Add export/recovery foundation | Done | S3-T01 through S3-T06 complete. Stage 3 is a backend fixture/stub export foundation, not real extraction or recovery. |
-| 4 | Add hashing and signature checks | In Progress | S4-T01 contract implementation is reviewed/done; no hash calculation or signature detection behavior has started. |
+| 4 | Add hashing and signature checks | In Progress | S4-T01 contracts and S4-T02 provider-backed hashing are reviewed/done; S4-T03 signature detection remains draft. |
 | 5 | Add search and timeline foundations | Rough | Rough ticket plan exists under `tickets/stage-5/`; do not start until Stage 4 contracts and handoff are reviewed. |
 
 ## Stage 1 Work Targets
@@ -136,7 +136,7 @@ Detailed Stage 4 ticket sequence:
 
 - S4-T00: review-agent familiarization and reality-anchor risk audit. Status: Done.
 - S4-T01: hash/signature request/result/status/warning contracts and provenance model. Status: Done.
-- S4-T02: provider-backed SHA-256 plus optional MD5/SHA-1 calculation for explicit content sources. Status: Draft.
+- S4-T02: provider-backed SHA-256 plus optional MD5/SHA-1 calculation for explicit content sources. Status: Done.
 - S4-T03: file signature/magic-byte detection over bounded provider bytes. Status: Draft.
 - S4-T04: extension mismatch result rules where metadata and signature both exist. Status: Draft.
 - S4-T05: fixture-sized known-file matching plan or minimal implementation. Status: Draft.

@@ -13,6 +13,24 @@ YYYY-MM-DD
 ```
 
 2026-07-14
+- Completed: reviewed S4-T02 provider-backed hashing and marked it done.
+- Learned: the implementation keeps analysis hashing on explicit Stage 4 provider bytes, rejects bad algorithm requests before provider reads, and preserves S4-T01 provenance/content-source identity without reusing preview/export paths.
+- Blocked by: nothing for S4-T02; signature detection, extension mismatch, known-file matching, persistence, search/timeline, UI, real parser work, deleted recovery, carving, and native dependencies remain deferred.
+- Next: prepare S4-T03 file signature detection when requested. Final review test run: `python -m pytest` reported 116 passed in 4.21s.
+
+2026-07-14
+- Completed: implemented S4-T02 provider-backed hashing with a Stage 4 `AnalysisContentProvider` boundary, default SHA-256, optional MD5/SHA-1, structured non-ok paths, package exports, dependency-free hashing tests, and docs/status updates.
+- Learned: validating hash algorithms before provider reads keeps unsupported requests from touching bytes, and the content-source identity makes synthetic/generated provider results explicit instead of implying real evidence extraction.
+- Blocked by: nothing for S4-T02 implementation; signature detection, extension mismatch, known-file matching, persistence, search/timeline, UI, real parser work, deleted recovery, carving, and native dependencies remain deferred.
+- Next: hand S4-T02 off for review before starting S4-T03. Final test run: `python -m pytest` reported 116 passed in 3.38s.
+
+2026-07-14
+- Completed: expanded S4-T02 into an implementation-ready provider-backed hashing ticket and prepared the VS Code coding-agent prompt.
+- Learned: S4-T02 should validate algorithms before content reads and must introduce a Stage 4 analysis provider boundary rather than reusing preview/export providers.
+- Blocked by: nothing for S4-T02 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-14-s4-t02-provider-backed-hashing.md`, then review the resulting implementation before preparing S4-T03.
+
+2026-07-14
 - Completed: reviewed S4-T01 hash/signature analysis contracts and marked the ticket done.
 - Learned: the implementation stayed contract-only and gives S4-T02 a clean explicit-provider result shape without blurring preview bytes, export-output verification, metadata-only entries, or future whole-image verification.
 - Blocked by: nothing for S4-T01; S4-T02 should remain separate and provider-backed only.

@@ -80,3 +80,5 @@ For Stage 4 tickets:
 - Export-output SHA-256 verifies written artifacts only and is separate from per-file analysis hashing.
 - Source kinds such as `synthetic`, `generated_fixture`, `local_stream`, `export_provider`, and future `real_parser` must be labeled honestly in analysis results.
 - S4-T01 contract tests should not read or write analysis bytes. Later generated/local-stream fixture tests must keep generated scratch data under ignored workspace paths such as `.test-artifacts/`.
+- S4-T02 hash tests may use `StubAnalysisContentProvider` with tiny in-memory bytes, but those bytes must be labeled as `synthetic` or `generated_fixture` through the analysis content-source identity.
+- S4-T02 must not reuse `StubPreviewProvider`, `StubExportContentProvider`, preview-rendered text/hex/raw JSON byte values, or written export artifacts as implicit analysis content.

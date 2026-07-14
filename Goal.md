@@ -47,7 +47,7 @@ Out of initial scope:
 1. Evidence intake: prove segmented E01 discovery, adapter boundaries, JSON intake output, case-store schema, and dependency-safe behavior. Status: complete.
 2. Volume/filesystem view: establish image/byte-stream fixtures, discover whole-image volumes, and browse a stubbed filesystem with metadata and bounded preview output. Status: complete as of S2-T07 final review.
 3. Export/recovery: export selected files with provenance and lay groundwork for deleted-file recovery where supported. Status: complete as a backend fixture/stub export foundation after S3-T06 final review.
-4. Hash/signature analysis: add file hashing, known-file matching, file type detection, and mismatch flags. Status: next planned stage; begin from explicit content-provider contracts.
+4. Hash/signature analysis: add file hashing, known-file matching, file type detection, and mismatch flags. Status: in progress; S4-T01 contracts and S4-T02 provider-backed hashing are reviewed and done.
 5. Search/timeline: add filename search, metadata filters, full-text search, and timestamp timeline.
 6. Reporting/workflow: bookmarks, examiner notes, audit log, and report generation.
 7. Advanced features: carving, artifact parsers, archive expansion, shadow copies, encryption detection, OCR, and optional AI triage.
@@ -204,7 +204,7 @@ Stage 4 review-agent handoff:
 - The Stage 4 coding agent should start with `prompts/vscode-agent/2026-07-14-stage-4-familiarization.md`.
 - The Stage 4 review/research side has read the project, inspected tests/code, run `python -m pytest`, and recorded the S4-T00 risk audit.
 - Detailed Stage 4 tickets now live under `tickets/stage-4/`; S4-T01 contract-only implementation is reviewed and done.
-- S4-T02 provider-backed hashing is the next Stage 4 ticket to prepare when requested.
+- S4-T02 provider-backed hashing is reviewed and done.
 - A rough Stage 5 search/timeline ticket plan now lives under `tickets/stage-5/`.
 - The main carryover risk is the missing real evidence-backed content path. Stage 4 can build provider-backed hash/signature contracts, but future stages need a reality anchor before search, reports, timeline, or UI work imply real forensic extraction.
 
