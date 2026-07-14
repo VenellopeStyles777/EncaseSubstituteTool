@@ -25,3 +25,56 @@ Purpose: record documentation changes, important source references, and decision
 - Confirmed exported artifact SHA-256 is computed from the written output file, not preview text/hex or provider bytes alone.
 - Confirmed result and manifest agree on SHA-256, byte counts, status, and warnings.
 - Left S3-T04 as the next Stage 3 ticket to prepare, limited to optional explicit case-store audit integration.
+
+## 2026-07-13 - S3-T04 Handoff Preparation
+
+- Expanded S3-T04 into an implementation-ready ticket after S3-T03 was committed and pushed.
+- Added `prompts/vscode-agent/2026-07-13-s3-t04-export-audit-integration.md` as the paste-ready coding-agent prompt.
+- Marked S3-T04 ready in Stage 3 planning docs.
+- Documented the key guardrail: audit rows require explicit audit context, not source provenance ids alone.
+- Confirmed the current case-store schema already has `audit_events` and `insert_audit_event()`, so S3-T04 should prefer no schema migration.
+
+## 2026-07-13 - S3-T04 Review
+
+- Reviewed S3-T04 optional export audit integration.
+- Marked S3-T04 approved/done in Stage 3 ticket and planning docs.
+- Confirmed audit rows require explicit `ExportAuditContext`; source provenance case/evidence ids alone do not write to the case store.
+- Confirmed successful and explicitly audited failed exports produce structured `file_export` audit details while standalone exports remain unaudited.
+- Left S3-T05 as the next Stage 3 ticket to prepare, limited to deleted-file recovery research and conditional planning unless real adapter support exists.
+
+## 2026-07-13 - S3-T05 Handoff Preparation
+
+- Expanded S3-T05 into an implementation-ready documentation/planning ticket after S3-T04 was committed and pushed.
+- Added `prompts/vscode-agent/2026-07-13-s3-t05-deleted-recovery-plan.md` as the paste-ready coding-agent prompt.
+- Marked S3-T05 ready in Stage 3 planning docs.
+- Confirmed current adapters do not expose recoverable deleted-file bytes, so S3-T05 must not implement recovery code.
+- Documented the required distinction between active file export, deleted entry metadata, deleted-file recovery, carving/unallocated-space recovery, and unsupported entries.
+
+## 2026-07-13 - S3-T05 Review
+
+- Reviewed S3-T05 deleted-file recovery documentation/planning.
+- Marked S3-T05 approved/done in Stage 3 ticket and planning docs.
+- Confirmed the docs keep current export separate from deleted-file recovery and state recovery is unsupported/deferred with the present adapters.
+- Confirmed no recovery APIs, fake deleted entries, fake recoverable deleted bytes, parser work, carving, unallocated-space scanning, UI, reporting, or Stage 4 analysis were added.
+- Left S3-T06 as the next Stage 3 ticket to prepare: final documentation and review handoff.
+
+## 2026-07-14 - S3-T06 Handoff Preparation
+
+- Expanded S3-T06 into an implementation-ready final Stage 3 documentation/review-handoff ticket.
+- Added `prompts/vscode-agent/2026-07-14-s3-t06-stage-3-docs-review-handoff.md` as the paste-ready coding-agent prompt.
+- Marked S3-T06 ready in Stage 3 planning docs.
+- Documented the key guardrail: S3-T06 should reconcile docs and prepare Stage 4 notes without changing backend behavior or starting Stage 4 code.
+
+## 2026-07-14 - S3-T06 Documentation Handoff
+
+- Reconciled Stage 3 documentation across top-level, backend, ticket, fixture, environment, progression, review, and functionality docs.
+- Documented the final Stage 3 export workflow: explicit provider-backed bytes, safe selected destinations, overwrite refusal, manifests, SHA-256/byte-count verification from written artifacts, and optional explicit `ExportAuditContext` audit rows.
+- Re-stated that Stage 3 does not include real evidence parsing, real filesystem extraction, deleted recovery, carving, UI, search/timeline/reporting, packaging, or Stage 4 hash/signature analysis.
+- Added Stage 4 handoff guidance to build on explicit content providers and avoid preview-rendered text/hex or metadata-only filesystem entries as source content.
+
+## 2026-07-14 - S3-T06 Review
+
+- Reviewed and approved the final Stage 3 documentation/review handoff.
+- Marked S3-T06 done and Stage 3 complete in planning and ticket docs.
+- Confirmed S3-T06 did not change backend behavior, export APIs, tests, parser work, recovery/carving behavior, UI/search/reporting scope, native dependencies, or real evidence fixtures.
+- Left Stage 4 as the next planning target: hash/signature contracts over explicit content providers.

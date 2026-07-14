@@ -11,7 +11,7 @@ Current Stage 2 API surface:
 
 These callables are backend-only and JSON-friendly. They do not provide UI, executable packaging, broader hash/signature analysis, search, reporting, real EWF byte parsing, real partition parsing, real filesystem parsing, deleted recovery, or automatic case-store persistence.
 
-Stage 3 note: S3-T03 verifies the written fixture/stub/provider-backed export artifact by reading it back for byte count and SHA-256. It does not persist audit events, recover deleted files, parse real filesystems, run broader hash/signature analysis, or use preview-rendered text/hex as export bytes.
+Stage 3 note: S3-T04 can optionally record export attempts in the case-store audit log when the caller supplies explicit audit context. It does not recover deleted files, parse real filesystems, run broader hash/signature analysis, or use preview-rendered text/hex as export bytes.
 
 ## S1-T04 Intake Command
 
@@ -149,3 +149,52 @@ Current S3-T03 behavior:
 - preserves S3-T02 destination safety, exclusive write, overwrite refusal, and partial-artifact cleanup behavior.
 
 S3-T03 does not add MD5/SHA-1 production hashing, known-file matching, file signature analysis, extension mismatch checks, image verification, audit integration, deleted recovery, UI, real parser work, or required native dependencies.
+
+## S3-T04 Optional Export Audit Integration
+
+Callable usage from Python:
+
+```python
+from app.backend.api import ExportAuditContext, export_file
+from app.backend.case_store import connect, initialize_schema
+
+connection = connect(":memory:")
+initialize_schema(connection)
+
+result = export_file(
+    entry,
+    r"C:\case-exports",
+    audit_context=ExportAuditContext(
+        connection=connection,
+        case_id="case-123",
+        evidence_id="evidence-123",
+        actor="examiner",
+    ),
+)
+```
+
+`ExportAuditContext` is explicit opt-in audit context. Supplying `source.case_id` or `source.evidence_id` in export provenance does not write to the case store by itself.
+
+Current S3-T04 behavior:
+
+- successful exports with `ExportAuditContext` insert one `audit_events` row with `action="file_export"`;
+- audit details JSON records export status, source provenance, audit context ids, destination/output/manifest paths, byte counts, SHA-256/hash status, destination status, content-source identity, and warnings;
+- failed exports are not audited by default;
+- failed exports are audited only when `audit_failed_exports=True`, and details keep the non-ok export status;
+- `export_file_to_json()` accepts the same audit context and passes it through.
+
+S3-T04 uses the existing case-store schema and does not create cases or evidence sources automatically. Audit persistence errors are allowed to surface to the caller rather than being hidden as a successful audit.
+
+## S3-T05 Deleted-File Recovery Boundary
+
+The current export API does not perform deleted-file recovery. It exports bytes only from an explicit export content provider. A file entry with metadata such as `deleted=True` would still need a recovery-capable content source before export could proceed honestly.
+
+Current API truth:
+
+- `export_file()` is active provider-backed export, not deleted recovery.
+- Stage 2 filesystem entries are metadata-only.
+- Stub filesystem entries are allocated and not deleted.
+- Preview-rendered text/hex and filesystem metadata are not export or recovery bytes.
+- No API currently scans unallocated space, carves files, parses real filesystems, or recovers deleted content.
+
+Future deleted-recovery API work should return structured statuses such as `deleted_recovery_unsupported`, `deleted_entry_metadata_only`, `recovery_content_unavailable`, `recovery_partial`, `recovery_not_attempted`, and `carving_deferred` instead of treating unsupported recovery as success. Any recovered bytes should reuse the existing export result, manifest, SHA-256/byte-count verification, destination safety, and optional audit behavior.

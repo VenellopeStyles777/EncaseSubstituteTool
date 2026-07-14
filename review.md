@@ -12,6 +12,118 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-14 - S3-T06 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- Reconciled Stage 3 status across top-level docs, backend docs, fixture/environment docs, ticket indexes, functionality, plan, progression, review, and documentation log.
+- Documented final Stage 3 export behavior: Stage 2-style metadata input, explicit export content provider bytes, synthetic default `StubExportContentProvider` for `stub-file-hello`, examiner/test-selected destinations, overwrite refusal, sibling manifests, SHA-256/byte-count verification from written artifacts, and optional explicit `ExportAuditContext`.
+- Re-stated limitations: no real EWF parsing, image verification, partition parsing, filesystem parsing, filesystem extraction, deleted recovery, carving, UI, search, timeline, reporting, bookmarks, notes, packaging, or Stage 4 hash/signature analysis.
+- Added Stage 4 handoff guidance to build hash/signature contracts on explicit content providers, avoid preview text/hex as source content, avoid whole-image verification claims without adapter support, and keep known-file matching plus persistence optional until result contracts are reviewed.
+- S3-T06 stayed documentation/review-handoff only and did not change backend behavior, export APIs, tests, parser behavior, recovery/carving behavior, UI/search/reporting scope, native dependencies, or evidence fixtures.
+
+Tests:
+
+- `python -m pytest`: 99 passed in 4.42s.
+
+Residual notes:
+
+- Stage 3 is complete as a backend fixture/stub export foundation.
+- Stage 4 should begin with explicit content-provider hash/signature contracts, not preview-rendered bytes or metadata-only filesystem entries.
+
+## 2026-07-14 - S3-T06 Stage 3 Docs Handoff Preparation
+
+Result: ready for implementation agent.
+
+Guardrails:
+
+- S3-T06 is documentation/review-handoff only.
+- Reconcile the project docs so Stage 3 is accurately described after S3-T01 through S3-T05.
+- Keep current limitations visible: no real EWF parsing, image verification, partition parsing, real filesystem parsing, real filesystem byte extraction, deleted recovery, carving, UI, search, timeline, reporting, bookmarks, notes, packaging, or Stage 4 hash/signature analysis.
+- Document the export workflow as explicit provider-backed bytes written to examiner-selected output, with manifest provenance, SHA-256/byte-count verification from the written artifact, and optional audit only through explicit `ExportAuditContext`.
+- Keep manual-test fields `Untested` unless the user reports a manual run.
+- Do not change backend behavior or begin Stage 4 code.
+
+Expected verification:
+
+- Run `python -m pytest`.
+- Mark S3-T06 as `Review` after implementation, then stop for final Stage 3 review.
+
+Handoff prep verification:
+
+- `python -m pytest`: 99 passed in 4.36s.
+
+## 2026-07-13 - S3-T05 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- Documentation now distinguishes active allocated file export, deleted entry metadata, deleted-file recovery, carving/unallocated-space recovery, and unsupported or unrecoverable entries.
+- Current project truth is recorded: stub filesystem entries are allocated and not deleted; filesystem entries are metadata-only; preview/export providers supply synthetic bytes only for registered ids; current export is not deleted-file recovery; no real deleted-file recovery exists.
+- Future recovery requirements are documented for allocation/deleted state, recoverable ranges or explicit recovery content providers, completeness/confidence, overwritten/sparse/partial/unavailable warnings, filesystem-specific provenance, read-only source handling, and compatibility with export manifests, SHA-256/byte counts, and audit logging.
+- Future status/warning names include `deleted_recovery_unsupported`, `deleted_entry_metadata_only`, `recovery_content_unavailable`, `recovery_partial`, `recovery_not_attempted`, and `carving_deferred`.
+- S3-T05 stayed documentation/planning-only and did not add recovery APIs, fake deleted entries, fake recoverable deleted bytes, pytsk3 parsing, real EWF parsing, real partition parsing, real filesystem parsing, carving, unallocated-space scanning, UI, reporting, Stage 4 hash/signature analysis, or native dependency requirements.
+
+Tests:
+
+- `python -m pytest`: 99 passed in 6.72s.
+
+Residual notes:
+
+- Deleted-file recovery remains unsupported/deferred until a future real adapter exposes deleted entries and recoverable bytes.
+- S3-T06 is the next Stage 3 gate and should be limited to final documentation/review handoff.
+
+## 2026-07-13 - S3-T05 Deleted-File Recovery Plan Handoff
+
+Result: ready for implementation agent.
+
+Guardrails:
+
+- S3-T05 is documentation/planning-only with the current codebase.
+- Current `StubFilesystemAdapter` entries are allocated and not deleted; current providers supply synthetic bytes only for explicitly registered ids.
+- `Pytsk3FilesystemAdapter` is dependency/status scaffolding and does not parse real filesystems, deleted entries, or file content.
+- Do not implement recovery APIs, fake deleted entries, fake recoverable deleted bytes, carving, unallocated-space scanning, real parser work, UI, or native dependency requirements.
+- Docs should clearly distinguish active allocated file export, deleted entry metadata, deleted-file recovery, carving/unallocated-space recovery, and unsupported/unrecoverable entries.
+- Future recovery requirements should preserve provenance, read-only source handling, explicit content-source identity, completeness/confidence, and warnings for overwritten/sparse/unavailable ranges.
+
+Expected verification:
+
+- Update documentation/status files only unless a reviewed real adapter unexpectedly exists.
+- Run `python -m pytest`.
+
+Handoff prep verification:
+
+- `python -m pytest`: 99 passed in 3.70s.
+
+## 2026-07-13 - S3-T04 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- `app.backend.api.ExportAuditContext` provides explicit opt-in audit context with database connection, case id, optional evidence id, optional actor, and `audit_failed_exports`.
+- `export_file()` and `export_file_to_json()` accept audit context while standalone exports continue to work without case-store writes.
+- Successful audited exports create one `audit_events` row using `action="file_export"` and existing `insert_audit_event()`.
+- Audit details JSON records export status, source provenance, audit context ids, destination/output/manifest paths, byte counts, SHA-256/hash status, destination status, content-source identity, and warnings.
+- Failed exports are not audited by default; when `audit_failed_exports=True`, details preserve the non-ok status and hash/byte placeholders.
+- Source provenance case/evidence ids alone do not trigger database writes.
+- S3-T04 uses the existing case-store schema and does not add automatic case/evidence creation, automatic persistence for other API calls, deleted recovery, UI, reporting, real parser work, or Stage 4 hash/signature analysis.
+
+Tests:
+
+- `python -m pytest`: 99 passed in 3.19s.
+
+Residual notes:
+
+- Audit persistence errors are documented as surfacing to the caller rather than being hidden as success.
+- S3-T05 remains the next Stage 3 gate and should stay planning/research-focused unless real adapter support exists.
+
 ## 2026-07-13 - S3-T03 Review
 
 Result: approved for commit.

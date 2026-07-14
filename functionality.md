@@ -56,11 +56,12 @@ Initial feature groups to track:
 | Export manifest contract | 3 | Done | Untested | S3-T01 contract structures and tests are reviewed; no file export yet. |
 | Fixture/stub file export service | 3 | Done | Untested | S3-T02 reviewed; exports explicit stub/provider bytes only. |
 | Export hashing and byte-count verification | 3 | Done | Untested | S3-T03 reviewed; verifies written export artifacts with SHA-256 and on-disk byte counts. Broader hash analysis remains Stage 4. |
-| Export audit integration | 3 | Planned | Untested | S3-T04 is expanded as a Draft; audit must be explicit and optional. |
-| Deleted-file recovery | 3 | Planned | Untested | S3-T05 is planning/docs only unless a real adapter exposes recoverable bytes. |
+| Export audit integration | 3 | Done | Untested | S3-T04 reviewed; audit is explicit opt-in through `ExportAuditContext`. |
+| Deleted-file recovery | 3 | Deferred | Untested | S3-T05 reviewed; recovery remains unsupported/deferred until a real adapter exposes recoverable deleted-file bytes. |
+| Stage 3 documentation handoff | 3 | Done | Untested | S3-T06 reviewed; documentation/review handoff only, no new behavior. |
 | Hash/signature analysis | 4 | Planned | Untested | Broader analysis stage; not Stage 3. |
 | Search/timeline | 5 | Planned | Untested | Not started. |
 | Reporting/workflow | 6 | Planned | Untested | Not started. |
 | Desktop UI/executable packaging | Later | Deferred | Untested | CLI/manual testing comes first. |
 
-Manual testing note: Stage 1 and Stage 2 have automated tests but have not been manually exercised by the user as an app workflow. Keep the manual-test column at `Untested` until the user confirms a manual run.
+Manual testing note: Stage 1 through Stage 3 have automated tests but have not been manually exercised by the user as an app workflow. Keep the manual-test column at `Untested` until the user confirms a manual run.

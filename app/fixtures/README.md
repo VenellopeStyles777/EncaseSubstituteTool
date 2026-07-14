@@ -63,4 +63,7 @@ For Stage 3 tickets:
 - Preview-rendered text or hex is not an export byte source.
 - Stub/provider/generated-fixture exports must be labeled as synthetic, generated, or provider-backed in the result and manifest.
 - S3-T02 output files and manifests are test artifacts, not committed fixtures.
+- Current stub filesystem entries are allocated and not deleted; do not add fake deleted entries or fake recoverable deleted bytes to make recovery tests pass.
+- Deleted-file recovery fixtures require a future real or generated filesystem fixture that documents deleted-entry metadata, recoverable ranges, expected completeness, and known hashes. Until then, deleted recovery remains planning-only.
+- Carving and unallocated-space recovery fixtures are deferred and should not be mixed into Stage 3 export-provider fixtures.
 - Real raw/EWF/filesystem fixtures remain optional local-only inputs until a reviewed ticket explicitly adds safe integration behavior.

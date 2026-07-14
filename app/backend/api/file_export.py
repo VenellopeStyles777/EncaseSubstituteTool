@@ -6,8 +6,10 @@ from dataclasses import dataclass, field
 import hashlib
 import json
 from pathlib import Path
+import sqlite3
 from typing import Mapping, Protocol
 
+from app.backend.case_store import insert_audit_event
 from app.backend.forensic_core import (
     ExportContentSourceIdentity,
     ExportHashSummary,
@@ -22,6 +24,7 @@ from app.backend.forensic_core import (
 
 
 DEFAULT_MANIFEST_SUFFIX = ".manifest.json"
+EXPORT_AUDIT_DETAILS_SCHEMA_VERSION = "stage3.export_audit.v1"
 
 
 @dataclass(frozen=True)
@@ -36,6 +39,17 @@ class ExportContent:
     parser_name: str | None = None
     parser_version: str | None = None
     warnings: tuple[ExportWarning, ...] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class ExportAuditContext:
+    """Explicit opt-in case-store audit context for export attempts."""
+
+    connection: sqlite3.Connection
+    case_id: str
+    evidence_id: str | None = None
+    actor: str | None = None
+    audit_failed_exports: bool = False
 
 
 class ExportContentProvider(Protocol):
@@ -104,6 +118,7 @@ def export_file(
     *,
     provider: ExportContentProvider | None = None,
     output_name: str | None = None,
+    audit_context: ExportAuditContext | None = None,
 ) -> ExportResult:
     """Export explicit provider-backed raw bytes to a selected output directory."""
 
@@ -116,124 +131,142 @@ def export_file(
     requested_output_path = _requested_output_path(file_entry_or_request)
 
     if source.entry_type != "file":
-        return _result(
-            status_code="path_not_file",
-            status_message="Export requires a file entry.",
-            source=source,
-            provider=export_provider,
-            destination_directory=_path_str(requested_directory),
-            requested_output_path=requested_output_path,
-            warnings=(
-                ExportWarning(
-                    code="path_not_file",
-                    message="Directory or non-file entries cannot be exported.",
-                    path=source.file_path,
-                    source="file_export",
+        return _finalize_result(
+            _result(
+                status_code="path_not_file",
+                status_message="Export requires a file entry.",
+                source=source,
+                provider=export_provider,
+                destination_directory=_path_str(requested_directory),
+                requested_output_path=requested_output_path,
+                warnings=(
+                    ExportWarning(
+                        code="path_not_file",
+                        message="Directory or non-file entries cannot be exported.",
+                        path=source.file_path,
+                        source="file_export",
+                    ),
                 ),
             ),
+            audit_context,
         )
 
     if not _path_str(requested_directory):
-        return _result(
-            status_code="destination_not_selected",
-            status_message="An explicit output directory is required.",
-            source=source,
-            provider=export_provider,
-            requested_output_path=requested_output_path,
-            warnings=(
-                ExportWarning(
-                    code="destination_not_selected",
-                    message="No examiner-selected output directory was supplied.",
-                    source="file_export",
+        return _finalize_result(
+            _result(
+                status_code="destination_not_selected",
+                status_message="An explicit output directory is required.",
+                source=source,
+                provider=export_provider,
+                requested_output_path=requested_output_path,
+                warnings=(
+                    ExportWarning(
+                        code="destination_not_selected",
+                        message="No examiner-selected output directory was supplied.",
+                        source="file_export",
+                    ),
                 ),
             ),
+            audit_context,
         )
 
     destination_dir = Path(requested_directory).expanduser().resolve(strict=False)
     destination_status = _destination_status(source, destination_dir)
     if destination_status is not None:
-        return _result(
-            status_code=destination_status.code,
-            status_message=destination_status.message,
-            source=source,
-            provider=export_provider,
-            destination_directory=str(destination_dir),
-            requested_output_path=requested_output_path,
-            destination_status=destination_status,
-            warnings=(
-                ExportWarning(
-                    code=destination_status.code,
-                    message=destination_status.message,
-                    path=str(destination_dir),
-                    source="destination_safety",
+        return _finalize_result(
+            _result(
+                status_code=destination_status.code,
+                status_message=destination_status.message,
+                source=source,
+                provider=export_provider,
+                destination_directory=str(destination_dir),
+                requested_output_path=requested_output_path,
+                destination_status=destination_status,
+                warnings=(
+                    ExportWarning(
+                        code=destination_status.code,
+                        message=destination_status.message,
+                        path=str(destination_dir),
+                        source="destination_safety",
+                    ),
                 ),
             ),
+            audit_context,
         )
 
     requested_name = output_name or requested_output_path or source.file_name
     safe_output_name = _safe_output_name(requested_name)
     if safe_output_name is None:
-        return _result(
-            status_code="invalid_output_name",
-            status_message="Output file name must be a safe file name without traversal.",
-            source=source,
-            provider=export_provider,
-            destination_directory=str(destination_dir),
-            requested_output_path=requested_name,
-            warnings=(
-                ExportWarning(
-                    code="invalid_output_name",
-                    message="Output file name contained unsafe characters or path traversal.",
-                    path=requested_name,
-                    source="file_export",
+        return _finalize_result(
+            _result(
+                status_code="invalid_output_name",
+                status_message="Output file name must be a safe file name without traversal.",
+                source=source,
+                provider=export_provider,
+                destination_directory=str(destination_dir),
+                requested_output_path=requested_name,
+                warnings=(
+                    ExportWarning(
+                        code="invalid_output_name",
+                        message="Output file name contained unsafe characters or path traversal.",
+                        path=requested_name,
+                        source="file_export",
+                    ),
                 ),
             ),
+            audit_context,
         )
 
     output_path = destination_dir / safe_output_name
     manifest_path = destination_dir / f"{safe_output_name}{DEFAULT_MANIFEST_SUFFIX}"
     if output_path.exists() or manifest_path.exists():
         existing_path = output_path if output_path.exists() else manifest_path
-        return _result(
-            status_code="output_exists",
-            status_message="Output file or manifest already exists.",
-            source=source,
-            provider=export_provider,
-            destination_directory=str(destination_dir),
-            requested_output_path=str(output_path),
-            output_path=str(output_path),
-            manifest_path=str(manifest_path),
-            warnings=(
-                ExportWarning(
-                    code="output_exists",
-                    message="Refusing to overwrite an existing output or manifest file.",
-                    path=str(existing_path),
-                    source="file_export",
+        return _finalize_result(
+            _result(
+                status_code="output_exists",
+                status_message="Output file or manifest already exists.",
+                source=source,
+                provider=export_provider,
+                destination_directory=str(destination_dir),
+                requested_output_path=str(output_path),
+                output_path=str(output_path),
+                manifest_path=str(manifest_path),
+                warnings=(
+                    ExportWarning(
+                        code="output_exists",
+                        message="Refusing to overwrite an existing output or manifest file.",
+                        path=str(existing_path),
+                        source="file_export",
+                    ),
                 ),
             ),
+            audit_context,
         )
 
     content = export_provider.get_content(source)
     if content is None:
-        return _result(
-            status_code="content_source_unavailable",
-            status_message="Export provider has no raw bytes for this file entry.",
-            source=source,
-            provider=export_provider,
-            destination_directory=str(destination_dir),
-            requested_output_path=str(output_path),
-            output_path=str(output_path),
-            manifest_path=str(manifest_path),
-            content_status_code="content_source_unavailable",
-            content_status_message="No raw export content is registered for this file entry.",
-            warnings=(
-                ExportWarning(
-                    code="content_source_unavailable",
-                    message="Filesystem metadata alone is not exportable content.",
-                    path=source.file_path,
-                    source="export_content_provider",
+        return _finalize_result(
+            _result(
+                status_code="content_source_unavailable",
+                status_message="Export provider has no raw bytes for this file entry.",
+                source=source,
+                provider=export_provider,
+                destination_directory=str(destination_dir),
+                requested_output_path=str(output_path),
+                output_path=str(output_path),
+                manifest_path=str(manifest_path),
+                content_status_code="content_source_unavailable",
+                content_status_message="No raw export content is registered for this file entry.",
+                warnings=(
+                    ExportWarning(
+                        code="content_source_unavailable",
+                        message="Filesystem metadata alone is not exportable content.",
+                        path=source.file_path,
+                        source="export_content_provider",
+                    ),
                 ),
             ),
+            audit_context,
         )
 
     content_source = _content_source_identity(
@@ -282,48 +315,54 @@ def export_file(
         if output_created:
             _cleanup_written_output(output_path)
         existing_path = Path(error.filename) if error.filename else output_path
-        return _result(
-            status_code="output_exists",
-            status_message="Output file or manifest already exists.",
-            source=source,
-            provider=export_provider,
-            content_source=content_source,
-            destination_directory=str(destination_dir),
-            requested_output_path=str(output_path),
-            output_path=str(output_path),
-            manifest_path=str(manifest_path),
-            warnings=(
-                ExportWarning(
-                    code="output_exists",
-                    message="Refusing to overwrite an existing output or manifest file.",
-                    path=str(existing_path),
-                    source="file_export",
+        return _finalize_result(
+            _result(
+                status_code="output_exists",
+                status_message="Output file or manifest already exists.",
+                source=source,
+                provider=export_provider,
+                content_source=content_source,
+                destination_directory=str(destination_dir),
+                requested_output_path=str(output_path),
+                output_path=str(output_path),
+                manifest_path=str(manifest_path),
+                warnings=(
+                    ExportWarning(
+                        code="output_exists",
+                        message="Refusing to overwrite an existing output or manifest file.",
+                        path=str(existing_path),
+                        source="file_export",
+                    ),
                 ),
             ),
+            audit_context,
         )
     except OSError as error:
         _cleanup_partial_artifacts(output_path, manifest_path)
-        return _result(
-            status_code="export_write_failed",
-            status_message=f"Export write failed: {error}",
-            source=source,
-            provider=export_provider,
-            content_source=content_source,
-            destination_directory=str(destination_dir),
-            requested_output_path=str(output_path),
-            output_path=str(output_path),
-            manifest_path=str(manifest_path),
-            warnings=(
-                ExportWarning(
-                    code="export_write_failed",
-                    message="Output or manifest write failed.",
-                    path=str(output_path),
-                    source="file_export",
+        return _finalize_result(
+            _result(
+                status_code="export_write_failed",
+                status_message=f"Export write failed: {error}",
+                source=source,
+                provider=export_provider,
+                content_source=content_source,
+                destination_directory=str(destination_dir),
+                requested_output_path=str(output_path),
+                output_path=str(output_path),
+                manifest_path=str(manifest_path),
+                warnings=(
+                    ExportWarning(
+                        code="export_write_failed",
+                        message="Output or manifest write failed.",
+                        path=str(output_path),
+                        source="file_export",
+                    ),
                 ),
             ),
+            audit_context,
         )
 
-    return result
+    return _finalize_result(result, audit_context)
 
 
 def export_file_to_json(
@@ -332,6 +371,7 @@ def export_file_to_json(
     *,
     provider: ExportContentProvider | None = None,
     output_name: str | None = None,
+    audit_context: ExportAuditContext | None = None,
     indent: int | None = 2,
 ) -> str:
     """Run export and serialize the result as stable JSON."""
@@ -342,6 +382,7 @@ def export_file_to_json(
             output_directory,
             provider=provider,
             output_name=output_name,
+            audit_context=audit_context,
         ),
         indent=indent,
     )
@@ -526,6 +567,60 @@ def _cleanup_written_output(path: Path) -> None:
 def _cleanup_partial_artifacts(*paths: Path) -> None:
     for path in paths:
         _cleanup_written_output(path)
+
+
+def _finalize_result(
+    result: ExportResult,
+    audit_context: ExportAuditContext | None,
+) -> ExportResult:
+    if audit_context is None:
+        return result
+    if not result.status.ok and not audit_context.audit_failed_exports:
+        return result
+
+    insert_audit_event(
+        audit_context.connection,
+        case_id=audit_context.case_id,
+        evidence_id=audit_context.evidence_id,
+        action="file_export",
+        actor=audit_context.actor,
+        details=_export_audit_details(result, audit_context),
+    )
+    return result
+
+
+def _export_audit_details(
+    result: ExportResult,
+    audit_context: ExportAuditContext,
+) -> dict[str, object]:
+    return {
+        "schema_version": EXPORT_AUDIT_DETAILS_SCHEMA_VERSION,
+        "action": "file_export",
+        "status": result.status.to_dict(),
+        "source_path": result.source.source_path,
+        "source_file_id": result.source.file_id,
+        "source_file_path": result.source.file_path,
+        "source_file_name": result.source.file_name,
+        "source_case_id": result.source.case_id,
+        "source_evidence_id": result.source.evidence_id,
+        "volume_id": result.source.volume_id,
+        "audit_context": {
+            "case_id": audit_context.case_id,
+            "evidence_id": audit_context.evidence_id,
+            "actor": audit_context.actor,
+            "audit_failed_exports": audit_context.audit_failed_exports,
+        },
+        "destination_directory": result.destination_directory,
+        "requested_output_path": result.requested_output_path,
+        "output_path": result.output_path,
+        "manifest_path": result.manifest_path,
+        "bytes_requested": result.bytes_requested,
+        "bytes_written": result.bytes_written,
+        "hashes": result.hashes.to_dict(),
+        "destination_status": result.destination_status.to_dict(),
+        "content_source": result.content_source.to_dict(),
+        "warnings": [warning.to_dict() for warning in result.warnings],
+    }
 
 
 def _result(

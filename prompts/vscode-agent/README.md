@@ -12,8 +12,8 @@ Use this folder when:
 Current Stage 3 handoff:
 
 - Start a fresh Stage 3 implementation chat with `2026-07-13-stage-3-familiarization.md` if the coding agent has not already read it.
-- S3-T01 through S3-T03 are reviewed and done.
-- Prepare and review a new S3-T04 prompt before handing the next ticket to the implementation agent.
+- S3-T01 through S3-T06 are reviewed and done.
+- Prepare the Stage 4 handoff prompt next when requested.
 
 Current major onboarding prompts:
 
@@ -23,6 +23,9 @@ Current major onboarding prompts:
 - `2026-07-13-s3-t01-export-manifest-contract.md`: Stage 3 S3-T01 implementation prompt.
 - `2026-07-13-s3-t02-file-export-service.md`: Stage 3 S3-T02 implementation prompt.
 - `2026-07-13-s3-t03-export-hashing.md`: Stage 3 S3-T03 implementation prompt.
+- `2026-07-13-s3-t04-export-audit-integration.md`: Stage 3 S3-T04 implementation prompt.
+- `2026-07-13-s3-t05-deleted-recovery-plan.md`: Stage 3 S3-T05 implementation prompt.
+- `2026-07-14-s3-t06-stage-3-docs-review-handoff.md`: Stage 3 S3-T06 implementation prompt.
 
 Each prompt should name:
 

@@ -6,7 +6,7 @@ Current project idea: build an EnCase-like forensic analysis application focused
 
 ## Current Status
 
-Stage 2 is complete at the documentation/review-handoff level. The project currently provides a backend-first forensic browsing foundation:
+Stage 3 is complete as a backend-first forensic browsing and fixture/stub export foundation:
 
 - Python backend package skeleton.
 - E01 segment discovery for `.E01/.E02/.E03...` sibling files.
@@ -19,6 +19,11 @@ Stage 2 is complete at the documentation/review-handoff level. The project curre
 - Filesystem adapter boundary with deterministic stub entries and dependency-safe `pytsk3` skeleton behavior.
 - Backend directory listing/file metadata callable over adapter entries.
 - Bounded raw/text/hex preview callable over explicit preview-provider bytes.
+- Export result/manifest/provenance/content-source contract structures.
+- Fixture/stub file export callable over explicit export-provider bytes.
+- SHA-256 and byte-count verification from written export artifacts.
+- Optional export audit events when explicit `ExportAuditContext` is supplied.
+- Deleted-file recovery documented as unsupported/deferred with current adapters.
 
 Run tests from the repository root:
 
@@ -34,10 +39,18 @@ python -m app.backend.api.intake path\to\sample.E01
 
 Use `--adapter stub` for dependency-free synthetic metadata checks.
 
-Use the Stage 2 backend callables from Python:
+Use the current backend callables from Python:
 
 ```python
-from app.backend.api import list_directory, preview_file, run_e01_intake
+from app.backend.api import (
+    ExportAuditContext,
+    StubExportContentProvider,
+    export_file,
+    export_file_to_json,
+    list_directory,
+    preview_file,
+    run_e01_intake,
+)
 from app.backend.forensic_core import (
     LocalFileImageStream,
     StubFilesystemAdapter,
@@ -50,10 +63,11 @@ What is real versus stubbed today:
 - Real local-file behavior: `LocalFileImageStream` can describe and bounded-read tiny local files in read-only binary mode.
 - Stubbed behavior: whole-image volume discovery can wrap a readable non-empty stream as one volume; filesystem listing uses the deterministic `StubFilesystemAdapter` unless a future adapter supplies real entries.
 - Synthetic preview-provider content: `preview_file()` does not extract bytes from real filesystems. The default `StubPreviewProvider` maps the stub `/hello.txt` entry to synthetic `Hello, world!` bytes.
+- Synthetic export-provider content: `export_file()` writes bytes only from an explicit export content provider. The default `StubExportContentProvider` maps `stub-file-hello` to synthetic `Hello, world!` bytes, writes the output and manifest to an examiner/test-selected directory, refuses overwrites, verifies SHA-256/byte count from the written artifact, and audits only when `ExportAuditContext` is supplied.
 
-Current limitations: Stage 2 does not parse real EWF bytes, verify real images, parse real partition tables, parse real filesystems, extract real file content, provide a UI/executable, export/recover files, hash files, search, report, or automatically persist Stage 2 results to the case store. Real forensic libraries are optional and not required for tests.
+Current limitations: the project does not parse real EWF bytes, verify real images, parse real partition tables, parse real filesystems, extract real filesystem content, provide a UI/executable, recover deleted files, carve unallocated space, search, report, or automatically create case/evidence records from export. Real forensic libraries are optional and not required for tests.
 
-Next stage: Stage 3 export/recovery foundation is ready to begin with S3-T01. The Stage 3 VS Code onboarding prompt and S3-T01 implementation prompt are ready; later Stage 3 tickets remain Draft pending review before implementation. Stage 3 should add safe fixture/stub/provider-backed export contracts, manifests, hashes, provenance, and audit hooks without assuming real deleted-file recovery is available.
+Current handoff: S3-T01 through S3-T06 are reviewed and done. Stage 4 hash/signature analysis is next and should build on explicit content providers, not preview-rendered text/hex or filesystem metadata alone.
 
 Primary planning files:
 

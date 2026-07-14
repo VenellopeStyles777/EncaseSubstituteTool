@@ -8,9 +8,17 @@ import shutil
 
 from app.backend.api import (
     DEFAULT_MANIFEST_SUFFIX,
+    ExportAuditContext,
     StubExportContentProvider,
     export_file,
     export_file_to_json,
+)
+from app.backend.case_store import (
+    connect,
+    initialize_schema,
+    insert_case,
+    insert_evidence_source,
+    list_audit_events,
 )
 import app.backend.api.file_export as file_export_module
 from app.backend.forensic_core import ExportRequest, ExportSourceProvenance
@@ -63,6 +71,56 @@ def _stub_file_entry(**overrides: object) -> dict[str, object]:
     }
     entry.update(overrides)
     return entry
+
+
+def _sample_intake_result() -> dict[str, object]:
+    return {
+        "schema_version": "stage1.intake.v1",
+        "status": "ok",
+        "source_path": "C:/fixtures/tiny.raw",
+        "selected_path": "C:/fixtures/tiny.raw",
+        "read_only": True,
+        "segment_count": 1,
+        "segment_discovery": {"is_valid_input": True, "segments": [], "warnings": []},
+        "adapter": {
+            "name": "stub-ewf-reader",
+            "available": True,
+            "dependency": {"name": "stub", "available": True},
+        },
+        "metadata": {"reader": "stub"},
+        "verification": {"status": "not_supported", "supported": False},
+        "warnings": [],
+    }
+
+
+def _initialized_case_store():
+    connection = connect()
+    initialize_schema(connection)
+    case_id = insert_case(connection, case_id="case-export", name="Export Case")
+    evidence_id = insert_evidence_source(
+        connection,
+        case_id=case_id,
+        evidence_id="evidence-export",
+        intake_result=_sample_intake_result(),
+    )
+    return connection, case_id, evidence_id
+
+
+def _request_with_source_ids(
+    *,
+    case_id: str,
+    evidence_id: str,
+    destination_directory: Path,
+    file_id: str = "stub-file-hello",
+) -> ExportRequest:
+    return ExportRequest(
+        source=ExportSourceProvenance.from_file_entry(
+            _stub_file_entry(file_id=file_id),
+            case_id=case_id,
+            evidence_id=evidence_id,
+        ),
+        destination_directory=str(destination_directory),
+    )
 
 
 def test_successful_stub_export_writes_file_and_manifest():
@@ -120,6 +178,172 @@ def test_result_and_manifest_agree_on_export_fields():
     assert manifest["hashes"]["sha256"] == HELLO_SHA256
     assert manifest["hashes"]["status"]["code"] == "ok"
     assert result_dict["manifest"]["manifest_path"] == result_dict["manifest_path"]
+
+
+def test_successful_export_with_audit_context_creates_file_export_event():
+    connection, case_id, evidence_id = _initialized_case_store()
+
+    with _export_fixture_directory("file-export-audit-success") as directory:
+        request = _request_with_source_ids(
+            case_id=case_id,
+            evidence_id=evidence_id,
+            destination_directory=directory / "exports",
+        )
+        result = export_file(
+            request,
+            audit_context=ExportAuditContext(
+                connection=connection,
+                case_id=case_id,
+                evidence_id=evidence_id,
+                actor="tester",
+            ),
+        )
+
+    events = list_audit_events(connection, case_id=case_id)
+    details = json.loads(events[0]["details_json"])
+
+    assert result.status.code == "ok"
+    assert len(events) == 1
+    assert events[0]["action"] == "file_export"
+    assert events[0]["case_id"] == case_id
+    assert events[0]["evidence_id"] == evidence_id
+    assert events[0]["actor"] == "tester"
+    assert details["schema_version"] == "stage3.export_audit.v1"
+    assert details["status"]["code"] == "ok"
+    assert details["status"]["ok"] is True
+    assert details["source_path"] == "C:/fixtures/tiny.raw"
+    assert details["source_file_id"] == "stub-file-hello"
+    assert details["source_file_path"] == "/hello.txt"
+    assert details["source_file_name"] == "hello.txt"
+    assert details["source_case_id"] == case_id
+    assert details["source_evidence_id"] == evidence_id
+    assert details["audit_context"]["case_id"] == case_id
+    assert details["audit_context"]["evidence_id"] == evidence_id
+    assert details["audit_context"]["actor"] == "tester"
+    assert details["volume_id"] == "volume-0"
+    assert details["destination_directory"] == result.destination_directory
+    assert details["requested_output_path"] == result.requested_output_path
+    assert details["output_path"] == result.output_path
+    assert details["manifest_path"] == result.manifest_path
+    assert details["bytes_requested"] == 13
+    assert details["bytes_written"] == 13
+    assert details["hashes"]["sha256"] == HELLO_SHA256
+    assert details["hashes"]["status"]["code"] == "ok"
+    assert details["destination_status"]["code"] == "ok"
+    assert details["content_source"]["provider_name"] == "stub-export-provider"
+    assert details["content_source"]["source_kind"] == "stub"
+    assert details["warnings"][0]["code"] == "stub_export_content"
+
+
+def test_export_file_to_json_passes_audit_context_through():
+    connection, case_id, evidence_id = _initialized_case_store()
+
+    with _export_fixture_directory("file-export-audit-json") as directory:
+        parsed = json.loads(
+            export_file_to_json(
+                _request_with_source_ids(
+                    case_id=case_id,
+                    evidence_id=evidence_id,
+                    destination_directory=directory / "exports",
+                ),
+                audit_context=ExportAuditContext(
+                    connection=connection,
+                    case_id=case_id,
+                    evidence_id=evidence_id,
+                ),
+            )
+        )
+
+    events = list_audit_events(connection, case_id=case_id)
+
+    assert parsed["status"]["code"] == "ok"
+    assert len(events) == 1
+    assert events[0]["action"] == "file_export"
+
+
+def test_standalone_export_without_audit_context_creates_no_audit_event():
+    connection, case_id, _ = _initialized_case_store()
+
+    with _export_fixture_directory("file-export-no-audit-context") as directory:
+        result = export_file(_stub_file_entry(), directory / "exports")
+
+    assert result.status.code == "ok"
+    assert list_audit_events(connection, case_id=case_id) == []
+
+
+def test_source_provenance_ids_alone_do_not_create_audit_event():
+    connection, case_id, evidence_id = _initialized_case_store()
+
+    with _export_fixture_directory("file-export-source-ids-no-audit") as directory:
+        request = _request_with_source_ids(
+            case_id=case_id,
+            evidence_id=evidence_id,
+            destination_directory=directory / "exports",
+        )
+        result = export_file(request)
+
+    assert result.status.code == "ok"
+    assert result.source.case_id == case_id
+    assert result.source.evidence_id == evidence_id
+    assert list_audit_events(connection, case_id=case_id) == []
+
+
+def test_failed_export_is_not_audited_by_default():
+    connection, case_id, evidence_id = _initialized_case_store()
+
+    with _export_fixture_directory("file-export-failed-no-audit") as directory:
+        result = export_file(
+            _request_with_source_ids(
+                case_id=case_id,
+                evidence_id=evidence_id,
+                destination_directory=directory / "exports",
+                file_id="missing-file",
+            ),
+            audit_context=ExportAuditContext(
+                connection=connection,
+                case_id=case_id,
+                evidence_id=evidence_id,
+            ),
+        )
+
+    assert result.status.code == "content_source_unavailable"
+    assert list_audit_events(connection, case_id=case_id) == []
+
+
+def test_failed_export_is_audited_when_explicitly_requested():
+    connection, case_id, evidence_id = _initialized_case_store()
+
+    with _export_fixture_directory("file-export-failed-audited") as directory:
+        result = export_file(
+            _request_with_source_ids(
+                case_id=case_id,
+                evidence_id=evidence_id,
+                destination_directory=directory / "exports",
+                file_id="missing-file",
+            ),
+            audit_context=ExportAuditContext(
+                connection=connection,
+                case_id=case_id,
+                evidence_id=evidence_id,
+                audit_failed_exports=True,
+            ),
+        )
+
+    events = list_audit_events(connection, case_id=case_id)
+    details = json.loads(events[0]["details_json"])
+
+    assert result.status.code == "content_source_unavailable"
+    assert len(events) == 1
+    assert events[0]["action"] == "file_export"
+    assert details["status"]["code"] == "content_source_unavailable"
+    assert details["status"]["ok"] is False
+    assert details["output_path"] == result.output_path
+    assert details["manifest_path"] == result.manifest_path
+    assert details["bytes_requested"] is None
+    assert details["bytes_written"] is None
+    assert details["hashes"]["sha256"] is None
+    assert details["hashes"]["status"]["code"] == "hash_not_computed"
+    assert details["warnings"][0]["code"] == "content_source_unavailable"
 
 
 def test_hash_is_calculated_from_exported_file_bytes(monkeypatch):

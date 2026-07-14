@@ -11,9 +11,9 @@ Stage 3 should build on Stage 2 filesystem/file metadata results. Deleted-file r
 | S3-T01 | Done | Export result and manifest contract |
 | S3-T02 | Done | Fixture/stub file export service |
 | S3-T03 | Done | Export hashing and byte-count verification |
-| S3-T04 | Draft | Case-store audit integration for exports |
-| S3-T05 | Draft | Deleted-file recovery research and conditional plan |
-| S3-T06 | Draft | Stage 3 docs and review handoff |
+| S3-T04 | Done | Case-store audit integration for exports |
+| S3-T05 | Done | Deleted-file recovery research and conditional plan |
+| S3-T06 | Done | Stage 3 docs and review handoff |
 
 ## Stage 3 Definition Of Done
 
@@ -25,7 +25,7 @@ Stage 3 should build on Stage 2 filesystem/file metadata results. Deleted-file r
 
 ## 2026-07-13 Ticket Readiness Review
 
-The Stage 3 ticket set is a useful outline, but the tickets are not yet implementation-ready. They need the same level of detail as the Stage 2 prompts before being handed to the VS Code implementation agent.
+The Stage 3 ticket set began as an outline. Each ticket should reach the same level of detail as the Stage 2 prompts before being handed to the VS Code implementation agent.
 
 Recommended sequence:
 
@@ -36,4 +36,4 @@ Recommended sequence:
 5. Keep S3-T05 documentation/planning-only unless real adapter support exists.
 6. Use S3-T06 as the final Stage 3 documentation and review handoff.
 
-Do not hand any Stage 3 ticket after S3-T03 to the implementation agent until its individual ticket file and prompt are reviewed for the current code state. S3-T01 through S3-T03 are reviewed and done; S3-T04 is the next ticket to prepare.
+S3-T01 through S3-T06 are reviewed and done. Stage 3 is complete as a backend fixture/stub export foundation. Do not treat Stage 3 as real filesystem extraction, deleted recovery, carving, or Stage 4 hash/signature analysis.

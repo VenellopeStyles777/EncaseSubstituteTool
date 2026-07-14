@@ -46,8 +46,8 @@ Out of initial scope:
 0. Foundation: initialize Git, choose stack, create skeleton, add test/lint commands, define docs structure. Status: complete.
 1. Evidence intake: prove segmented E01 discovery, adapter boundaries, JSON intake output, case-store schema, and dependency-safe behavior. Status: complete.
 2. Volume/filesystem view: establish image/byte-stream fixtures, discover whole-image volumes, and browse a stubbed filesystem with metadata and bounded preview output. Status: complete as of S2-T07 final review.
-3. Export/recovery: export selected files with provenance and lay groundwork for deleted-file recovery where supported. Status: S3-T03 reviewed and done; S3-T04 is the next Stage 3 ticket to prepare.
-4. Hash/signature analysis: add file hashing, known-file matching, file type detection, and mismatch flags. Status: rough plan only; begin after Stage 3 export contracts and safe export workflow are reviewed.
+3. Export/recovery: export selected files with provenance and lay groundwork for deleted-file recovery where supported. Status: complete as a backend fixture/stub export foundation after S3-T06 final review.
+4. Hash/signature analysis: add file hashing, known-file matching, file type detection, and mismatch flags. Status: next planned stage; begin from explicit content-provider contracts.
 5. Search/timeline: add filename search, metadata filters, full-text search, and timestamp timeline.
 6. Reporting/workflow: bookmarks, examiner notes, audit log, and report generation.
 7. Advanced features: carving, artifact parsers, archive expansion, shadow copies, encryption detection, OCR, and optional AI triage.
@@ -140,7 +140,7 @@ Known Stage 2 limits:
 - No automatic case-store persistence for Stage 2 API results.
 - `pyewf`, libewf, `pytsk3`, and The Sleuth Kit remain optional and are not required for default tests.
 
-Stage 3 is the next planned stage. It should start from the Stage 2 backend result shapes and add export/recovery foundations without assuming deleted-file recovery is available until a real filesystem adapter exposes it.
+Stage 3 builds from the Stage 2 backend result shapes and adds export/recovery foundations without assuming deleted-file recovery is available until a real filesystem adapter exposes it.
 
 ## Stage 3 Detailed Targets
 
@@ -166,10 +166,14 @@ Stage 3 acceptance criteria:
 Stage 3 planning note, 2026-07-13:
 
 - The first Stage 3 VS Code implementation chat should start with `prompts/vscode-agent/2026-07-13-stage-3-familiarization.md`.
-- S3-T01 through S3-T03 are reviewed and done. S3-T04 is the next ticket to prepare; later Stage 3 tickets are expanded as plans but should be reviewed again one at a time before implementation.
+- S3-T01 through S3-T06 are reviewed and done.
+- The S3-T06 implementation prompt is `prompts/vscode-agent/2026-07-14-s3-t06-stage-3-docs-review-handoff.md`.
+- S3-T04 adds optional audit events only when explicit audit context is supplied. Source provenance ids alone must not trigger database writes.
+- S3-T05 remains documentation/planning-only because no reviewed adapter exposes deleted entries plus recoverable deleted-file bytes.
 - S3-T01 should define export contracts only. It should not write exported files, compute real hashes, add audit persistence, or start deleted recovery.
 - S3-T03 verifies written export artifacts with SHA-256 and on-disk byte counts only; broader hash/signature analysis remains Stage 4.
 - Stage 3 must keep preview, metadata, and export content separated: rendered preview output is not an export byte source.
+- Stage 4 should build hash/signature contracts on explicit content providers, avoid preview text/hex as source content, avoid whole-image verification claims without adapter support, and keep known-file matching plus persistence optional until result contracts are reviewed.
 
 ## Stage 4 Detailed Targets
 

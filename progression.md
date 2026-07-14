@@ -12,11 +12,47 @@ YYYY-MM-DD
 - Next:
 ```
 
+2026-07-14
+- Completed: implemented and reviewed S3-T06 final Stage 3 documentation/review handoff by reconciling top-level, backend, ticket, fixture, environment, progression, review, and documentation-log status around the completed export foundation.
+- Learned: the final Stage 3 behavior is backend-only fixture/stub export from explicit provider bytes, with manifests, overwrite refusal, SHA-256/byte-count verification from written artifacts, optional explicit audit logging, and deleted recovery documented as unsupported with current adapters.
+- Blocked by: nothing for S3-T06 documentation; Stage 4 remains unstarted and should begin with explicit content-provider hash/signature contracts.
+- Next: commit/push the approved Stage 3 final documentation handoff, then prepare Stage 4. Final review test run: `python -m pytest` reported 99 passed in 4.42s.
+
+2026-07-14
+- Completed: expanded S3-T06 into an implementation-ready documentation/review-handoff ticket and created the paste-ready VS Code implementation prompt.
+- Learned: the final Stage 3 pass should mainly reconcile stale documentation, especially top-level wording that still describes Stage 2 as the current project state.
+- Blocked by: nothing for S3-T06 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-14-s3-t06-stage-3-docs-review-handoff.md`, then review the final Stage 3 documentation changes before marking the stage complete. Handoff prep test run: `python -m pytest` reported 99 passed in 4.36s.
+
+2026-07-13
+- Completed: implemented and reviewed S3-T05 as documentation/planning only, clarifying active allocated export versus deleted-entry metadata, deleted-file recovery, carving/unallocated-space recovery, and unsupported or unrecoverable entries.
+- Learned: the current adapters remain metadata-only for filesystem entries; `StubFilesystemAdapter` has allocated non-deleted entries, and `Pytsk3FilesystemAdapter` does not parse real filesystems or expose deleted-entry content.
+- Blocked by: nothing for S3-T05 documentation; real deleted-file recovery is blocked on future adapter support for recoverable ranges or explicit recovery content providers.
+- Next: prepare S3-T06 as the final Stage 3 documentation/review handoff. Final review test run: `python -m pytest` reported 99 passed in 6.72s.
+
+2026-07-13
+- Completed: implemented and reviewed S3-T04 optional export audit integration with explicit `ExportAuditContext`, `file_export` audit events, structured export audit details, JSON pass-through, and in-memory SQLite coverage for success, no-context, provenance-only, default failed export, and explicitly audited failed export paths.
+- Learned: the existing `audit_events` table and `insert_audit_event()` helper were sufficient; no schema migration or automatic case/evidence creation was needed.
+- Blocked by: nothing for S3-T04.
+- Next: prepare S3-T05 for implementation handoff when requested, keeping it research/planning-focused unless real adapter support exists. Final review test run: `python -m pytest` reported 99 passed in 3.19s.
+
+2026-07-13
+- Completed: expanded S3-T05 into an implementation-ready documentation/planning ticket and created the paste-ready VS Code implementation prompt.
+- Learned: current filesystem adapters expose allocation/deleted metadata fields but no deleted entries with recoverable byte ranges or real content providers; S3-T05 should not implement recovery code.
+- Blocked by: nothing for S3-T05 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-13-s3-t05-deleted-recovery-plan.md`, then review the documentation changes before S3-T06 is made ready. Handoff prep test run: `python -m pytest` reported 99 passed in 3.70s.
+
 2026-07-13
 - Completed: implemented and reviewed S3-T03 export hashing and byte-count verification by reading the written output file after export, computing SHA-256 from the artifact bytes, recording on-disk byte count, comparing it with provider byte count, and keeping result/manifest verification fields in agreement.
 - Learned: the existing S3-T01 `ExportHashSummary` contract was sufficient for S3-T03; no parallel hash result shape or Stage 4 hash-analysis scope was needed.
 - Blocked by: nothing for S3-T03.
 - Next: prepare S3-T04 for implementation handoff when requested, keeping audit integration explicit and optional. Final review test run: `python -m pytest` reported 93 passed in 4.04s.
+
+2026-07-13
+- Completed: expanded S3-T04 into an implementation-ready optional export audit integration ticket and created the paste-ready VS Code implementation prompt.
+- Learned: the existing case-store schema already has an `audit_events` table and `insert_audit_event()` helper, so S3-T04 should not need a schema migration unless implementation discovers a concrete gap.
+- Blocked by: nothing for S3-T04 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-13-s3-t04-export-audit-integration.md`, then review the implementation before S3-T05 is made ready.
 
 2026-07-08
 - Completed: expanded Stage 1 targets, created app skeleton folders, split research into topic files, added VS Code agent prompt, and added agent workflow documentation.

@@ -36,9 +36,26 @@ case_id = insert_case(connection, name="Example Case")
 
 S1-T05 does not automatically persist S1-T04 intake results. Callers can explicitly pass an intake result dict to `insert_evidence_source()` when a case workflow is ready.
 
+## S3-T04 Export Audit Integration
+
+The Stage 3 export API can optionally write export audit events through the existing `audit_events` table. No schema migration is required.
+
+`app.backend.api.ExportAuditContext` wraps the explicit audit inputs:
+
+- SQLite connection;
+- required case id;
+- optional evidence id;
+- optional actor;
+- `audit_failed_exports`, defaulting to false.
+
+When an export is audited, `insert_audit_event()` is called with `action="file_export"` and structured details JSON. Details include export status, source provenance, audit context ids, destination/output/manifest paths, byte counts, SHA-256/hash status, destination status, content-source identity, and warnings.
+
+Standalone exports do not write audit rows. Source provenance `case_id` and `evidence_id` fields are preserved in results and audit details when present, but they do not trigger persistence unless an explicit `ExportAuditContext` is supplied.
+
 Current limits:
 
 - No migration runner beyond the initial `schema_migrations` marker.
 - No automatic case creation or intake persistence in the CLI.
-- No analysis-result, bookmark, note, export, or report tables yet.
+- No automatic evidence-source creation from exports.
+- No analysis-result, bookmark, note, export-artifact, or report tables yet.
 - Audit timestamps use UTC ISO strings with second precision.
