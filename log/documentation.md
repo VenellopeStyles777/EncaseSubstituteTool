@@ -112,3 +112,50 @@ Purpose: record documentation changes, important source references, and decision
 - Confirmed S4-T01 is contract-only: no hashes computed, no signatures detected, no provider bytes read, no preview/export bytes analyzed, no metadata-as-bytes behavior, no export verification changes, no persistence, and no search/timeline work.
 - Confirmed `content_analysis.py` preserves source provenance and explicit analysis content-source identity for future synthetic, generated fixture, local-stream, export-provider, and real-parser bytes.
 - Verification: `python -m pytest` reported 106 passed in 4.82s.
+
+## 2026-07-14 - S4-T02 Handoff Preparation
+
+- Expanded S4-T02 into an implementation-ready provider-backed hashing ticket.
+- Marked S4-T02 ready in Stage 4 planning docs.
+- Added the key guardrail that S4-T02 must use an explicit Stage 4 analysis content provider rather than preview/export providers or metadata-only entries.
+- Added `prompts/vscode-agent/2026-07-14-s4-t02-provider-backed-hashing.md` as the paste-ready coding-agent prompt.
+
+## 2026-07-14 - S4-T02 Provider-Backed Hashing Implementation
+
+- Added Stage 4 provider-backed hashing documentation and ticket status updates.
+- Documented `AnalysisContentProvider`, `StubAnalysisContentProvider`, `hash_file_content()`, and `calculate_hashes()` as core-module behavior, not an API/export/preview workflow.
+- Re-stated that SHA-256 is default, MD5/SHA-1 are optional comparison hashes, and unsupported algorithm requests are rejected before provider reads.
+- Re-stated that analysis hashing must not use preview-rendered output, preview providers, export providers, written export artifacts, or filesystem metadata as source bytes.
+- Verification after implementation: `python -m pytest` reported 116 passed in 3.38s.
+
+## 2026-07-14 - S4-T02 Review
+
+- Marked S4-T02 reviewed and done.
+- Recorded no blocking findings in `review.md`.
+- Confirmed provider-backed hashing stays separate from preview/export behavior and from future whole-image verification.
+- Confirmed signature detection, extension mismatch, known-file matching, persistence, search/timeline, UI, real parser work, deleted recovery, carving, native dependencies, export-output changes, and Stage 5 work remain deferred.
+- Reviewer verification: `python -m pytest` reported 116 passed in 4.21s.
+
+## 2026-07-14 - S4-T03 Handoff Preparation
+
+- Expanded S4-T03 into an implementation-ready file signature detection ticket.
+- Marked S4-T03 ready in Stage 4 planning docs.
+- Added the key guardrail that S4-T03 must reuse the explicit Stage 4 analysis provider boundary and inspect bounded provider bytes only.
+- Re-stated that extension mismatch, known-file matching, persistence, search/timeline, UI, parser work, deleted recovery, carving, native dependencies, export-output changes, and Stage 5 work remain out of scope.
+- Added `prompts/vscode-agent/2026-07-14-s4-t03-file-signature-detection.md` as the paste-ready coding-agent prompt.
+
+## 2026-07-14 - S4-T03 File Signature Detection Implementation
+
+- Added bounded, provider-backed detection for PDF, PNG, JPEG, GIF87a/GIF89a, ZIP header variants, ELF, and conservative MZ executable candidates.
+- Added structured non-ok handling for invalid limits, non-file entries, metadata-only inputs, unavailable content, provider failures, partial known signatures, and unknown signatures.
+- Added focused dependency-free coverage for signature matches, bounds, failures, provenance, source labels, JSON safety, and S4-T02 hashing regression behavior.
+- Updated Stage 4, backend, fixture, functionality, progression, and review documentation for the S4-T03 handoff.
+- Final verification: `python -m pytest` reported 127 passed in 4.41s.
+
+## 2026-07-14 - S4-T03 Review
+
+- Marked S4-T03 reviewed and done.
+- Recorded no blocking findings in `review.md`.
+- Confirmed bounded signature detection stays separate from preview/export behavior and future whole-image verification.
+- Confirmed extension mismatch, known-file matching, persistence, search/timeline, UI/reporting, real parser work, deleted recovery, carving, native dependencies, export-output changes, and Stage 5 work remain deferred.
+- Reviewer verification: `python -m pytest` reported 127 passed in 5.39s.

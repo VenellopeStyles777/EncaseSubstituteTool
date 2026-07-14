@@ -19,7 +19,7 @@ The backend package can be imported cleanly:
 - `app.backend.analysis_workers`
 - `app.backend.api`
 
-Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 has started with contract-only hash/signature analysis result shapes. The project remains backend-first and has no UI/executable packaging yet.
+Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 now has hash/signature analysis result contracts, provider-backed hash calculation, and bounded provider-backed file signature detection over explicit analysis content providers. The project remains backend-first and has no UI/executable packaging yet.
 
 ## Tests
 
@@ -37,9 +37,9 @@ If `pytest` is not installed:
 python -m pip install pytest
 ```
 
-Current Stage 3 verification:
+Current verification snapshot:
 
-- `python -m pytest`: 99 passed in 4.42s for the final S3-T06 review run.
+- `python -m pytest`: 127 passed in 5.39s after the S4-T03 file signature detection review.
 - The project config routes pytest temporary files to `.test-artifacts/pytest-temp` and disables pytest's optional cache provider.
 
 ## Stage 1 Intake Command
@@ -83,7 +83,7 @@ Not implemented yet:
 - Real EWF byte parsing or image verification.
 - Real partition table parsing.
 - Real filesystem parsing or real file extraction.
-- Deleted-file recovery, carving, Stage 4 hash/signature analysis, search, reporting, UI, or executable packaging workflows.
+- Deleted-file recovery, carving, search, reporting, UI, or executable packaging workflows.
 - Automatic persistence from intake JSON or Stage 2 API results into SQLite.
 - Required native forensic dependencies; `pyewf`, libewf, `pytsk3`, and The Sleuth Kit remain optional.
 
@@ -110,13 +110,18 @@ Current Stage 3 limits:
 - No real filesystem byte extraction, deleted-file recovery, carving, unallocated-space scanning, UI, search, timeline, reporting, bookmarks, notes, or packaging is implemented.
 - Export audit rows require explicit `ExportAuditContext`; source provenance ids alone do not create case-store writes.
 
-## Stage 4 Contract Foundation
+## Stage 4 Hash And Signature Analysis Foundation
 
 Implemented so far:
 
 - `app.backend.forensic_core.content_analysis` defines contract-only hash/signature analysis request/result/status/warning/source-provenance/content-source structures.
 - The contracts distinguish source kinds such as `synthetic`, `generated_fixture`, `local_stream`, `export_provider`, and future `real_parser`.
-- Hash result fields are placeholders; no digests are computed in S4-T01.
-- Signature result fields are placeholders; no file signatures are detected in S4-T01.
+- `hash_file_content(...)` and `calculate_hashes(...)` compute hashes from explicit Stage 4 analysis-provider bytes only.
+- `StubAnalysisContentProvider` supplies dependency-free synthetic/generated test bytes through a Stage 4 analysis provider that is separate from preview and export providers.
+- SHA-256 is computed by default; MD5 and SHA-1 are computed only when explicitly requested as comparison hashes.
+- Unsupported, empty, malformed, directory/non-file, metadata-only, missing-content, and provider-exception paths return structured non-ok `HashAnalysisResult` objects.
+- `detect_file_signature(...)` and `analyze_file_signature(...)` inspect bounded prefixes from explicit Stage 4 analysis-provider bytes only.
+- The supported dependency-free signature table covers PDF, PNG, JPEG, GIF87a/GIF89a, ZIP header variants, ELF, and conservative MZ executable candidates.
+- Invalid max-byte, directory/non-file, metadata-only, missing-content, provider-exception, insufficient partial-signature, and unknown-signature paths return structured non-ok `SignatureAnalysisResult` objects.
 
-Stage 4 must continue to analyze only explicit content providers, avoid hashing preview text/hex as source content, avoid whole-image verification claims without adapter support, and keep known-file matching plus persistence optional until result contracts are reviewed.
+Stage 4 must continue to analyze only explicit content providers, avoid hashing or signature-checking preview text/hex or export artifacts as source analysis content, avoid whole-image verification claims without adapter support, and keep extension mismatch, known-file matching, persistence, search/timeline, and UI work for later reviewed tickets.
