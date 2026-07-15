@@ -2,6 +2,33 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-15 - S4-T07 Review Documentation
+
+- Marked S4-T07 reviewed and done.
+- Recorded no blocking findings in `review.md`.
+- Updated Stage 4 status docs to complete and kept Stage 5 rough/draft.
+- Confirmed S4-T07 remained documentation/status-only and did not change source, schema, tests, API behavior, persistence behavior, parser behavior, UI, native dependency configuration, or Stage 5 implementation.
+- Confirmed Stage 5 should begin with S5-T00 readiness review before implementation.
+- Reviewer verification: `python -m pytest` reported 152 passed in 2.45s.
+
+## 2026-07-15 - S4-T07 Documentation Handoff
+
+- Marked S4-T07 as `Review` and reconciled Stage 4 documentation/status after S4-T01 through S4-T06 were reviewed and done.
+- Documented the final Stage 4 behavior: contracts, provider-backed hashing, bounded signature detection, extension mismatch over existing signature results plus metadata, fixture-sized known-file matching over existing hash results plus caller-supplied in-memory records, and persistence planning only.
+- Re-stated Stage 4 limits: no real EWF/partition/filesystem parsing, no real filesystem file-content extraction, no whole-image verification, no analysis-result persistence implementation, no Stage 4 API wrappers, no search/timeline/reporting/UI, no external known-file datasets or NSRL import, no deleted recovery/carving, and no required native dependencies.
+- Kept Stage 3 export-output verification separate from Stage 4 per-file analysis hashing.
+- Kept synthetic/generated/provider-backed labels visible and left Stage 5 rough/draft with all tickets still unstarted.
+- Confirmed no behavior, schema, test, API, persistence, parser, UI, native dependency, commit, push, or Stage 5 implementation changes were made for S4-T07.
+- Verification: `python -m pytest` reported 152 passed in 4.21s.
+
+## 2026-07-15 - S4-T07 Handoff Preparation
+
+- Expanded S4-T07 into an implementation-ready documentation/review-handoff ticket.
+- Marked S4-T07 ready in Stage 4 planning docs.
+- Added guardrails that S4-T07 must not change code, schema, tests, persistence, API wrappers, search/timeline, UI, parser behavior, native dependencies, or Stage 5 ticket status beyond rough readiness notes.
+- Re-stated the final documentation goals: reconcile Stage 4 behavior/limits, keep Stage 3 export-output verification separate, keep whole-image verification unsupported, preserve synthetic/generated/provider-backed labels, and prepare Stage 5 readiness notes.
+- Added `prompts/vscode-agent/2026-07-15-s4-t07-stage-4-docs-review-handoff.md` as the paste-ready coding-agent prompt.
+
 ## 2026-07-15 - S4-T06 Review Documentation
 
 - Marked S4-T06 reviewed and done.

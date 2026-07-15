@@ -6,9 +6,9 @@ Stage 5 must not turn synthetic/provider-backed data into confident forensic fin
 
 ## Stage 5 Status
 
-Status: Rough. Stage 5 has not started.
+Status: Rough. Stage 5 has not started, and every Stage 5 ticket remains `Draft`.
 
-Stage 5 should not begin until Stage 4 result contracts and documentation handoff are reviewed. A Stage 5 readiness check should confirm whether the project has a reality anchor or whether search must be explicitly limited to provider-backed/synthetic-labeled data.
+Stage 5 should begin with S5-T00 readiness review before implementation. That readiness check should confirm whether the project has a reality anchor or whether search must be explicitly limited to provider-backed/synthetic-labeled data.
 
 ## Draft Ticket Order
 
@@ -25,8 +25,9 @@ Stage 5 should not begin until Stage 4 result contracts and documentation handof
 
 ## Stage 5 Guardrails
 
-- Search results must preserve source path, evidence id when available, volume id, file id/path, source/provider identity, parser/source status, warning list, and timestamp context.
+- Search results must preserve source path, evidence id when available, volume id, file id/path, source/provider identity, source kind, parser/source status, warning list, and timestamp context.
 - Search over synthetic/provider-backed data must be labeled as such.
+- Search/timeline must preserve unsupported, failed, partial, dependency-unavailable, synthetic, generated, and provider-backed source states instead of smoothing them into confident findings.
 - Filename/metadata search may use existing stub/listing shapes, but it must not imply real filesystem coverage.
 - Hash/signature search may use reviewed Stage 4 result shapes only.
 - Full-text search should stay deferred or planning-only until there is reviewed text extraction from explicit content providers.

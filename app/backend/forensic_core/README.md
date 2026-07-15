@@ -41,6 +41,7 @@ Stage 4 contract start:
 - S4-T04 adds extension mismatch evaluation over reviewed signature results and file name/path metadata only.
 - S4-T05 adds fixture-sized known-file matching over reviewed hash results and caller-supplied in-memory records only.
 - S4-T06 documents future case-store persistence requirements and keeps current analysis helpers non-persistent.
+- S4-T07 reconciles documentation/status only and adds no core behavior.
 - Per-file analysis content remains separate from Stage 2 preview rendering, Stage 3 export-output verification, and future whole-image verification.
 
 ## S1-T02 Segment Discovery
@@ -327,6 +328,12 @@ Future persistence should be explicit opt-in and should not be triggered by `cas
 Future rows must preserve source provenance, content-source identity, source kind, synthetic/generated flags, status JSON, full result JSON with `schema_version`, warnings, timestamps, and provider/parser names and versions. The recommended schema direction is a parent `analysis_results` table plus optional child/index tables for hash digests, signature detections, extension mismatch flags, and known-file match categories.
 
 S4-T06 does not add schema migrations, persistence helpers, API wrappers, background jobs, search/timeline/reporting, UI, external known-file dataset storage, real parser work, native dependencies, or Stage 5 work.
+
+## S4-T07 Documentation Handoff
+
+S4-T07 is documentation/status reconciliation only. The final Stage 4 behavior remains in `content_analysis.py`: contracts, provider-backed hashes, bounded signatures, extension mismatch over existing signature results, fixture-sized known-file matching over existing hash results, and persistence planning only.
+
+Stage 4 still does not include real EWF, partition, or filesystem parsing; real filesystem file-content extraction; whole-image verification; analysis-result persistence implementation; Stage 4 API wrappers; search/timeline/reporting/UI; external known-file datasets or NSRL import; deleted recovery/carving; or required native dependencies. Stage 5 remains rough/draft and must preserve source/provenance/status/warning/source-kind uncertainty and synthetic/generated/provider-backed labels before building search or timeline behavior.
 
 ## S3-T05 Deleted-File Recovery Plan
 

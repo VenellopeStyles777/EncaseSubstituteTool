@@ -19,7 +19,7 @@ The backend package can be imported cleanly:
 - `app.backend.analysis_workers`
 - `app.backend.api`
 
-Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 now has hash/signature analysis result contracts, provider-backed hash calculation, bounded provider-backed file signature detection over explicit analysis content providers, extension mismatch evaluation over reviewed signature results plus file metadata, fixture-sized known-file matching, and a documentation-only analysis-result persistence plan. The project remains backend-first and has no UI/executable packaging yet.
+Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 added hash/signature analysis result contracts, provider-backed hash calculation, bounded provider-backed file signature detection over explicit analysis content providers, extension mismatch evaluation over reviewed signature results plus file metadata, fixture-sized known-file matching, a documentation-only analysis-result persistence plan, and the S4-T07 documentation handoff. The project remains backend-first and has no Stage 4 API wrappers, search/timeline/reporting/UI, or executable packaging yet.
 
 ## Tests
 
@@ -39,7 +39,7 @@ python -m pip install pytest
 
 Current verification snapshot:
 
-- `python -m pytest`: 152 passed after the S4-T06 case-store persistence planning review.
+- `python -m pytest`: 152 passed in 2.45s after the S4-T07 documentation/review handoff review.
 - The project config routes pytest temporary files to `.test-artifacts/pytest-temp` and disables pytest's optional cache provider.
 
 ## Stage 1 Intake Command
@@ -112,7 +112,7 @@ Current Stage 3 limits:
 
 ## Stage 4 Hash And Signature Analysis Foundation
 
-Implemented so far:
+Implemented:
 
 - `app.backend.forensic_core.content_analysis` defines contract-only hash/signature analysis request/result/status/warning/source-provenance/content-source structures.
 - The contracts distinguish source kinds such as `synthetic`, `generated_fixture`, `local_stream`, `export_provider`, and future `real_parser`.
@@ -130,5 +130,6 @@ Implemented so far:
 - Known-file match results preserve hash provenance, content-source identity, hash status, digest statuses, bytes analyzed, timestamps, matched record metadata, and synthetic/generated context warnings.
 - Non-ok hashes, missing computed digests, invalid records, duplicate records, no-match states, and conflicting categories for the same matched digest return structured results.
 - S4-T06 documents future case-store persistence requirements for analysis results, but does not add schema, helper functions, API wrappers, background jobs, or automatic writes.
+- S4-T07 reconciles documentation/status only and does not add behavior.
 
-Stage 4 must continue to analyze only explicit content providers for hashing/signature detection, avoid hashing or signature-checking preview text/hex or export artifacts as source analysis content, avoid whole-image verification claims without adapter support, and keep known-file matching fixture-sized/in-memory until a later reviewed ticket adds larger datasets. Analysis-result persistence, search/timeline, and UI work remain later reviewed implementation tickets.
+Stage 4 must continue to analyze only explicit content providers for hashing/signature detection, avoid hashing or signature-checking preview text/hex or export artifacts as source analysis content, avoid whole-image verification claims without adapter support, and keep known-file matching fixture-sized/in-memory until a later reviewed ticket adds larger datasets. Analysis-result persistence, Stage 4 API wrappers, search/timeline, reporting, UI, real parser work, deleted recovery, carving, external known-file datasets, and required native dependencies remain later reviewed implementation tickets. Stage 5 remains rough/draft and must preserve source/provenance/status/warning/source-kind uncertainty and synthetic/generated/provider-backed labels.

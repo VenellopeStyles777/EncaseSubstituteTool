@@ -6,6 +6,7 @@ Status labels:
 
 - `Done`: implemented, reviewed, and committed or ready to commit.
 - `In Progress`: active ticket work.
+- `Review`: implementation is complete and waiting for research/review acceptance.
 - `Planned`: planned but not started.
 - `Untested`: not manually tested by the user yet. Automated tests may still exist.
 - `Deferred`: intentionally out of current scope.
@@ -66,8 +67,9 @@ Initial feature groups to track:
 | Extension mismatch rules | 4 | Done | Untested | S4-T04 reviewed; mismatch evaluation consumes reviewed signature results and file metadata only, with no provider byte reads. |
 | Known-file matching | 4 | Done | Untested | S4-T05 reviewed; matching consumes reviewed hash results and caller-supplied in-memory records only, with no external datasets, persistence, byte reads, or implicit hash calculation. |
 | Analysis-result persistence plan | 4 | Done | Untested | S4-T06 reviewed; it defers schema/behavior changes while documenting explicit opt-in future persistence requirements. |
-| Search/timeline | 5 | Planned | Untested | Rough Stage 5 tickets are drafted; search/timeline must wait for reviewed Stage 4 result contracts and preserve source/status/warning labels. |
+| Stage 4 documentation handoff | 4 | Done | Untested | S4-T07 reviewed; it reconciled Stage 4 docs and prepared Stage 5 readiness notes without code or behavior changes. |
+| Search/timeline | 5 | Planned | Untested | Rough Stage 5 tickets are drafted; search/timeline should start with S5-T00 readiness review and preserve source/provenance/status/warning/source-kind labels. |
 | Reporting/workflow | 6 | Planned | Untested | Not started. |
 | Desktop UI/executable packaging | Later | Deferred | Untested | CLI/manual testing comes first. |
 
-Manual testing note: Stage 1 through Stage 3 have automated tests but have not been manually exercised by the user as an app workflow. Keep the manual-test column at `Untested` until the user confirms a manual run.
+Manual testing note: Stage 1 through Stage 4 have automated tests but have not been manually exercised by the user as an app workflow. Keep the manual-test column at `Untested` until the user confirms a manual run.

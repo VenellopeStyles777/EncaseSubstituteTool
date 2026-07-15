@@ -6,7 +6,7 @@ Stage 4 builds on Stage 3 export/content-provider boundaries, but it must remain
 
 ## Stage 4 Status
 
-Status: In Progress. S4-T01 contract implementation, S4-T02 provider-backed hashing, S4-T03 file signature detection, S4-T04 extension mismatch rules, S4-T05 fixture-sized known-file matching, and S4-T06 case-store persistence planning are reviewed and done; S4-T07 documentation/review handoff is next.
+Status: Complete. S4-T01 contract implementation, S4-T02 provider-backed hashing, S4-T03 file signature detection, S4-T04 extension mismatch rules, S4-T05 fixture-sized known-file matching, S4-T06 case-store persistence planning, and S4-T07 documentation/review handoff are reviewed and done.
 
 The Stage 4 review-agent familiarization and risk audit is complete. Continue one reviewed ticket at a time so hash, signature, known-file, and persistence work do not blur together.
 
@@ -18,6 +18,22 @@ python -m pytest
 
 Result recorded by the Stage 4 review agent: `99 passed in 6.46s`.
 
+S4-T07 implementation verification:
+
+```powershell
+python -m pytest
+```
+
+Result: `152 passed in 4.21s`.
+
+S4-T07 review verification:
+
+```powershell
+python -m pytest
+```
+
+Result: `152 passed in 2.45s`.
+
 ## Current Truth
 
 Real today:
@@ -25,6 +41,7 @@ Real today:
 - `LocalFileImageStream` can read tiny local files in read-only mode.
 - Stage 3 export can write explicit provider bytes to an examiner/test-selected destination, refuse overwrites, clean up failed writes, write a manifest, compute SHA-256 from the written artifact, and optionally audit through explicit `ExportAuditContext`.
 - SQLite case-store helpers can persist cases, evidence-source intake snapshots, and audit events when explicitly called.
+- `content_analysis.py` can compute per-file hashes, detect bounded file signatures, evaluate extension mismatches, and match tiny caller-supplied known-file records when callers provide the reviewed Stage 4 inputs.
 
 Stubbed or synthetic today:
 
@@ -33,6 +50,7 @@ Stubbed or synthetic today:
 - Filesystem entries are deterministic stub metadata or pytsk3 dependency-status skeletons.
 - Preview bytes come from explicit preview providers; the default provider is synthetic.
 - Export bytes come from explicit export providers; the default provider is synthetic.
+- Default Stage 4 analysis bytes come from explicit synthetic/generated analysis providers and are labeled in analysis results.
 
 Not proved today:
 
@@ -41,7 +59,7 @@ Not proved today:
 - Real partition or filesystem parsing.
 - Real filesystem file-content extraction.
 - Deleted-file recovery or carving.
-- Hash/signature analysis over evidence-derived file bytes.
+- Hash/signature analysis over evidence-derived filesystem file bytes.
 
 ## Detailed Ticket Order
 
@@ -54,7 +72,7 @@ Not proved today:
 | [S4-T04](S4-T04-extension-mismatch-rules.md) | Done | Extension mismatch result rules where metadata and signature both exist |
 | [S4-T05](S4-T05-known-file-matching.md) | Done | Fixture-sized known-file matching over caller-supplied in-memory records |
 | [S4-T06](S4-T06-case-store-persistence-plan.md) | Done | Planning-only case-store persistence decision for analysis results |
-| [S4-T07](S4-T07-docs-review-handoff.md) | Draft | Stage 4 documentation and review handoff |
+| [S4-T07](S4-T07-docs-review-handoff.md) | Done | Stage 4 documentation and review handoff |
 
 ## Stage 4 Guardrails
 
@@ -87,3 +105,4 @@ Recommended handling:
 - Known-file matching remains fixture-sized, optional, in-memory, and reviewed before persistence or search/timeline work builds on it.
 - Case-store persistence is planned only after standalone result shapes are stable; S4-T06 defers implementation and documents future explicit opt-in requirements.
 - Documentation clearly separates per-file provider-backed analysis from export-output verification and whole-image verification.
+- S4-T07 reconciles Stage 4 documentation/status and completed the final Stage 4 handoff without starting Stage 5.

@@ -62,7 +62,7 @@ Current limits:
 
 ## S4-T06 Analysis-Result Persistence Plan
 
-S4-T06 keeps analysis-result persistence documentation-only. The current SQLite schema is unchanged and still contains only `cases`, `evidence_sources`, `audit_events`, and `schema_migrations`.
+S4-T06 keeps analysis-result persistence documentation-only, and S4-T07 only reconciles that documentation for review. The current SQLite schema is unchanged and still contains only `cases`, `evidence_sources`, `audit_events`, and `schema_migrations`.
 
 Stage 4 analysis helpers remain standalone and non-persistent:
 
