@@ -12,6 +12,127 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-15 - S4-T07 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- S4-T07 stayed documentation/status reconciliation only; no Python source, schema, tests, API behavior, persistence behavior, parser behavior, search/timeline code, UI, native dependency configuration, Stage 5 implementation, commit, or push was added.
+- Final Stage 4 docs accurately describe S4-T01 contracts, S4-T02 provider-backed hashing, S4-T03 bounded signature detection, S4-T04 extension mismatch over existing signature results plus metadata, S4-T05 fixture-sized known-file matching over existing hash results plus caller-supplied in-memory records, and S4-T06 persistence planning only.
+- Stage 3 export-output SHA-256 verification remains separate from Stage 4 per-file analysis hashing, and whole-image verification remains unsupported.
+- Docs keep synthetic/generated/provider-backed labels visible and preserve the warning that Stage 5 must not turn synthetic or stub-only data into confident real-evidence findings.
+- Stage 5 remains rough/draft with all tickets unstarted; S5-T00 readiness review is the next appropriate handoff.
+- Manual-test status remains `Untested`.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 2.45s.
+
+Residual notes:
+
+- Stage 5 should start with a readiness/risk audit that either adds a reality anchor or explicitly limits search/timeline to provenance-rich, labeled provider-backed records.
+
+## 2026-07-15 - S4-T07 Stage 4 Documentation Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- Marked `tickets/stage-4/S4-T07-docs-review-handoff.md` as `Review`.
+- Reconciled top-level, backend, ticket, fixture, progression, review, and documentation logs for the final Stage 4 behavior and limits.
+- Documented S4-T01 contracts, S4-T02 provider-backed hashing, S4-T03 bounded signature detection, S4-T04 extension mismatch over existing signature results plus metadata, S4-T05 fixture-sized known-file matching over existing hash results plus caller-supplied in-memory records, and S4-T06 persistence planning only.
+- Re-stated that Stage 3 export-output SHA-256 verification is separate from Stage 4 per-file analysis hashing, and whole-image verification remains unsupported.
+- Kept synthetic/generated/provider-backed labels visible and kept Stage 5 rough/draft with all tickets still unstarted.
+
+Scope intentionally not implemented:
+
+- No Python source, schema, tests, API behavior, persistence behavior, search/timeline code, UI, parser behavior, native dependency configuration, Stage 5 implementation, commit, or push.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 4.21s.
+
+## 2026-07-15 - S4-T07 Handoff Preparation
+
+Result: ready for implementation agent.
+
+Guardrails:
+
+- S4-T07 is documentation/review-handoff only.
+- S4-T01 through S4-T06 are reviewed and done; S4-T07 should reconcile docs and prepare Stage 5 readiness notes without new behavior.
+- Do not modify Python source, tests, SQLite schema, case-store helpers, API wrappers, persistence behavior, search/timeline code, UI, parser code, native dependency configuration, commit, or push.
+- Final Stage 4 docs must separate provider-backed per-file analysis from Stage 3 export-output verification and unsupported whole-image verification.
+- Docs must preserve synthetic/generated/provider-backed labels and avoid implying real evidence-backed filesystem extraction.
+- Stage 5 must remain rough/draft and should preserve source/provenance/status/warnings/source-kind uncertainty before any search/timeline implementation.
+
+Expected verification:
+
+- `python -m pytest`.
+
+## 2026-07-15 - S4-T06 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- S4-T06 stayed planning/documentation-only and did not change Python source, tests, SQLite schema, case-store exports, file export behavior, or Stage 4 analysis behavior.
+- The persistence decision is correctly deferred until a later reviewed workflow/API/job layer owns explicit caller intent, connection/case context, and policy for successful, failed, partial, and not-evaluated results.
+- Future persistence requirements preserve source provenance, content-source identity, source kind, synthetic/generated labels, status JSON, full result JSON with `schema_version`, warnings, timestamps, and provider/parser names and versions.
+- The recommended future schema direction is clear enough for a later ticket: a parent `analysis_results` table plus optional child/index tables for hash digests, signature detections, extension mismatch flags, and known-file matches.
+- Docs explicitly state that embedded `case_id` or `evidence_id` values in analysis provenance do not trigger writes, and standalone Stage 4 helper calls remain non-persistent.
+- Search/timeline/reporting, UI, external known-file dataset storage, real parser work, native dependencies, S4-T07, and Stage 5 remain deferred.
+
+Tests:
+
+- `python -m pytest`: passed with 152 tests.
+
+Residual notes:
+
+- S4-T07 should reconcile Stage 4 docs and preserve the reality-anchor warning before Stage 5 search/timeline work begins.
+
+## 2026-07-15 - S4-T06 Case-Store Persistence Plan Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `tickets/stage-4/S4-T06-case-store-persistence-plan.md` is marked `Review`.
+- S4-T06 documents that analysis-result persistence is deferred beyond this ticket.
+- The plan records an explicit opt-in future persistence context: SQLite connection, explicit case id, optional evidence id, optional actor/examiner, optional analysis job id, failed/partial/not-evaluated result policy, and caller intent to persist.
+- Future table requirements are documented for stable result id, case/evidence ids, analysis type, source provenance JSON, content-source identity JSON, source kind, synthetic/generated flags, status code/JSON, full result JSON with `schema_version`, warnings JSON, timestamps, and parser/provider name/version fields.
+- Future index/query needs are documented for case/evidence id, file id/path, analysis type, status, source kind, hash digests, detected signatures, mismatch values, and known-file categories.
+- The recommended future schema direction is a parent `analysis_results` table plus optional child/index tables for hash digests, signature detections, extension mismatch flags, and known-file matches.
+- Docs state that embedded `case_id` or `evidence_id` in analysis provenance must not trigger writes, and standalone Stage 4 helper calls must remain non-persistent.
+
+Scope intentionally not implemented:
+
+- No SQLite schema migration, new table, case-store helper, API wrapper, automatic persistence, background job, test change, S4-T01 through S4-T05 behavior change, search/timeline/reporting/UI, external known-file dataset storage, real parser work, native dependency, S4-T07, Stage 5, commit, or push.
+
+Tests:
+
+- Full run: `python -m pytest` reported 152 passed in 3.10s.
+
+## 2026-07-15 - S4-T06 Handoff Preparation
+
+Result: ready for implementation agent.
+
+Guardrails:
+
+- S4-T06 is planning/documentation-only.
+- Do not modify `app/backend/case_store/schema.py`, add migrations, add tables, add persistence helpers, add API wrappers, or add tests unless a code change is explicitly approved later.
+- The current case store has cases, evidence sources, audit events, and schema migrations only.
+- Stage 3 export audit is the model for explicit opt-in persistence; embedded source `case_id` or `evidence_id` must not trigger writes.
+- The future plan must preserve source provenance, content-source identity, source kind, synthetic/generated labels, statuses, warnings, timestamps, and full result JSON.
+- Future persistence should be designed for hash, signature, extension mismatch, and known-file match result shapes, while keeping search/timeline/reporting out of Stage 4.
+- Do not change S4-T01 through S4-T05 behavior, do not add background jobs, and do not start Stage 5 work.
+
+Expected verification:
+
+- `python -m pytest`.
+
 ## 2026-07-14 - S4-T05 Review
 
 Result: approved for commit.

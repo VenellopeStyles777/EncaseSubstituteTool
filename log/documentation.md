@@ -2,6 +2,59 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-15 - S4-T07 Review Documentation
+
+- Marked S4-T07 reviewed and done.
+- Recorded no blocking findings in `review.md`.
+- Updated Stage 4 status docs to complete and kept Stage 5 rough/draft.
+- Confirmed S4-T07 remained documentation/status-only and did not change source, schema, tests, API behavior, persistence behavior, parser behavior, UI, native dependency configuration, or Stage 5 implementation.
+- Confirmed Stage 5 should begin with S5-T00 readiness review before implementation.
+- Reviewer verification: `python -m pytest` reported 152 passed in 2.45s.
+
+## 2026-07-15 - S4-T07 Documentation Handoff
+
+- Marked S4-T07 as `Review` and reconciled Stage 4 documentation/status after S4-T01 through S4-T06 were reviewed and done.
+- Documented the final Stage 4 behavior: contracts, provider-backed hashing, bounded signature detection, extension mismatch over existing signature results plus metadata, fixture-sized known-file matching over existing hash results plus caller-supplied in-memory records, and persistence planning only.
+- Re-stated Stage 4 limits: no real EWF/partition/filesystem parsing, no real filesystem file-content extraction, no whole-image verification, no analysis-result persistence implementation, no Stage 4 API wrappers, no search/timeline/reporting/UI, no external known-file datasets or NSRL import, no deleted recovery/carving, and no required native dependencies.
+- Kept Stage 3 export-output verification separate from Stage 4 per-file analysis hashing.
+- Kept synthetic/generated/provider-backed labels visible and left Stage 5 rough/draft with all tickets still unstarted.
+- Confirmed no behavior, schema, test, API, persistence, parser, UI, native dependency, commit, push, or Stage 5 implementation changes were made for S4-T07.
+- Verification: `python -m pytest` reported 152 passed in 4.21s.
+
+## 2026-07-15 - S4-T07 Handoff Preparation
+
+- Expanded S4-T07 into an implementation-ready documentation/review-handoff ticket.
+- Marked S4-T07 ready in Stage 4 planning docs.
+- Added guardrails that S4-T07 must not change code, schema, tests, persistence, API wrappers, search/timeline, UI, parser behavior, native dependencies, or Stage 5 ticket status beyond rough readiness notes.
+- Re-stated the final documentation goals: reconcile Stage 4 behavior/limits, keep Stage 3 export-output verification separate, keep whole-image verification unsupported, preserve synthetic/generated/provider-backed labels, and prepare Stage 5 readiness notes.
+- Added `prompts/vscode-agent/2026-07-15-s4-t07-stage-4-docs-review-handoff.md` as the paste-ready coding-agent prompt.
+
+## 2026-07-15 - S4-T06 Review Documentation
+
+- Marked S4-T06 reviewed and done.
+- Recorded no blocking findings in `review.md`.
+- Confirmed S4-T06 remained planning/documentation-only and did not change schema, persistence helpers, API wrappers, analysis behavior, or tests.
+- Confirmed future analysis-result persistence remains deferred and must be explicit opt-in.
+- Updated Stage 4 status docs and backend overview to include the reviewed S4-T06 state.
+- Reviewer verification: `python -m pytest` passed with 152 tests.
+
+## 2026-07-15 - S4-T06 Implementation Documentation
+
+- Marked S4-T06 as implemented and ready for review while keeping it planning/documentation-only.
+- Documented that actual analysis-result persistence remains deferred beyond S4-T06.
+- Added future explicit opt-in persistence context, table requirements, index/query needs, and parent/child table direction to case-store and Stage 4 docs.
+- Re-stated that embedded analysis `case_id` or `evidence_id` values must not trigger writes, and standalone Stage 4 helper calls remain non-persistent.
+- Confirmed no schema, migration, persistence helper, API wrapper, test, search/timeline/reporting/UI, real parser, native dependency, S4-T07, or Stage 5 work was added.
+
+## 2026-07-15 - S4-T06 Handoff Preparation
+
+- Expanded S4-T06 into an implementation-ready planning-only case-store persistence decision ticket.
+- Marked S4-T06 ready in Stage 4 planning docs.
+- Added the key guardrail that S4-T06 must not change SQLite schema, add migrations, add persistence helpers, add API wrappers, or change S4-T01 through S4-T05 behavior.
+- Documented the decision direction: defer analysis-result persistence implementation until a later reviewed workflow/job/API layer can own explicit opt-in writes.
+- Re-stated that future persistence must preserve provenance, content-source identity, source kind, synthetic/generated labels, statuses, warnings, timestamps, and full result JSON.
+- Added `prompts/vscode-agent/2026-07-15-s4-t06-case-store-persistence-plan.md` as the paste-ready coding-agent prompt.
+
 ## 2026-07-14 - S4-T05 Implementation Documentation
 
 - Documented S4-T05 fixture-sized known-file matching as implemented for review handoff.

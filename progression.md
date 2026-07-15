@@ -12,6 +12,42 @@ YYYY-MM-DD
 - Next:
 ```
 
+2026-07-15
+- Completed: reviewed S4-T07 documentation/status handoff, marked it done, and closed Stage 4.
+- Learned: Stage 4 is complete as a provider-backed analysis foundation, but the key risk remains the missing real evidence-backed filesystem content path before search/timeline/reporting can be confidence-heavy.
+- Blocked by: nothing for S4-T07; Stage 5 should begin with S5-T00 readiness review before implementation.
+- Next: commit S4-T07 after approval, then prepare S5-T00 when requested. Reviewer verification: `python -m pytest` reported 152 passed in 2.45s.
+
+2026-07-15
+- Completed: implemented S4-T07 as a documentation/status reconciliation handoff and marked the ticket `Review`.
+- Learned: the final Stage 4 docs now consistently separate provider-backed per-file analysis from Stage 3 export-output verification, unsupported whole-image verification, deferred persistence, and rough/draft Stage 5 search/timeline work.
+- Blocked by: nothing for S4-T07; code/schema/tests/API behavior, persistence implementation, search/timeline, UI, parser work, native dependencies, and Stage 5 implementation were intentionally unchanged.
+- Next: hand S4-T07 to the research/review agent. Final verification: `python -m pytest` reported 152 passed in 4.21s.
+
+2026-07-15
+- Completed: expanded S4-T07 into a ready documentation/review-handoff ticket and prepared the VS Code coding-agent prompt.
+- Learned: the final Stage 4 handoff needs to emphasize provider-backed analysis limits, non-persistence, and the reality-anchor risk before Stage 5 search/timeline begins.
+- Blocked by: nothing for S4-T07 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-15-s4-t07-stage-4-docs-review-handoff.md`, then review the documentation-only result.
+
+2026-07-15
+- Completed: reviewed S4-T06 documentation-only case-store persistence planning and marked it done.
+- Learned: the plan keeps analysis helpers non-persistent while giving later workflow/API/job work a clear explicit opt-in persistence shape.
+- Blocked by: nothing for S4-T06; actual schema migrations, persistence helpers, API wrappers, background jobs, search/timeline/reporting, UI, external known-file dataset storage, real parser work, and Stage 5 remain deferred.
+- Next: commit S4-T06 after approval, then prepare S4-T07 documentation/review handoff. Reviewer verification: `python -m pytest` passed with 152 tests.
+
+2026-07-15
+- Completed: implemented S4-T06 as a documentation-only case-store persistence plan, marking the ticket ready for review without schema, code, or test changes.
+- Learned: future analysis persistence needs an explicit context similar to `ExportAuditContext`, plus a parent `analysis_results` table direction and optional child/index tables for hash, signature, mismatch, and known-file query needs.
+- Blocked by: nothing for S4-T06 implementation; actual schema migrations, persistence helpers, API wrappers, background jobs, search/timeline/reporting, UI, external known-file dataset storage, real parser work, and Stage 5 remain deferred.
+- Next: hand S4-T06 to the review agent, then prepare S4-T07 only after review. Final verification: `python -m pytest` reported 152 passed in 3.10s.
+
+2026-07-15
+- Completed: expanded S4-T06 into a ready planning-only case-store persistence decision ticket and prepared the VS Code coding-agent prompt.
+- Learned: existing case-store persistence is limited to explicit helper calls and S3 export audit context, so analysis-result persistence should be documented now but deferred until a reviewed workflow/job layer can own explicit opt-in writes.
+- Blocked by: nothing for S4-T06 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-15-s4-t06-case-store-persistence-plan.md`, then review the documentation-only result before preparing S4-T07.
+
 2026-07-14
 - Completed: reviewed S4-T05 fixture-sized known-file matching and marked the ticket done.
 - Learned: the implementation preserves reviewed hash provenance, digest statuses, source labels, and caller record metadata without adding byte reads, implicit hashing, disk/network known-file readers, persistence, or external datasets.

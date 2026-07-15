@@ -6,7 +6,7 @@ Stage 4 builds on Stage 3 export/content-provider boundaries, but it must remain
 
 ## Stage 4 Status
 
-Status: In Progress. S4-T01 contract implementation, S4-T02 provider-backed hashing, S4-T03 file signature detection, S4-T04 extension mismatch rules, and S4-T05 fixture-sized known-file matching are reviewed and done; S4-T06 case-store persistence planning is the next ticket to prepare when requested.
+Status: Complete. S4-T01 contract implementation, S4-T02 provider-backed hashing, S4-T03 file signature detection, S4-T04 extension mismatch rules, S4-T05 fixture-sized known-file matching, S4-T06 case-store persistence planning, and S4-T07 documentation/review handoff are reviewed and done.
 
 The Stage 4 review-agent familiarization and risk audit is complete. Continue one reviewed ticket at a time so hash, signature, known-file, and persistence work do not blur together.
 
@@ -18,6 +18,22 @@ python -m pytest
 
 Result recorded by the Stage 4 review agent: `99 passed in 6.46s`.
 
+S4-T07 implementation verification:
+
+```powershell
+python -m pytest
+```
+
+Result: `152 passed in 4.21s`.
+
+S4-T07 review verification:
+
+```powershell
+python -m pytest
+```
+
+Result: `152 passed in 2.45s`.
+
 ## Current Truth
 
 Real today:
@@ -25,6 +41,7 @@ Real today:
 - `LocalFileImageStream` can read tiny local files in read-only mode.
 - Stage 3 export can write explicit provider bytes to an examiner/test-selected destination, refuse overwrites, clean up failed writes, write a manifest, compute SHA-256 from the written artifact, and optionally audit through explicit `ExportAuditContext`.
 - SQLite case-store helpers can persist cases, evidence-source intake snapshots, and audit events when explicitly called.
+- `content_analysis.py` can compute per-file hashes, detect bounded file signatures, evaluate extension mismatches, and match tiny caller-supplied known-file records when callers provide the reviewed Stage 4 inputs.
 
 Stubbed or synthetic today:
 
@@ -33,6 +50,7 @@ Stubbed or synthetic today:
 - Filesystem entries are deterministic stub metadata or pytsk3 dependency-status skeletons.
 - Preview bytes come from explicit preview providers; the default provider is synthetic.
 - Export bytes come from explicit export providers; the default provider is synthetic.
+- Default Stage 4 analysis bytes come from explicit synthetic/generated analysis providers and are labeled in analysis results.
 
 Not proved today:
 
@@ -41,7 +59,7 @@ Not proved today:
 - Real partition or filesystem parsing.
 - Real filesystem file-content extraction.
 - Deleted-file recovery or carving.
-- Hash/signature analysis over evidence-derived file bytes.
+- Hash/signature analysis over evidence-derived filesystem file bytes.
 
 ## Detailed Ticket Order
 
@@ -53,8 +71,8 @@ Not proved today:
 | [S4-T03](S4-T03-file-signature-detection.md) | Done | File signature/magic-byte detection over bounded provider bytes |
 | [S4-T04](S4-T04-extension-mismatch-rules.md) | Done | Extension mismatch result rules where metadata and signature both exist |
 | [S4-T05](S4-T05-known-file-matching.md) | Done | Fixture-sized known-file matching over caller-supplied in-memory records |
-| [S4-T06](S4-T06-case-store-persistence-plan.md) | Draft | Optional case-store persistence plan for hash/signature results |
-| [S4-T07](S4-T07-docs-review-handoff.md) | Draft | Stage 4 documentation and review handoff |
+| [S4-T06](S4-T06-case-store-persistence-plan.md) | Done | Planning-only case-store persistence decision for analysis results |
+| [S4-T07](S4-T07-docs-review-handoff.md) | Done | Stage 4 documentation and review handoff |
 
 ## Stage 4 Guardrails
 
@@ -64,6 +82,7 @@ Not proved today:
 - Keep whole-image verification separate unless the image/adapter layer exposes verified evidence bytes and expected verification values.
 - Keep MD5/SHA-1 framed as forensic comparison hashes, not stronger integrity signals than SHA-256.
 - Keep known-file matching small and optional; do not require NSRL-scale datasets or network access for default tests.
+- Keep analysis-result persistence explicit and deferred until a later reviewed workflow/API/job layer owns write intent and persistence context.
 - Do not require `pyewf`, libewf, `pytsk3`, The Sleuth Kit, `python-magic`, Node, UI tooling, or real evidence for default tests.
 - Do not add search, timeline, reporting, UI, deleted recovery, carving, real EWF parsing, partition parsing, or real filesystem parsing in Stage 4 unless a later reviewed ticket explicitly changes scope.
 
@@ -84,5 +103,6 @@ Recommended handling:
 - Signature detection uses bounded provider bytes and structured statuses for detected, unknown, unsupported, and insufficient content.
 - Extension mismatch logic only runs when both file metadata and detected signature information are available.
 - Known-file matching remains fixture-sized, optional, in-memory, and reviewed before persistence or search/timeline work builds on it.
-- Case-store persistence is planned or implemented only after standalone result shapes are stable.
+- Case-store persistence is planned only after standalone result shapes are stable; S4-T06 defers implementation and documents future explicit opt-in requirements.
 - Documentation clearly separates per-file provider-backed analysis from export-output verification and whole-image verification.
+- S4-T07 reconciles Stage 4 documentation/status and completed the final Stage 4 handoff without starting Stage 5.

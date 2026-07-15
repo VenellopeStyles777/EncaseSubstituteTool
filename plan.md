@@ -10,8 +10,8 @@ Suggested first planning format:
 | 1 | Build E01 evidence intake spike | Done | S1-T01 through S1-T06 complete. Stage 1 is a backend intake foundation, not real EWF/filesystem parsing. |
 | 2 | Add volume/filesystem browsing MVP | Done | S2-T01 through S2-T07 complete. Stage 2 is a backend fixture/stub browsing foundation, not real EWF/partition/filesystem parsing. |
 | 3 | Add export/recovery foundation | Done | S3-T01 through S3-T06 complete. Stage 3 is a backend fixture/stub export foundation, not real extraction or recovery. |
-| 4 | Add hashing and signature checks | In Progress | S4-T01 contracts, S4-T02 provider-backed hashing, S4-T03 signature detection, S4-T04 extension mismatch rules, and S4-T05 known-file matching are reviewed/done; S4-T06 persistence planning remains draft. |
-| 5 | Add search and timeline foundations | Rough | Rough ticket plan exists under `tickets/stage-5/`; do not start until Stage 4 contracts and handoff are reviewed. |
+| 4 | Add hashing and signature checks | Done | S4-T01 through S4-T07 are reviewed/done. Stage 4 remains provider-backed and does not prove real filesystem extraction. |
+| 5 | Add search and timeline foundations | Rough | Rough ticket plan exists under `tickets/stage-5/`; start with S5-T00 readiness review before any implementation. |
 
 ## Stage 1 Work Targets
 
@@ -140,8 +140,8 @@ Detailed Stage 4 ticket sequence:
 - S4-T03: file signature/magic-byte detection over bounded provider bytes. Status: Done.
 - S4-T04: extension mismatch result rules where metadata and reviewed signature results both exist. Status: Done.
 - S4-T05: fixture-sized known-file matching over caller-supplied in-memory records. Status: Done.
-- S4-T06: optional case-store persistence plan for hash/signature results. Status: Draft.
-- S4-T07: Stage 4 documentation and review handoff. Status: Draft.
+- S4-T06: planning-only case-store persistence decision for analysis results. Status: Done.
+- S4-T07: Stage 4 documentation and review handoff. Status: Done.
 
 Stage 4 guardrails:
 
@@ -152,7 +152,7 @@ Stage 4 guardrails:
 
 ## Stage 5 Rough Ticket Plan
 
-Stage 5 should wait for reviewed Stage 4 result contracts and documentation handoff. Its job is to define search and timeline foundations over explicit, provenance-rich records without hiding parser/source uncertainty.
+Stage 5 remains rough/draft and should start with S5-T00 readiness review. Its job is to define search and timeline foundations over explicit, provenance-rich records without hiding parser/source uncertainty.
 
 Rough Stage 5 ticket sequence:
 
@@ -170,7 +170,7 @@ Stage 5 guardrails:
 - Do not implement full-text search until text extraction is explicit, provider-backed, and honestly labeled.
 - Do not hide dependency-unavailable, parser-not-implemented, synthetic-provider, partial, unsupported, or failed states.
 - Do not imply real filesystem coverage when searching stub metadata.
-- Preserve source path, evidence id when available, volume id, file id/path, provider/source identity, parser/source status, warnings, and timestamp context in results.
+- Preserve source path, evidence id when available, volume id, file id/path, provider/source identity, source kind, parser/source status, warnings, synthetic/generated labels, and timestamp context in results.
 - Keep UI/reporting, real parser work, deleted recovery, carving, and required native dependencies out of Stage 5 unless a later reviewed ticket changes scope.
 
 ## Forward Stage Risks
