@@ -40,6 +40,7 @@ Stage 4 contract start:
 - S4-T03 adds bounded file signature detection from explicit Stage 4 analysis provider bytes only.
 - S4-T04 adds extension mismatch evaluation over reviewed signature results and file name/path metadata only.
 - S4-T05 adds fixture-sized known-file matching over reviewed hash results and caller-supplied in-memory records only.
+- S4-T06 documents future case-store persistence requirements and keeps current analysis helpers non-persistent.
 - Per-file analysis content remains separate from Stage 2 preview rendering, Stage 3 export-output verification, and future whole-image verification.
 
 ## S1-T02 Segment Discovery
@@ -309,6 +310,23 @@ Current S4-T05 behavior:
 - keeps synthetic/generated content-source labels and adds context warnings when a match came from synthetic or generated fixture hash bytes.
 
 S4-T05 does not accept analysis providers, read bytes, calculate hashes, read known-file lists from disk or network, import NSRL-scale datasets, persist results, add search/timeline behavior, change S4-T02/S4-T03/S4-T04 behavior, parse real evidence/filesystems, recover deleted files, carve data, require native dependencies, or start Stage 5 work.
+
+## S4-T06 Case-Store Persistence Plan
+
+S4-T06 is planning/documentation-only. The Stage 4 result shapes are stable enough to describe future persistence, but `content_analysis.py` still does not write to SQLite or accept persistence context.
+
+Current behavior remains non-persistent:
+
+- `hash_file_content()` / `calculate_hashes()` return `HashAnalysisResult` only;
+- `detect_file_signature()` / `analyze_file_signature()` return `SignatureAnalysisResult` only;
+- `evaluate_extension_mismatch()` / `check_extension_mismatch()` return `ExtensionMismatchResult` only;
+- `match_known_file_hashes()` / `match_known_files()` return `KnownFileMatchResult` only.
+
+Future persistence should be explicit opt-in and should not be triggered by `case_id` or `evidence_id` values embedded in source provenance. A later workflow/API/job layer should provide a SQLite connection, explicit case id, optional evidence id, optional actor/examiner, optional analysis job id, caller intent to persist, and a policy for successful, failed, partial, and not-evaluated results.
+
+Future rows must preserve source provenance, content-source identity, source kind, synthetic/generated flags, status JSON, full result JSON with `schema_version`, warnings, timestamps, and provider/parser names and versions. The recommended schema direction is a parent `analysis_results` table plus optional child/index tables for hash digests, signature detections, extension mismatch flags, and known-file match categories.
+
+S4-T06 does not add schema migrations, persistence helpers, API wrappers, background jobs, search/timeline/reporting, UI, external known-file dataset storage, real parser work, native dependencies, or Stage 5 work.
 
 ## S3-T05 Deleted-File Recovery Plan
 

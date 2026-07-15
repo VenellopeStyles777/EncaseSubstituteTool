@@ -12,6 +12,24 @@ YYYY-MM-DD
 - Next:
 ```
 
+2026-07-15
+- Completed: reviewed S4-T06 documentation-only case-store persistence planning and marked it done.
+- Learned: the plan keeps analysis helpers non-persistent while giving later workflow/API/job work a clear explicit opt-in persistence shape.
+- Blocked by: nothing for S4-T06; actual schema migrations, persistence helpers, API wrappers, background jobs, search/timeline/reporting, UI, external known-file dataset storage, real parser work, and Stage 5 remain deferred.
+- Next: commit S4-T06 after approval, then prepare S4-T07 documentation/review handoff. Reviewer verification: `python -m pytest` passed with 152 tests.
+
+2026-07-15
+- Completed: implemented S4-T06 as a documentation-only case-store persistence plan, marking the ticket ready for review without schema, code, or test changes.
+- Learned: future analysis persistence needs an explicit context similar to `ExportAuditContext`, plus a parent `analysis_results` table direction and optional child/index tables for hash, signature, mismatch, and known-file query needs.
+- Blocked by: nothing for S4-T06 implementation; actual schema migrations, persistence helpers, API wrappers, background jobs, search/timeline/reporting, UI, external known-file dataset storage, real parser work, and Stage 5 remain deferred.
+- Next: hand S4-T06 to the review agent, then prepare S4-T07 only after review. Final verification: `python -m pytest` reported 152 passed in 3.10s.
+
+2026-07-15
+- Completed: expanded S4-T06 into a ready planning-only case-store persistence decision ticket and prepared the VS Code coding-agent prompt.
+- Learned: existing case-store persistence is limited to explicit helper calls and S3 export audit context, so analysis-result persistence should be documented now but deferred until a reviewed workflow/job layer can own explicit opt-in writes.
+- Blocked by: nothing for S4-T06 handoff.
+- Next: give the coding agent `prompts/vscode-agent/2026-07-15-s4-t06-case-store-persistence-plan.md`, then review the documentation-only result before preparing S4-T07.
+
 2026-07-14
 - Completed: reviewed S4-T05 fixture-sized known-file matching and marked the ticket done.
 - Learned: the implementation preserves reviewed hash provenance, digest statuses, source labels, and caller record metadata without adding byte reads, implicit hashing, disk/network known-file readers, persistence, or external datasets.

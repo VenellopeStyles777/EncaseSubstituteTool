@@ -12,6 +12,68 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-15 - S4-T06 Review
+
+Result: approved for commit.
+
+Findings:
+
+- No blocking issues found.
+- S4-T06 stayed planning/documentation-only and did not change Python source, tests, SQLite schema, case-store exports, file export behavior, or Stage 4 analysis behavior.
+- The persistence decision is correctly deferred until a later reviewed workflow/API/job layer owns explicit caller intent, connection/case context, and policy for successful, failed, partial, and not-evaluated results.
+- Future persistence requirements preserve source provenance, content-source identity, source kind, synthetic/generated labels, status JSON, full result JSON with `schema_version`, warnings, timestamps, and provider/parser names and versions.
+- The recommended future schema direction is clear enough for a later ticket: a parent `analysis_results` table plus optional child/index tables for hash digests, signature detections, extension mismatch flags, and known-file matches.
+- Docs explicitly state that embedded `case_id` or `evidence_id` values in analysis provenance do not trigger writes, and standalone Stage 4 helper calls remain non-persistent.
+- Search/timeline/reporting, UI, external known-file dataset storage, real parser work, native dependencies, S4-T07, and Stage 5 remain deferred.
+
+Tests:
+
+- `python -m pytest`: passed with 152 tests.
+
+Residual notes:
+
+- S4-T07 should reconcile Stage 4 docs and preserve the reality-anchor warning before Stage 5 search/timeline work begins.
+
+## 2026-07-15 - S4-T06 Case-Store Persistence Plan Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- `tickets/stage-4/S4-T06-case-store-persistence-plan.md` is marked `Review`.
+- S4-T06 documents that analysis-result persistence is deferred beyond this ticket.
+- The plan records an explicit opt-in future persistence context: SQLite connection, explicit case id, optional evidence id, optional actor/examiner, optional analysis job id, failed/partial/not-evaluated result policy, and caller intent to persist.
+- Future table requirements are documented for stable result id, case/evidence ids, analysis type, source provenance JSON, content-source identity JSON, source kind, synthetic/generated flags, status code/JSON, full result JSON with `schema_version`, warnings JSON, timestamps, and parser/provider name/version fields.
+- Future index/query needs are documented for case/evidence id, file id/path, analysis type, status, source kind, hash digests, detected signatures, mismatch values, and known-file categories.
+- The recommended future schema direction is a parent `analysis_results` table plus optional child/index tables for hash digests, signature detections, extension mismatch flags, and known-file matches.
+- Docs state that embedded `case_id` or `evidence_id` in analysis provenance must not trigger writes, and standalone Stage 4 helper calls must remain non-persistent.
+
+Scope intentionally not implemented:
+
+- No SQLite schema migration, new table, case-store helper, API wrapper, automatic persistence, background job, test change, S4-T01 through S4-T05 behavior change, search/timeline/reporting/UI, external known-file dataset storage, real parser work, native dependency, S4-T07, Stage 5, commit, or push.
+
+Tests:
+
+- Full run: `python -m pytest` reported 152 passed in 3.10s.
+
+## 2026-07-15 - S4-T06 Handoff Preparation
+
+Result: ready for implementation agent.
+
+Guardrails:
+
+- S4-T06 is planning/documentation-only.
+- Do not modify `app/backend/case_store/schema.py`, add migrations, add tables, add persistence helpers, add API wrappers, or add tests unless a code change is explicitly approved later.
+- The current case store has cases, evidence sources, audit events, and schema migrations only.
+- Stage 3 export audit is the model for explicit opt-in persistence; embedded source `case_id` or `evidence_id` must not trigger writes.
+- The future plan must preserve source provenance, content-source identity, source kind, synthetic/generated labels, statuses, warnings, timestamps, and full result JSON.
+- Future persistence should be designed for hash, signature, extension mismatch, and known-file match result shapes, while keeping search/timeline/reporting out of Stage 4.
+- Do not change S4-T01 through S4-T05 behavior, do not add background jobs, and do not start Stage 5 work.
+
+Expected verification:
+
+- `python -m pytest`.
+
 ## 2026-07-14 - S4-T05 Review
 
 Result: approved for commit.

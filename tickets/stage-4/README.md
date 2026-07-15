@@ -6,7 +6,7 @@ Stage 4 builds on Stage 3 export/content-provider boundaries, but it must remain
 
 ## Stage 4 Status
 
-Status: In Progress. S4-T01 contract implementation, S4-T02 provider-backed hashing, S4-T03 file signature detection, S4-T04 extension mismatch rules, and S4-T05 fixture-sized known-file matching are reviewed and done; S4-T06 case-store persistence planning is the next ticket to prepare when requested.
+Status: In Progress. S4-T01 contract implementation, S4-T02 provider-backed hashing, S4-T03 file signature detection, S4-T04 extension mismatch rules, S4-T05 fixture-sized known-file matching, and S4-T06 case-store persistence planning are reviewed and done; S4-T07 documentation/review handoff is next.
 
 The Stage 4 review-agent familiarization and risk audit is complete. Continue one reviewed ticket at a time so hash, signature, known-file, and persistence work do not blur together.
 
@@ -53,7 +53,7 @@ Not proved today:
 | [S4-T03](S4-T03-file-signature-detection.md) | Done | File signature/magic-byte detection over bounded provider bytes |
 | [S4-T04](S4-T04-extension-mismatch-rules.md) | Done | Extension mismatch result rules where metadata and signature both exist |
 | [S4-T05](S4-T05-known-file-matching.md) | Done | Fixture-sized known-file matching over caller-supplied in-memory records |
-| [S4-T06](S4-T06-case-store-persistence-plan.md) | Draft | Optional case-store persistence plan for hash/signature results |
+| [S4-T06](S4-T06-case-store-persistence-plan.md) | Done | Planning-only case-store persistence decision for analysis results |
 | [S4-T07](S4-T07-docs-review-handoff.md) | Draft | Stage 4 documentation and review handoff |
 
 ## Stage 4 Guardrails
@@ -64,6 +64,7 @@ Not proved today:
 - Keep whole-image verification separate unless the image/adapter layer exposes verified evidence bytes and expected verification values.
 - Keep MD5/SHA-1 framed as forensic comparison hashes, not stronger integrity signals than SHA-256.
 - Keep known-file matching small and optional; do not require NSRL-scale datasets or network access for default tests.
+- Keep analysis-result persistence explicit and deferred until a later reviewed workflow/API/job layer owns write intent and persistence context.
 - Do not require `pyewf`, libewf, `pytsk3`, The Sleuth Kit, `python-magic`, Node, UI tooling, or real evidence for default tests.
 - Do not add search, timeline, reporting, UI, deleted recovery, carving, real EWF parsing, partition parsing, or real filesystem parsing in Stage 4 unless a later reviewed ticket explicitly changes scope.
 
@@ -84,5 +85,5 @@ Recommended handling:
 - Signature detection uses bounded provider bytes and structured statuses for detected, unknown, unsupported, and insufficient content.
 - Extension mismatch logic only runs when both file metadata and detected signature information are available.
 - Known-file matching remains fixture-sized, optional, in-memory, and reviewed before persistence or search/timeline work builds on it.
-- Case-store persistence is planned or implemented only after standalone result shapes are stable.
+- Case-store persistence is planned only after standalone result shapes are stable; S4-T06 defers implementation and documents future explicit opt-in requirements.
 - Documentation clearly separates per-file provider-backed analysis from export-output verification and whole-image verification.

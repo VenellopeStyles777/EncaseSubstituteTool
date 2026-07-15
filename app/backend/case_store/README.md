@@ -59,3 +59,23 @@ Current limits:
 - No automatic evidence-source creation from exports.
 - No analysis-result, bookmark, note, export-artifact, or report tables yet.
 - Audit timestamps use UTC ISO strings with second precision.
+
+## S4-T06 Analysis-Result Persistence Plan
+
+S4-T06 keeps analysis-result persistence documentation-only. The current SQLite schema is unchanged and still contains only `cases`, `evidence_sources`, `audit_events`, and `schema_migrations`.
+
+Stage 4 analysis helpers remain standalone and non-persistent:
+
+- `hash_file_content()` and `calculate_hashes()`;
+- `detect_file_signature()` and `analyze_file_signature()`;
+- `evaluate_extension_mismatch()` and `check_extension_mismatch()`;
+- `match_known_file_hashes()` and `match_known_files()`.
+
+Embedded `case_id` or `evidence_id` values in analysis source provenance preserve context, but they must not trigger writes by themselves. A future persistence feature should follow the `ExportAuditContext` pattern and require explicit caller intent plus persistence context, including a SQLite connection, case id, optional evidence id, optional actor/examiner, optional analysis job id, and a policy for failed, partial, and not-evaluated results.
+
+Recommended future schema direction:
+
+- parent `analysis_results` table for shared fields such as stable result id, case id, evidence id, analysis type, source provenance JSON, content-source identity JSON, source kind, synthetic/generated flags, status code, status JSON, full result JSON with `schema_version`, warnings JSON, created/completed/persisted timestamps, and parser/provider name/version fields;
+- optional child or index tables for hash digests, signature detections, extension mismatch flags, and known-file matches when search/timeline/reporting work needs efficient queries.
+
+Future query/index needs should include case/evidence id, file id/path, analysis type, status code, source kind, hash algorithm/digest, detected type/signature, mismatch value, and known-file matched/category values. Persisted rows must retain synthetic/generated/provider-backed labels so later search, timeline, or reports do not imply real evidence-derived analysis when the source was synthetic or generated.

@@ -19,7 +19,7 @@ The backend package can be imported cleanly:
 - `app.backend.analysis_workers`
 - `app.backend.api`
 
-Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 now has hash/signature analysis result contracts, provider-backed hash calculation, bounded provider-backed file signature detection over explicit analysis content providers, and extension mismatch evaluation over reviewed signature results plus file metadata. The project remains backend-first and has no UI/executable packaging yet.
+Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 now has hash/signature analysis result contracts, provider-backed hash calculation, bounded provider-backed file signature detection over explicit analysis content providers, extension mismatch evaluation over reviewed signature results plus file metadata, fixture-sized known-file matching, and a documentation-only analysis-result persistence plan. The project remains backend-first and has no UI/executable packaging yet.
 
 ## Tests
 
@@ -39,7 +39,7 @@ python -m pip install pytest
 
 Current verification snapshot:
 
-- `python -m pytest`: 140 passed in 4.99s after the S4-T04 extension mismatch implementation handoff.
+- `python -m pytest`: 152 passed after the S4-T06 case-store persistence planning review.
 - The project config routes pytest temporary files to `.test-artifacts/pytest-temp` and disables pytest's optional cache provider.
 
 ## Stage 1 Intake Command
@@ -129,5 +129,6 @@ Implemented so far:
 - `match_known_file_hashes(...)` and `match_known_files(...)` compare reviewed `HashAnalysisResult` digest values with tiny caller-supplied in-memory known-file records only.
 - Known-file match results preserve hash provenance, content-source identity, hash status, digest statuses, bytes analyzed, timestamps, matched record metadata, and synthetic/generated context warnings.
 - Non-ok hashes, missing computed digests, invalid records, duplicate records, no-match states, and conflicting categories for the same matched digest return structured results.
+- S4-T06 documents future case-store persistence requirements for analysis results, but does not add schema, helper functions, API wrappers, background jobs, or automatic writes.
 
-Stage 4 must continue to analyze only explicit content providers for hashing/signature detection, avoid hashing or signature-checking preview text/hex or export artifacts as source analysis content, avoid whole-image verification claims without adapter support, and keep known-file matching fixture-sized/in-memory until a later reviewed ticket adds persistence or larger datasets. Persistence, search/timeline, and UI work remain later reviewed tickets.
+Stage 4 must continue to analyze only explicit content providers for hashing/signature detection, avoid hashing or signature-checking preview text/hex or export artifacts as source analysis content, avoid whole-image verification claims without adapter support, and keep known-file matching fixture-sized/in-memory until a later reviewed ticket adds larger datasets. Analysis-result persistence, search/timeline, and UI work remain later reviewed implementation tickets.

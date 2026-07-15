@@ -13,7 +13,7 @@ These callables are backend-only and JSON-friendly. They do not provide UI, exec
 
 Stage 3 note: S3-T04 can optionally record export attempts in the case-store audit log when the caller supplies explicit audit context. It does not recover deleted files, parse real filesystems, run broader hash/signature analysis, or use preview-rendered text/hex as export bytes.
 
-Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. There is still no API callable/wrapper for hash, signature, mismatch, or known-file analysis. Preview-rendered text/hex, preview providers, export providers, written export artifacts, and external known-file lists remain disallowed as implicit source analysis content.
+Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. There is still no API callable/wrapper for hash, signature, mismatch, known-file, or analysis-result persistence. Preview-rendered text/hex, preview providers, export providers, written export artifacts, and external known-file lists remain disallowed as implicit source analysis content.
 
 ## S1-T04 Intake Command
 
@@ -186,6 +186,14 @@ Current S3-T04 behavior:
 - `export_file_to_json()` accepts the same audit context and passes it through.
 
 S3-T04 uses the existing case-store schema and does not create cases or evidence sources automatically. Audit persistence errors are allowed to surface to the caller rather than being hidden as a successful audit.
+
+## S4-T06 Analysis Persistence Boundary
+
+Stage 4 analysis results are not persisted by the API layer yet. Standalone calls to `hash_file_content()`, `detect_file_signature()`, `evaluate_extension_mismatch()`, or `match_known_file_hashes()` remain JSON-friendly in-memory operations even when their source provenance contains `case_id` or `evidence_id`.
+
+Future analysis persistence should mirror the explicitness of `ExportAuditContext`: callers must provide a SQLite connection, explicit case id, optional evidence id, optional actor/examiner, optional analysis job id, and an explicit intent to persist. The future API/workflow owner must also decide whether successful, failed, partial, and not-evaluated results should be stored.
+
+S4-T06 does not add API wrappers, background jobs, automatic persistence, schema migrations, search/timeline/reporting, UI, external known-file dataset storage, or real parser behavior.
 
 ## S3-T05 Deleted-File Recovery Boundary
 

@@ -204,7 +204,7 @@ Stage 4 review-agent handoff:
 - The Stage 4 coding agent should start with `prompts/vscode-agent/2026-07-14-stage-4-familiarization.md`.
 - The Stage 4 review/research side has read the project, inspected tests/code, run `python -m pytest`, and recorded the S4-T00 risk audit.
 - Detailed Stage 4 tickets now live under `tickets/stage-4/`; S4-T01 contract-only implementation is reviewed and done.
-- S4-T02 provider-backed hashing, S4-T03 file signature detection, S4-T04 extension mismatch rules, and S4-T05 fixture-sized known-file matching are reviewed and done.
+- S4-T02 provider-backed hashing, S4-T03 file signature detection, S4-T04 extension mismatch rules, S4-T05 fixture-sized known-file matching, and S4-T06 planning-only case-store persistence decision are reviewed and done.
 - A rough Stage 5 search/timeline ticket plan now lives under `tickets/stage-5/`.
 - The main carryover risk is the missing real evidence-backed content path. Stage 4 can build provider-backed hash/signature contracts, but future stages need a reality anchor before search, reports, timeline, or UI work imply real forensic extraction.
 

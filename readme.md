@@ -29,6 +29,7 @@ Stage 4 is in progress on top of the completed backend-first forensic browsing a
 - Provider-backed file signature detection over bounded explicit Stage 4 analysis-provider bytes for a small dependency-free magic-byte table.
 - Extension/signature mismatch evaluation over reviewed signature results and file name/path metadata only.
 - Fixture-sized known-file matching over reviewed hash results and caller-supplied in-memory records only.
+- Analysis-result persistence planning that defers schema and behavior changes while requiring future explicit opt-in persistence.
 
 Run tests from the repository root:
 
@@ -78,7 +79,7 @@ What is real versus stubbed today:
 
 Current limitations: the project does not parse real EWF bytes, verify real images, parse real partition tables, parse real filesystems, extract real filesystem content, provide a UI/executable, recover deleted files, carve unallocated space, search, report, import external known-file datasets, or automatically persist analysis results. Real forensic libraries are optional and not required for tests.
 
-Current handoff: S3-T01 through S3-T06 are reviewed and done. Stage 4 review-agent familiarization/risk audit is recorded, detailed Stage 4 tickets now live under `tickets/stage-4/`, and S4-T01 hash/signature contracts, S4-T02 provider-backed hashing, S4-T03 file signature detection, S4-T04 extension mismatch rules, and S4-T05 fixture-sized known-file matching are reviewed and done. S4-T06 case-store persistence planning is the next Stage 4 ticket to prepare when requested. The main carryover risk is the lack of a real evidence-backed content path; future stages need a tiny generated or optional fixture-backed reality anchor before search/report/UI work implies real forensic extraction.
+Current handoff: S3-T01 through S3-T06 are reviewed and done. Stage 4 review-agent familiarization/risk audit is recorded, detailed Stage 4 tickets now live under `tickets/stage-4/`, and S4-T01 hash/signature contracts, S4-T02 provider-backed hashing, S4-T03 file signature detection, S4-T04 extension mismatch rules, S4-T05 fixture-sized known-file matching, and S4-T06 planning-only case-store persistence decision are reviewed and done. No analysis-result schema or persistence behavior has been added. The main carryover risk is the lack of a real evidence-backed content path; future stages need a tiny generated or optional fixture-backed reality anchor before search/report/UI work implies real forensic extraction.
 
 Primary planning files:
 
