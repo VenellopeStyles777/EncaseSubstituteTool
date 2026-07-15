@@ -43,6 +43,7 @@ Stage 4 contract start:
 - S4-T06 documents future case-store persistence requirements and keeps current analysis helpers non-persistent.
 - S4-T07 reconciles documentation/status only and adds no core behavior.
 - Per-file analysis content remains separate from Stage 2 preview rendering, Stage 3 export-output verification, and future whole-image verification.
+- Stage 4.5 is scaffolded as a future first-testing stage for user-provided E01 files before search/timeline. No first-testing command, real EWF metadata reader, verifier, partition parser, filesystem parser, or E01-backed file-content provider has been implemented yet.
 
 ## S1-T02 Segment Discovery
 

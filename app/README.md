@@ -10,3 +10,9 @@ Initial layout:
 - `tests/`: automated tests.
 - `scripts/`: setup and developer utility scripts.
 - `docs/`: app-specific technical documentation.
+
+Stage 4.5 first-testing scaffold:
+
+- `fixtures/user-provided-e01/`: notes for real E01 inputs supplied by the user, not committed to Git.
+- `scripts/first_testing/`: planned command/script location for E01 first-testing workflows.
+- `docs/manual-testing/`: human-run backend workflow checks before a UI exists.

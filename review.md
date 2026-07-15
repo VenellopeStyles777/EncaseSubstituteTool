@@ -12,6 +12,231 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-15 - Stage 5 Detailed Ticket Population
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Read the Stage 5 review-agent handoff prompt and populated detailed Stage 5 tickets S5-T01 through S5-T16.
+- Added matching paste-ready VS Code coding-agent prompts for S5-T01 through S5-T16.
+- Updated the Stage 5 README, main plan, prompt indexes, handoff prompt, workflow notes, and current status docs so S5-T00 remains the documentation cleanup gate and S5-T01 is the hard Stage 4.5 completion gate.
+- Documented that S5-T01 must block S5-T02 and later if the Stage 4.5 substantial-test implementation runway is incomplete.
+
+Scope intentionally not implemented:
+
+- No Python source behavior, tests, schema, parser behavior, evidence handling behavior, native dependency setup, search/timeline implementation, UI, reporting, local artifacts, E01 fixtures, commit, or push.
+
+Verification:
+
+- `python -m pytest`: 152 passed in 4.75s.
+
+## 2026-07-15 - S4.5-T08 Documentation And Review Handoff
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Completed the S4.5-T08 documentation-only handoff and marked the ticket `Review`.
+- Reconciled Stage 4.5 status across top-level docs, app/backend docs, ticket indexes, prompt indexes, manual-testing docs, progression, review notes, and documentation logs.
+- Confirmed S4.5-T00 through S4.5-T07 remain planning in review.
+- Confirmed the implementation runway from S4.5-IMP01 through S4.5-IMP06 stays visible, with S4.5-IMP01 as the next practical implementation slice unless the user changes priority.
+- Preserved the current real-E01 truth: segment filename discovery exists, but real EWF metadata, real verification, partition/filesystem parsing, and E01-backed file-content extraction do not.
+- Kept Stage 5 search/timeline deferred and left broad documentation organization cleanup to S5-T00.
+
+Scope intentionally not implemented:
+
+- No Python source behavior, tests, schema, parser behavior, native dependency setup, evidence handling behavior, UI/reporting, Stage 5 search/timeline implementation, broad S5-T00 cleanup, local artifacts, E01 fixtures, dependency installation, commit, or push.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 10.64s.
+
+## 2026-07-15 - S4.5-T07 Workflow Guardrail Review Optimization
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Sent the S4.5-T06 documentation-only handoff prompt to the Stage 4.5 coding-agent task.
+- Expanded S4.5-T07 into a detailed documentation-only workflow, guardrail, and review optimization plan.
+- Added review gates for the future Stage 4.5 implementation runway.
+- Defined per-slice manual-test/review checklists, required handoff format, review-note categories, `functionality.md` manual-test status rules, privacy/redaction rules, no-overclaim checks, and evidence safety checks.
+- Updated `workflow.md` and the manual-testing guide with Stage 4.5 handoff and review rules.
+- Added a ticket-specific coding-agent prompt that points to the Stage 4.5 familiarization prompt.
+
+Scope intentionally not implemented:
+
+- No Python source, product behavior, output rendering, parser behavior, first-testing command behavior, file-content providers, search/timeline, UI, packaging, deleted recovery, carving, local artifacts, E01 fixtures, dependency installation, commit, or push.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 7.28s.
+
+## 2026-07-15 - S4.5-T06 File List And Output Plan
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Sent the S4.5-T05 documentation-only handoff prompt to the Stage 4.5 coding-agent task.
+- Expanded S4.5-T06 into a detailed documentation-only file-list and output plan.
+- Defined command prompt summary, JSON artifact bundle, CSV file-list columns, optional static HTML, redaction rules, and output artifact layout.
+- Added an implementation runway lining up S4.5 planning tickets into future buildable implementation slices before Stage 5 search/timeline.
+- Added a ticket-specific coding-agent prompt that points to the Stage 4.5 familiarization prompt.
+
+Scope intentionally not implemented:
+
+- No Python source, output rendering, CSV writing, HTML generation, first-testing command behavior, parser behavior, file-content providers, local artifacts, E01 fixtures, dependency installation, search/timeline, reporting UI, packaging, deleted recovery, carving, commit, or push.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 4.26s.
+
+## 2026-07-15 - S4.5-T05 E01 File Content Provider Plan
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Sent the S4.5-T04 documentation-only handoff prompt to the Stage 4.5 coding-agent task.
+- Expanded S4.5-T05 into a detailed documentation-only plan for E01-backed file-content providers.
+- Defined the shared selected-file content reader direction plus thin provider wrappers for preview, export, and analysis.
+- Mapped future real parser bytes to existing `preview_file()`, `export_file()`, `hash_file_content()`, `detect_file_signature()`, and `evaluate_extension_mismatch()` behavior.
+- Added provenance, provider identity, status/warning, memory/streaming, deleted/sparse/special-file, test, manual integration, and implementation-sequence planning.
+- Added a ticket-specific coding-agent prompt that points to the Stage 4.5 familiarization prompt.
+
+Scope intentionally not implemented:
+
+- No Python source, dependency installation, byte extraction, content reader, provider wrapper, parser behavior, streaming API, first-testing command behavior, tests, schema migration, E01 fixtures, manual evidence run, file-list export, static HTML, search/timeline, reporting, UI, commit, or push.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 4.30s.
+
+## 2026-07-15 - S4.5-T04 EWF Stream, Partition, And Filesystem Plan
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Sent the S4.5-T03 documentation-only handoff prompt to the Stage 4.5 coding-agent task.
+- Expanded S4.5-T04 into a detailed documentation-only plan for EWF-backed image streams, partition discovery, and real filesystem metadata parsing.
+- Recorded that local `pyewf` and `pytsk3` are still missing.
+- Defined the future data path from selected `.E01` to `ImageByteStream`, `VolumeInfo`, `FilesystemResult`, `FilesystemEntry`, and `list_directory()` outputs.
+- Added dependency/status/warning planning, mocked test strategy, manual integration logging, and future implementation boundaries.
+- Added a ticket-specific coding-agent prompt that points to the Stage 4.5 familiarization prompt.
+
+Scope intentionally not implemented:
+
+- No Python source, dependency installation, EWF stream, partition parser, pytsk image wrapper, real filesystem parser, tests, schema migration, E01 fixtures, manual evidence run, file-content provider, preview/export/hash/signature bridge, file-list export, static HTML, search/timeline, reporting, UI, commit, or push.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 3.65s.
+
+## 2026-07-15 - S4.5-T03 Pyewf Metadata And Verification Plan
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Sent the S4.5-T02 documentation-only handoff prompt to the Stage 4.5 coding-agent task.
+- Expanded S4.5-T03 into a detailed documentation-only plan for real `pyewf` metadata and verification investigation.
+- Recorded that local `pyewf` is still missing.
+- Defined dependency investigation questions, metadata field scope, verification statuses, warning codes, test strategy, manual integration logging, and future implementation boundaries.
+- Added a ticket-specific coding-agent prompt that points to the Stage 4.5 familiarization prompt.
+
+Scope intentionally not implemented:
+
+- No Python source, dependency installation, real metadata reader, real verification, tests, schema migration, E01 fixtures, manual evidence run, EWF stream, partition/filesystem parser, file-content provider, preview/export/hash/signature bridge, file-list export, static HTML, search/timeline, UI, commit, or push.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 5.38s.
+
+## 2026-07-15 - S4.5-T02 Case Workspace And First-Testing Command Plan
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Expanded S4.5-T02 into a detailed documentation-only plan for the first-testing command and case workspace.
+- Defined the future command target, arguments, case workspace layout, manifest fields, text summary shape, JSON artifacts, and audit expectations.
+- Mapped the future command to current intake and case-store helpers.
+- Added a ticket-specific coding-agent prompt that points to the Stage 4.5 familiarization prompt.
+
+Scope intentionally not implemented:
+
+- No Python source, first-testing command, tests, schema migration, dependency installation, evidence fixtures, real EWF metadata, verification, EWF stream, partition/filesystem parser, file-content provider, preview/export/hash/signature bridge, file-list export, static HTML, search/timeline, UI, commit, or push.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 5.64s.
+
+## 2026-07-15 - Stage 4.5 First Testing Scaffold
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Added Stage 4.5 scaffold for first testing with user-provided E01 files before Stage 5 search/timeline.
+- Added draft tickets under `tickets/stage-4.5/`.
+- Added onboarding prompt and app-side user-provided E01/script/manual-test placeholder folders.
+- Updated planning and app docs to keep Stage 4.5 separate from Stage 5 search/timeline implementation.
+- Documented the current functionality summary and the key real-E01 limit: segment discovery exists, but real EWF metadata, verification, partition parsing, filesystem parsing, and file-content extraction do not.
+
+Scope intentionally not implemented:
+
+- No Python source behavior, tests, schema, API wrapper, first-testing command, real `pyewf` metadata reader, verification, search/timeline, persistence, UI, real partition/filesystem parser work, deleted recovery, carving, commit, or push.
+
+Expected verification:
+
+- `python -m pytest`.
+
+## 2026-07-15 - S4.5-T00 Current-Code Utilization Plan
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Expanded S4.5-T00 with a current-code utilization table for the desired command-line E01 MVP.
+- Mapped intended functionality to current functions and classes:
+  - intake and segment discovery;
+  - case-store helpers;
+  - EWF adapter contracts;
+  - image/volume/filesystem shapes;
+  - preview/export/analysis provider surfaces;
+  - audit and output artifacts.
+- Reworked the Stage 4.5 follow-on ticket sequence to align with the current goal.
+- Marked Stage 5 search/timeline as deferred behind first-testing.
+
+Scope intentionally not implemented:
+
+- No source behavior, tests, schema, API wrapper, real EWF metadata reader, verification, EWF stream, parser, file-content provider, output renderer, search/timeline, UI, commit, or push.
+
+Expected verification:
+
+- `python -m pytest`.
+
+## 2026-07-15 - S4.5-T01 User-Provided E01 Handling Plan
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Expanded S4.5-T01 into a detailed user-provided E01 handling and privacy plan.
+- Updated the user-provided E01 fixture documentation and Stage 4.5 manual-testing guide.
+- Added a ticket-specific coding-agent prompt that points to the Stage 4.5 familiarization prompt.
+
+Scope intentionally not implemented:
+
+- No Python source, tests, schema, first-testing command, dependency installation, E01 fixtures, parser behavior, search/timeline, UI, commit, or push.
+
+Expected verification:
+
+- `python -m pytest`.
+
 ## 2026-07-15 - S4-T07 Review
 
 Result: approved for commit.
@@ -23,7 +248,7 @@ Findings:
 - Final Stage 4 docs accurately describe S4-T01 contracts, S4-T02 provider-backed hashing, S4-T03 bounded signature detection, S4-T04 extension mismatch over existing signature results plus metadata, S4-T05 fixture-sized known-file matching over existing hash results plus caller-supplied in-memory records, and S4-T06 persistence planning only.
 - Stage 3 export-output SHA-256 verification remains separate from Stage 4 per-file analysis hashing, and whole-image verification remains unsupported.
 - Docs keep synthetic/generated/provider-backed labels visible and preserve the warning that Stage 5 must not turn synthetic or stub-only data into confident real-evidence findings.
-- Stage 5 remains rough/draft with all tickets unstarted; S5-T00 readiness review is the next appropriate handoff.
+- Stage 5 remains rough/draft with search/timeline unstarted; this older readiness note is now superseded by S5-T00 documentation cleanup first, with readiness/risk audit moved to S5-T01.
 - Manual-test status remains `Untested`.
 
 Tests:
@@ -32,7 +257,7 @@ Tests:
 
 Residual notes:
 
-- Stage 5 should start with a readiness/risk audit that either adds a reality anchor or explicitly limits search/timeline to provenance-rich, labeled provider-backed records.
+- Stage 5 should run documentation cleanup first, then a readiness/risk audit that either adds a reality anchor or explicitly limits search/timeline to provenance-rich, labeled provider-backed records.
 
 ## 2026-07-15 - S4-T07 Stage 4 Documentation Handoff
 

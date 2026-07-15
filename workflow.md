@@ -51,6 +51,60 @@ Useful handoff summaries include:
 
 This summary is helpful but does not replace review. The research/review agent still checks the actual files and reruns tests.
 
+## Stage 4.5 Manual-Testing Handoffs
+
+Stage 4.5 implementation handoffs must be more explicit because they may touch real local evidence paths.
+
+Every Stage 4.5 implementation handoff should include:
+
+- ticket id;
+- files changed;
+- behavior changed;
+- artifacts created;
+- dependencies installed: yes/no;
+- real E01 used: yes/no;
+- evidence path redacted as;
+- source modified: no;
+- output path;
+- automated tests;
+- mocked dependency tests;
+- manual E01 test;
+- skipped manual pieces;
+- unsupported/deferred states shown;
+- privacy/redaction notes;
+- known risks;
+- next recommended ticket.
+
+Do not describe mocked dependency tests, stub providers, generated dummy filenames, or dependency-unavailable output as manual E01 testing. `functionality.md` manual-test status should move from `Untested` only after the user confirms an implemented behavior against an approved real local E01/manual input and the shared result is redacted or approved for disclosure.
+
+Stage 4.5 review notes should separately label:
+
+- automated tests;
+- mocked dependency tests;
+- optional real-E01 manual tests;
+- skipped manual tests;
+- unavailable tests;
+- privacy notes.
+
+The review agent should request changes if docs or output claim real EWF metadata, verification, partition parsing, filesystem parsing, file-content extraction, preview/export/hash/signature, or file-list coverage that the implementation did not actually provide.
+
+## Documentation Source-Of-Truth Rules
+
+Before broad documentation cleanup, identify which file owns each kind of information and preserve unique history before deleting or moving files.
+
+- `functionality.md`: current feature/status/manual-test matrix.
+- `progression.md`: concise chronological development journal and next action.
+- `log/documentation.md`: documentation-change log and decision trace.
+- `review.md`: review findings, approvals, risks, and verification notes.
+- `plan.md`: stage order, ticket sequence, implementation runway, and guardrails.
+- `tickets/`: executable work slices, ticket status, acceptance criteria, and handoff scope.
+- `prompts/vscode-agent/`: paste-ready implementation prompts and prompt history.
+- `workflow.md`: process rules, handoff rules, review gates, and Git expectations.
+
+S5-T00 is the first planned Stage 5 gate for this cleanup. It should reduce duplication across `functionality.md`, `progression.md`, `log/`, `tickets/`, and `prompts/vscode-agent/`, and should clean up unused or confusing markdown structure only after references and unique content are handled.
+
+S5-T01 is the Stage 5 readiness and Stage 4.5 completion gate. It must block S5-T02 or later search/timeline implementation if the Stage 4.5 substantial-test implementation runway has not been completed and reviewed. Do not use Stage 5 ticket work to push the Stage 4.5 first-testing requirements back.
+
 ## Ticketing Workflow
 
 Tickets live in `tickets/`.

@@ -13,10 +13,94 @@ YYYY-MM-DD
 ```
 
 2026-07-15
+- Completed: populated Stage 5 with detailed tickets S5-T01 through S5-T16 and matching VS Code coding-agent prompts, after reading the Stage 5 review-agent handoff prompt.
+- Learned: Stage 5 needs a hard S5-T01 gate that checks completed and reviewed Stage 4.5 substantial-test implementation work before any S5-T02+ search/timeline implementation can proceed.
+- Blocked by: Stage 5 search/timeline implementation remains blocked until S5-T00 is accepted and S5-T01 confirms the Stage 4.5 implementation runway is complete.
+- Next: review/complete Stage 4.5 first-testing implementation beginning with S4.5-IMP01 before feeding Stage 5 search/timeline tickets. Verification: `python -m pytest` reported 152 passed in 4.75s.
+
+2026-07-15
+- Completed: added a Stage 5 review-agent handoff packet under `prompts/stage-5-onboarding/`, including a paste-ready inheriting-agent prompt.
+- Learned: the next review agent needs to inherit the Stage 4.5 planning truth, the S4.5-T08 review state, and the rule that Stage 5 starts with S5-T00 documentation cleanup before S5-T01 readiness or any search/timeline feature work.
+- Blocked by: no blocker for the handoff; the next live review action is S4.5-T08 review acceptance or explicit user direction to start Stage 5.
+- Next: use the Stage 5 handoff packet when transitioning to the next research/review agent.
+
+2026-07-15
+- Completed: completed the S4.5-T08 documentation/review handoff and marked S4.5-T08 as `Review`.
+- Learned: the Stage 4.5 planning package is now internally aligned around the current real-E01 truth: segment discovery exists, while real metadata, verification, partition/filesystem parsing, and E01-backed file content extraction remain unimplemented.
+- Blocked by: no blocker for documentation; first-testing implementation remains unstarted until the user asks for S4.5-IMP01 or changes priority.
+- Next: review the S4.5-T08 documentation-only handoff. The next practical implementation ticket should be S4.5-IMP01, not Stage 5 search/timeline, unless the user changes priority.
+
+2026-07-15
+- Completed: returned to Stage 4.5 and expanded S4.5-T08 into a ready documentation/review handoff ticket with a matching VS Code coding-agent prompt.
+- Learned: S4.5-T08 should close the planning package without creating the first implementation prompt yet; the next practical implementation slice remains S4.5-IMP01 unless the user changes priority.
+- Blocked by: no blocker for handoff; implementation remains unstarted until the user asks for the next coding prompt.
+- Next: feed `prompts/vscode-agent/2026-07-15-s4.5-t08-documentation-review-handoff.md`, then review the documentation-only result.
+
+2026-07-15
+- Completed: moved documentation organization and duplication cleanup to the front of Stage 5 as S5-T00, added a detailed S5-T00 ticket, and prepared the matching VS Code coding-agent prompt.
+- Learned: Stage 5 should not start with the older search/timeline readiness ticket; it should first reconcile source-of-truth ownership across `functionality.md`, `progression.md`, `log/`, `tickets/`, and `prompts/vscode-agent/`, including unused or confusing markdown structure.
+- Blocked by: no blocker for planning; actual cleanup should wait for S5-T00 handoff and review.
+- Next: finish Stage 4.5 planning/review, then when Stage 5 is explicitly started, feed `prompts/vscode-agent/2026-07-15-s5-t00-documentation-organization-cleanup.md` before search/timeline tickets.
+
+2026-07-15
+- Completed: corrected the added testing scaffold to Stage 4.5 first-testing planning, including tickets, onboarding prompt, user-provided E01 fixture notes, first-testing script placeholder, and manual-test documentation.
+- Learned: the next useful slice should show current progress with actual E01 files supplied by the user, beginning with honest segment/intake output and clear dependency/not-implemented states before any search/timeline work.
+- Blocked by: nothing for scaffolding; S4.5-T00 still needs current-functionality/scope review before implementation begins.
+- Next: review and approve the Stage 4.5 first-testing scope, then proceed one Stage 4.5 ticket at a time.
+
+2026-07-15
+- Completed: expanded S4.5-T00 with a current-code utilization plan mapping the desired E01 command-line MVP to existing intake, case-store, volume/filesystem, preview, export, and analysis functions.
+- Learned: the current code has most result shapes and provider boundaries needed for the first-testing workflow, but the missing bridge remains real E01 metadata/verification, EWF-backed bytes, real volume/filesystem parsing, and E01-backed file-content providers.
+- Blocked by: no blocker for planning; implementation should still proceed through reviewed Stage 4.5 tickets.
+- Next: review S4.5-T00, then prepare S4.5-T01 or S4.5-T02 depending on whether safety/workflow or orchestration should land first.
+
+2026-07-15
+- Completed: expanded S4.5-T01 as a documentation-only user-provided E01 handling, privacy, output-location, and manual-test logging plan; added the ticket-specific coding-agent prompt.
+- Learned: the first-testing workflow needs strict path rules before any command implementation: selected `.E01` only, ignored local configs, output outside evidence directories, and redacted shared summaries.
+- Blocked by: nothing for S4.5-T01 planning.
+- Next: review S4.5-T01, then prepare S4.5-T02 for case workspace and first-testing command planning.
+
+2026-07-15
+- Completed: expanded S4.5-T02 as a documentation-only case workspace and first-testing command plan; added the ticket-specific coding-agent prompt.
+- Learned: the first command can be useful before real parsers exist if it creates a case workspace, persists intake results, writes a manifest/summary bundle, and clearly marks real metadata, verification, filesystem navigation, preview, export, hash/signature, and file-list export as unsupported until later tickets implement them.
+- Blocked by: no blocker for planning; implementation of `app.backend.api.first_testing` should be a later narrow ticket after review.
+- Next: review S4.5-T02, then prepare S4.5-T03 for real `pyewf` metadata and verification investigation planning.
+
+2026-07-15
+- Completed: sent the S4.5-T02 documentation-only handoff prompt to the Stage 4.5 coding-agent task, then expanded S4.5-T03 as a documentation-only real `pyewf` metadata and verification investigation plan with a matching coding-agent prompt.
+- Learned: `pyewf` is still missing locally, so the next safe plan must preserve dependency-unavailable behavior while defining future metadata fields, verification statuses, warning codes, mocked tests, and opt-in manual E01 checks.
+- Blocked by: no blocker for planning; real metadata/verification implementation should wait for reviewed dependency/API investigation and a separate coding ticket.
+- Next: review S4.5-T03, then prepare S4.5-T04 for the EWF-backed stream, partition, and filesystem parser plan.
+
+2026-07-15
+- Completed: sent the S4.5-T03 documentation-only handoff prompt to the Stage 4.5 coding-agent task, then expanded S4.5-T04 as a documentation-only EWF stream, partition, and filesystem parser bridge plan with a matching coding-agent prompt.
+- Learned: the clean bridge is selected `.E01` -> EWF-backed `ImageByteStream` -> `VolumeInfo` records -> `FilesystemResult` / `FilesystemEntry` records -> `list_directory()` output; file-content providers for preview/export/hash/signature should wait for S4.5-T05.
+- Blocked by: no blocker for planning; `pyewf` and `pytsk3` are both missing locally and real parser implementation should wait for a reviewed narrow coding ticket.
+- Next: review S4.5-T04, then prepare S4.5-T05 for the E01-backed file-content provider plan.
+
+2026-07-15
+- Completed: sent the S4.5-T04 documentation-only handoff prompt to the Stage 4.5 coding-agent task, then expanded S4.5-T05 as a documentation-only E01-backed file-content provider plan with a matching coding-agent prompt.
+- Learned: the safest provider design is a shared parser-backed selected-file content reader with thin wrappers for preview, export, and analysis, while keeping the current preview/export/hash/signature functions as the user-visible behavior.
+- Blocked by: no blocker for planning; real byte extraction needs the S4.5-T04 stream/filesystem bridge and a separate reviewed coding ticket.
+- Next: review S4.5-T05, then prepare S4.5-T06 for file-list export, command prompt summary, and optional static HTML output planning.
+
+2026-07-15
+- Completed: sent the S4.5-T05 documentation-only handoff prompt to the Stage 4.5 coding-agent task, then expanded S4.5-T06 as a documentation-only file-list/output plan with a matching coding-agent prompt and implementation runway.
+- Learned: the Stage 4.5 plans now line up as implementation slices: command shell, metadata/verification, EWF stream/filesystem, selected-file content providers, output bundle, then guardrail/review handoff before Stage 5 search/timeline.
+- Blocked by: no blocker for planning; output rendering and file-list export should wait for a separate reviewed coding ticket.
+- Next: review S4.5-T06, then prepare S4.5-T07 for workflow, guardrail, and manual-test review optimization.
+
+2026-07-15
+- Completed: sent the S4.5-T06 documentation-only handoff prompt to the Stage 4.5 coding-agent task, then expanded S4.5-T07 as a documentation-only workflow, guardrail, and review optimization plan with a matching coding-agent prompt.
+- Learned: future Stage 4.5 implementation needs explicit gates for evidence safety, dependency states, provenance, output honesty, privacy, and user-confirmed manual-test status before `functionality.md` can mark real E01 behavior tested.
+- Blocked by: no blocker for planning; product behavior remains unimplemented until a reviewed implementation ticket starts.
+- Next: review S4.5-T07, then prepare S4.5-T08 for final Stage 4.5 documentation and review handoff.
+
+2026-07-15
 - Completed: reviewed S4-T07 documentation/status handoff, marked it done, and closed Stage 4.
 - Learned: Stage 4 is complete as a provider-backed analysis foundation, but the key risk remains the missing real evidence-backed filesystem content path before search/timeline/reporting can be confidence-heavy.
-- Blocked by: nothing for S4-T07; Stage 5 should begin with S5-T00 readiness review before implementation.
-- Next: commit S4-T07 after approval, then prepare S5-T00 when requested. Reviewer verification: `python -m pytest` reported 152 passed in 2.45s.
+- Blocked by: nothing for S4-T07; this older Stage 5 readiness note is now superseded by S5-T00 documentation cleanup as the first Stage 5 gate, with readiness/risk audit moved to S5-T01.
+- Next: commit S4-T07 after approval, then prepare Stage 4.5 first-testing or S5-T00 when requested. Reviewer verification: `python -m pytest` reported 152 passed in 2.45s.
 
 2026-07-15
 - Completed: implemented S4-T07 as a documentation/status reconciliation handoff and marked the ticket `Review`.

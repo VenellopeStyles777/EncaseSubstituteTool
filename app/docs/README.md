@@ -12,3 +12,4 @@ Suggested future files:
 Current docs:
 
 - `environment-readiness.md`: local tool and dependency readiness before Stage 1.
+- `manual-testing/`: manual backend workflow guides, starting with the Stage 4.5 first-testing plan.

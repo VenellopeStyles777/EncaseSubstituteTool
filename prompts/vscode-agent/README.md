@@ -12,7 +12,11 @@ Use this folder when:
 Current handoff:
 
 - S3-T01 through S3-T06 are reviewed and done.
-- `2026-07-14-stage-4-familiarization.md` is the Stage 4 coding-agent succession/onboarding prompt.
+- S4-T01 through S4-T07 are reviewed and done.
+- Stage 4.5 planning prompts S4.5-T01 through S4.5-T08 are present; the next practical implementation prompt should be S4.5-IMP01 only if the user explicitly asks for it.
+- `2026-07-15-stage-4.5-first-testing-familiarization.md` is the added Stage 4.5 coding-agent onboarding prompt.
+- `2026-07-15-s5-t00-documentation-organization-cleanup.md` is the planned first Stage 5 prompt for documentation organization cleanup before search/timeline.
+- Stage 5 prompt drafts S5-T01 through S5-T16 are present, but S5-T01 must gate search/timeline implementation on completed and reviewed Stage 4.5 substantial-test work before S5-T02 or later is fed.
 - Keep this coding-agent handoff separate from the Stage 4 research/review-agent packet in `prompts/stage-4-onboarding/`.
 - The coding-agent reflection may focus on implementation mechanics; the review-agent reflection focuses on review risk, forensic soundness, and future-stage guardrails.
 
@@ -22,6 +26,32 @@ Current major onboarding prompts:
 - `2026-07-09-stage-2-familiarization.md`: Stage 2 implementation onboarding.
 - `2026-07-13-stage-3-familiarization.md`: Stage 3 implementation onboarding.
 - `2026-07-14-stage-4-familiarization.md`: Stage 4 implementation onboarding.
+- `2026-07-15-stage-4.5-first-testing-familiarization.md`: added Stage 4.5 first-testing onboarding.
+- `2026-07-15-s4.5-t01-user-e01-handling-plan.md`: Stage 4.5 S4.5-T01 documentation-only handoff prompt.
+- `2026-07-15-s4.5-t02-case-workspace-first-testing-command-plan.md`: Stage 4.5 S4.5-T02 documentation-only handoff prompt.
+- `2026-07-15-s4.5-t03-pyewf-real-metadata-verification-plan.md`: Stage 4.5 S4.5-T03 documentation-only handoff prompt.
+- `2026-07-15-s4.5-t04-ewf-stream-partition-filesystem-plan.md`: Stage 4.5 S4.5-T04 documentation-only handoff prompt.
+- `2026-07-15-s4.5-t05-e01-file-content-provider-plan.md`: Stage 4.5 S4.5-T05 documentation-only handoff prompt.
+- `2026-07-15-s4.5-t06-file-list-output-plan.md`: Stage 4.5 S4.5-T06 documentation-only handoff prompt.
+- `2026-07-15-s4.5-t07-workflow-guardrail-review-optimization.md`: Stage 4.5 S4.5-T07 documentation-only handoff prompt.
+- `2026-07-15-s4.5-t08-documentation-review-handoff.md`: Stage 4.5 S4.5-T08 documentation-only handoff prompt.
+- `2026-07-15-s5-t00-documentation-organization-cleanup.md`: Stage 5 S5-T00 documentation organization cleanup prompt.
+- `2026-07-15-s5-t01-readiness-and-stage-4.5-completion-gate.md`: Stage 5 S5-T01 readiness and Stage 4.5 completion gate prompt.
+- `2026-07-15-s5-t02-input-inventory-and-provenance-audit.md`: Stage 5 S5-T02 input inventory and provenance audit prompt.
+- `2026-07-15-s5-t03-searchable-record-contracts.md`: Stage 5 S5-T03 searchable record contracts prompt.
+- `2026-07-15-s5-t04-search-query-filter-sort-contracts.md`: Stage 5 S5-T04 search query, filter, and sort contracts prompt.
+- `2026-07-15-s5-t05-file-metadata-search-engine.md`: Stage 5 S5-T05 file metadata search engine prompt.
+- `2026-07-15-s5-t06-search-result-sorting-and-pagination.md`: Stage 5 S5-T06 search result sorting and pagination prompt.
+- `2026-07-15-s5-t07-analysis-result-record-adapters.md`: Stage 5 S5-T07 analysis result record adapters prompt.
+- `2026-07-15-s5-t08-analysis-result-search-and-filters.md`: Stage 5 S5-T08 analysis result search and filters prompt.
+- `2026-07-15-s5-t09-search-api-wrapper-and-json-output.md`: Stage 5 S5-T09 search API wrapper and JSON output prompt.
+- `2026-07-15-s5-t10-timestamp-normalization-contracts.md`: Stage 5 S5-T10 timestamp normalization contracts prompt.
+- `2026-07-15-s5-t11-timeline-event-contracts.md`: Stage 5 S5-T11 timeline event contracts prompt.
+- `2026-07-15-s5-t12-file-metadata-timeline-assembly.md`: Stage 5 S5-T12 file metadata timeline assembly prompt.
+- `2026-07-15-s5-t13-analysis-export-audit-timeline-adapters.md`: Stage 5 S5-T13 analysis, export, and audit timeline adapters prompt.
+- `2026-07-15-s5-t14-timeline-query-sorting-and-json-api.md`: Stage 5 S5-T14 timeline query, sorting, and JSON API prompt.
+- `2026-07-15-s5-t15-full-text-search-reality-check.md`: Stage 5 S5-T15 full-text search reality check prompt.
+- `2026-07-15-s5-t16-stage-5-documentation-review-handoff.md`: Stage 5 S5-T16 documentation and review handoff prompt.
 - `2026-07-14-s4-t01-hash-signature-contracts.md`: Stage 4 S4-T01 implementation prompt.
 - `2026-07-14-s4-t02-provider-backed-hashing.md`: Stage 4 S4-T02 implementation prompt.
 - `2026-07-14-s4-t03-file-signature-detection.md`: Stage 4 S4-T03 implementation prompt.

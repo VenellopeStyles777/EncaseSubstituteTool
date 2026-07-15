@@ -2,13 +2,154 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-15 - Stage 5 Detailed Ticket Population
+
+- Read `prompts/stage-5-onboarding/stage-5-review-agent-handoff-prompt.md` and expanded Stage 5 from a rough search/timeline outline into detailed tickets S5-T01 through S5-T16.
+- Added matching paste-ready VS Code coding-agent prompts for S5-T01 through S5-T16.
+- Updated `tickets/stage-5/README.md` so S5-T00 remains the first documentation cleanup gate and S5-T01 is the hard readiness and Stage 4.5 completion gate.
+- Documented that S5-T01 must block S5-T02 and later if the Stage 4.5 substantial-test implementation runway is incomplete, instead of pushing that work back.
+- Updated Stage 5 planning, prompt indexes, workflow guidance, and current status notes to reference the detailed ticket queue.
+- Confirmed this ticket-population pass did not implement app behavior, parser behavior, search/timeline logic, schema changes, tests, UI, reports, evidence fixtures, dependency installation, commit, or push.
+- Verification after ticket population: `python -m pytest` reported 152 passed in 4.75s.
+
+## 2026-07-15 - Stage 5 Review-Agent Handoff
+
+- Added `prompts/stage-5-onboarding/README.md`.
+- Added `prompts/stage-5-onboarding/stage-5-review-agent-handoff-prompt.md` as the paste-ready handoff for the next research/review agent.
+- Documented the inherited project truth: Stages 1 through 4 are backend foundations, Stage 4.5 remains planning-only, S4.5-T08 is in review, and Stage 5 must begin with S5-T00 documentation cleanup before S5-T01 readiness or search/timeline work.
+- Flagged empty `tickets/stage-5a/` and `prompts/stage-5a-onboarding/` as cleanup candidates for S5-T00 review rather than active planning folders.
+- Verification after handoff: `python -m pytest` reported 152 passed in 10.20s.
+
+## 2026-07-15 - S4.5-T08 Documentation Review Handoff Completion
+
+- Completed the S4.5-T08 documentation/review handoff and marked `tickets/stage-4.5/S4.5-T08-documentation-review-handoff.md` as `Review`.
+- Reconciled Stage 4.5 status across top-level docs, app/backend docs, ticket indexes, prompt indexes, manual-testing docs, progression, review notes, and documentation logs.
+- Confirmed S4.5-T00 through S4.5-T07 remain planning in review and S4.5-T08 closes the planning package without starting implementation.
+- Confirmed the Stage 4.5 implementation runway remains S4.5-IMP01 through S4.5-IMP06, with S4.5-IMP01 as the next practical implementation slice unless the user changes priority.
+- Preserved the current real-E01 truth: segment filename discovery exists, but real EWF metadata, real verification, partition/filesystem parsing, and E01-backed file-content extraction do not.
+- Kept Stage 5 search/timeline deferred and left broad documentation organization cleanup to S5-T00.
+- Confirmed no Python source behavior, tests, schema, parser behavior, native dependency setup, evidence handling behavior, UI/reporting, Stage 5 implementation, local artifacts, E01 fixtures, dependency installation, commit, or push were part of this handoff.
+- Verification after handoff: `python -m pytest` reported 152 passed in 10.64s.
+
+## 2026-07-15 - S4.5-T08 Documentation Review Handoff Preparation
+
+- Expanded S4.5-T08 into a ready documentation/review handoff ticket.
+- Added `prompts/vscode-agent/2026-07-15-s4.5-t08-documentation-review-handoff.md` as the paste-ready documentation-only coding-agent prompt.
+- Re-stated that S4.5-T08 should close the Stage 4.5 planning package, preserve the current real-E01 truth, and point to S4.5-IMP01 as the next practical implementation slice unless the user changes priority.
+- Re-stated that S4.5-T08 must not implement source behavior, tests, native dependencies, real metadata/verification, EWF stream/filesystem parsing, E01-backed content providers, file-list export, visual output, Stage 5 search/timeline, or broad S5-T00 documentation cleanup.
+- Verification after preparation: `python -m pytest` reported 152 passed in 8.50s.
+
+## 2026-07-15 - S5-T00 Documentation Organization Cleanup Plan
+
+- Moved documentation organization and duplication cleanup to the first planned Stage 5 gate.
+- Added `tickets/stage-5/S5-T00-documentation-organization-cleanup.md` with the source-of-truth model for `functionality.md`, `progression.md`, `log/documentation.md`, `review.md`, `plan.md`, `tickets/`, `prompts/vscode-agent/`, and `workflow.md`.
+- Added `prompts/vscode-agent/2026-07-15-s5-t00-documentation-organization-cleanup.md` as the paste-ready coding-agent prompt.
+- Updated Stage 5 planning so search/timeline readiness moves behind S5-T00.
+- Documented that unused or confusing markdown structure, including an empty `tickets/stage-5a/` folder if still present, should be cleaned only after unique information and references are handled.
+- Confirmed no app code, parser behavior, native dependency setup, evidence files, test fixtures, search/timeline implementation, UI, reports, commits, or pushes were part of this planning change.
+- Verification: `python -m pytest` reported 152 passed in 7.12s.
+
+## 2026-07-15 - Stage 4.5 First Testing Scaffold
+
+- Corrected the added testing scaffold to `tickets/stage-4.5/` for the first-testing stage before Stage 5 search/timeline.
+- Added draft S4.5-T00 through S4.5-T06 tickets covering current functionality summary, user-provided E01 handling, manual E01 intake demo planning, optional real `pyewf` metadata/verification investigation, command prompt/simple visual output planning, workflow/review guardrail optimization, and documentation handoff.
+- Added `prompts/vscode-agent/2026-07-15-stage-4.5-first-testing-familiarization.md` and `prompts/stage-4.5-onboarding/README.md`.
+- Added scaffold folders for `app/fixtures/user-provided-e01/`, `app/scripts/first_testing/`, and `app/docs/manual-testing/`.
+- Updated top-level and app docs to state that Stage 4.5 is scaffolded but not implemented, and that Stage 5 search/timeline should wait until first-testing is reviewed or explicitly set aside.
+- Re-stated that current code can discover E01 segment names but does not yet read real EWF metadata, verify real EWF images, parse partitions/filesystems, or extract file content from E01 files.
+
+## 2026-07-15 - S4.5-T00 Current-Code Utilization Plan
+
+- Marked S4.5-T00 ready for review as planning-only work.
+- Added a map from the desired command-line E01 workflow to current code:
+  - `run_e01_intake()` and `discover_e01_segments()` for E01 path and segment intake;
+  - case-store helpers for case/evidence/audit records;
+  - EWF adapter contracts for future metadata/verification;
+  - image/volume/filesystem result shapes for future parser-backed navigation;
+  - preview/export/content-analysis provider interfaces for future E01-backed file bytes;
+  - directory listing records as the basis for file-list export.
+- Updated the Stage 4.5 ticket sequence to prioritize case orchestration, real EWF metadata/verification, EWF stream and filesystem parsing, file-content providers, file-list/output planning, and workflow/review guardrails.
+- Updated Stage 5 and future roadmap notes so search/timeline remain deferred behind the first-testing E01 command-line goal.
+
+## 2026-07-15 - S4.5-T01 User-Provided E01 Handling Plan
+
+- Expanded S4.5-T01 as a documentation-only plan.
+- Defined accepted input forms: direct `.E01` path, evidence directory plus explicit first segment, and ignored local run config.
+- Defined output-location rules under `.test-artifacts/first-testing/` and stated outputs must not overlap evidence folders.
+- Documented evidence safety requirements: read-only inputs, no writes beside evidence, no segment modification, structured invalid input for later segments, and visible missing-segment warnings.
+- Documented redaction and privacy rules for shared logs, screenshots, and review notes.
+- Added manual-test logging format for future Stage 4.5 implementation handoffs.
+- Added `prompts/vscode-agent/2026-07-15-s4.5-t01-user-e01-handling-plan.md` as a documentation-only coding-agent handoff prompt that points to the Stage 4.5 familiarization prompt.
+
+## 2026-07-15 - S4.5-T02 Case Workspace And First-Testing Command Plan
+
+- Expanded S4.5-T02 as a documentation-only plan and marked it ready for review.
+- Defined the future command target: `python -m app.backend.api.first_testing <path.E01> --case <case-dir>`.
+- Defined planned arguments, invalid `.E02+` primary input behavior, case workspace layout, output artifacts, run manifest fields, and concise command prompt summary shape.
+- Documented how the future command should reuse `run_e01_intake()`, `discover_e01_segments()`, `connect()`, `initialize_schema()`, `insert_case()`, `insert_evidence_source()`, `insert_audit_event()`, `SCHEMA_VERSION`, and `INTAKE_SCHEMA_VERSION`.
+- Documented that the first command shell may create a case database, persist intake, write artifacts, and show segment/adapter status now, but must still label real EWF metadata, verification, partition/filesystem parsing, preview/export/hash/signature, file-list export, static HTML, search/timeline, UI, deleted recovery, and carving as unsupported until later tickets implement them.
+- Added `prompts/vscode-agent/2026-07-15-s4.5-t02-case-workspace-first-testing-command-plan.md` as a documentation-only coding-agent handoff prompt.
+
+## 2026-07-15 - S4.5-T03 Pyewf Metadata And Verification Plan
+
+- Sent the S4.5-T02 documentation-only prompt to the Stage 4.5 coding-agent task.
+- Expanded S4.5-T03 as a documentation-only plan and marked it ready for review.
+- Rechecked local `pyewf` availability with `importlib.util.find_spec("pyewf")`; result was `missing`.
+- Documented upstream `libyal/libewf` references that future implementation should verify against before coding.
+- Defined the planned dependency investigation, first metadata field scope, verification statuses, result-shape mapping, warning codes, dependency-free mocked test strategy, and optional manual integration log format.
+- Re-stated that reading stored EWF hash values as metadata is not the same as verified image integrity.
+- Updated manual-testing and environment docs with the Stage 4.5 `pyewf` planning status.
+- Added `prompts/vscode-agent/2026-07-15-s4.5-t03-pyewf-real-metadata-verification-plan.md` as a documentation-only coding-agent handoff prompt.
+
+## 2026-07-15 - S4.5-T04 EWF Stream, Partition, And Filesystem Plan
+
+- Sent the S4.5-T03 documentation-only prompt to the Stage 4.5 coding-agent task.
+- Expanded S4.5-T04 as a documentation-only plan and marked it ready for review.
+- Rechecked local `pyewf` and `pytsk3` availability with `importlib.util.find_spec(...)`; both were `missing`.
+- Documented the planned path from selected `.E01` to EWF-backed `ImageByteStream`, `VolumeInfo` records, `FilesystemResult` / `FilesystemEntry` records, and `list_directory()` output.
+- Defined future `EwfImageByteStream` behavior, partition discovery strategy/statuses, `Pytsk3FilesystemAdapter` consumption plan, metadata mapping, dependency/capability reporting, mocked test strategy, manual integration log format, and future implementation sequence.
+- Re-stated that file-content providers for preview/export/hash/signature belong to S4.5-T05, not S4.5-T04.
+- Added `prompts/vscode-agent/2026-07-15-s4.5-t04-ewf-stream-partition-filesystem-plan.md` as a documentation-only coding-agent handoff prompt.
+
+## 2026-07-15 - S4.5-T05 E01 File Content Provider Plan
+
+- Sent the S4.5-T04 documentation-only prompt to the Stage 4.5 coding-agent task.
+- Expanded S4.5-T05 as a documentation-only plan and marked it ready for review.
+- Documented the provider direction: a shared selected-file content reader plus thin wrappers for `PreviewContentProvider`, `ExportContentProvider`, and `AnalysisContentProvider`.
+- Mapped current preview, export, hash, signature, extension mismatch, and known-file functions to the future real-parser provider path.
+- Defined provider identity, provenance requirements, memory/streaming risk, failure statuses/warnings, deleted/sparse/special-file handling, first-testing command behavior, mocked test strategy, optional manual integration log format, and future implementation sequence.
+- Re-stated that the command must not fall back to stub providers while claiming E01-backed output.
+- Added `prompts/vscode-agent/2026-07-15-s4.5-t05-e01-file-content-provider-plan.md` as a documentation-only coding-agent handoff prompt.
+
+## 2026-07-15 - S4.5-T06 File List And Output Plan
+
+- Sent the S4.5-T05 documentation-only prompt to the Stage 4.5 coding-agent task.
+- Expanded S4.5-T06 as a documentation-only plan and marked it ready for review.
+- Defined the first-testing output bundle: command summary, run manifest, JSON artifacts, CSV file list, export manifests, unsupported-section output, and optional static HTML summary.
+- Defined file-list JSON fields and CSV columns based on `FilesystemEntry` and directory-listing output.
+- Documented redaction rules for shared command summaries, screenshots, and HTML previews.
+- Added an implementation runway that lines up S4.5-T01 through S4.5-T08 into future buildable implementation slices before Stage 5 search/timeline.
+- Added `prompts/vscode-agent/2026-07-15-s4.5-t06-file-list-output-plan.md` as a documentation-only coding-agent handoff prompt.
+
+## 2026-07-15 - S4.5-T07 Workflow Guardrail Review Optimization
+
+- Sent the S4.5-T06 documentation-only prompt to the Stage 4.5 coding-agent task.
+- Expanded S4.5-T07 as a documentation-only plan and marked it ready for review.
+- Added Stage 4.5 implementation review gates for scope, evidence safety, dependencies, provenance, output honesty, tests, privacy, and manual-tested status.
+- Defined per-slice review checks for S4.5-IMP01 through S4.5-IMP06.
+- Defined the required Stage 4.5 coding-agent handoff format.
+- Documented review-note categories for automated tests, mocked dependency tests, manual E01 tests, skipped tests, unavailable tests, and privacy notes.
+- Documented when `functionality.md` manual-test status may move from `Untested`.
+- Updated `workflow.md` and manual-testing docs with Stage 4.5 handoff, privacy, and no-overclaim guardrails.
+- Added `prompts/vscode-agent/2026-07-15-s4.5-t07-workflow-guardrail-review-optimization.md` as a documentation-only coding-agent handoff prompt.
+
 ## 2026-07-15 - S4-T07 Review Documentation
 
 - Marked S4-T07 reviewed and done.
 - Recorded no blocking findings in `review.md`.
 - Updated Stage 4 status docs to complete and kept Stage 5 rough/draft.
 - Confirmed S4-T07 remained documentation/status-only and did not change source, schema, tests, API behavior, persistence behavior, parser behavior, UI, native dependency configuration, or Stage 5 implementation.
-- Confirmed Stage 5 should begin with S5-T00 readiness review before implementation.
+- Confirmed at the time that Stage 5 needed a readiness review before implementation; this was later superseded so S5-T00 is documentation cleanup first and readiness/risk audit moves to S5-T01.
 - Reviewer verification: `python -m pytest` reported 152 passed in 2.45s.
 
 ## 2026-07-15 - S4-T07 Documentation Handoff

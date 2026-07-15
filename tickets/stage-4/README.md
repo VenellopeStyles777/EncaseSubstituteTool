@@ -94,7 +94,7 @@ Recommended handling:
 
 - S4-T01 must define source-kind/provider fields that can distinguish `synthetic`, `generated_fixture`, `local_stream`, and future `real_parser` bytes.
 - S4-T02 may use a dependency-free stub/generated provider for default tests, but the result must label those bytes honestly.
-- Before Stage 5 search/timeline begins, add either an optional generated/local-stream provider ticket or a dedicated Stage 5 readiness check that blocks confidence-heavy search over synthetic-only results.
+- Before Stage 5 search/timeline begins, run the documentation cleanup gate and then add either an optional generated/local-stream provider ticket or a dedicated Stage 5 readiness check that blocks confidence-heavy search over synthetic-only results.
 
 ## Stage 4 Definition Of Done
 

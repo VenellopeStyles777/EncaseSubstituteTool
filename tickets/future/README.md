@@ -16,7 +16,7 @@ Future stages must avoid building confidence-heavy features over synthetic data 
 
 Add a reality anchor before the project becomes UI/report heavy.
 
-Candidate future ticket:
+This is now reframed as Stage 4.5 first testing under `tickets/stage-4.5/`. The immediate priority is user-provided E01 manual testing and honest command-line output before search/timeline continues. The current Stage 4.5 goal overrides the older Stage 5 search/timeline priority. The earlier candidate shape is preserved here as a later possible fixture direction:
 
 ```text
 Reality Anchor Fixture And Content Provider
@@ -42,11 +42,13 @@ Detailed tickets now live in `tickets/stage-4/`.
 
 Main risk: hashes/signatures over synthetic bytes may look more forensic than they are. Every result must expose provider identity and source status.
 
-## Stage 5 - Search And Timeline
+## Stage 5 - Documentation Cleanup, Search, And Timeline
 
 Rough tickets now live in `tickets/stage-5/`.
 
-Main risk: search/timeline can become misleading if unsupported parser states are hidden. Results must carry source/provenance/status/warnings.
+First gate: S5-T00 should clean up documentation organization and duplication before search/timeline starts. It should reconcile `functionality.md`, `progression.md`, `log/`, `tickets/`, and `prompts/vscode-agent/`, and remove or document unused/confusing markdown structures only after preserving unique information.
+
+Main feature risk: search/timeline can become misleading if unsupported parser states are hidden. Results must carry source/provenance/status/warnings. Stage 5 is deferred behind Stage 4.5 and should consume the first-testing handoff, if implemented, without treating stub, synthetic, or dependency-unavailable states as real EWF/filesystem parser output.
 
 ## Stage 6 - Reporting And Workflow
 
