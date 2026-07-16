@@ -12,6 +12,34 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-16 - S5-T00 Documentation Organization Cleanup
+
+Result: accepted; S5-T00 marked `Done`.
+
+Implemented:
+
+- Applied the S5-T00 source-of-truth model across the main project docs and indexes.
+- Reduced duplicate long status narrative in `readme.md` and `plan.md`.
+- Kept `tickets/` as ticket scope/status and `prompts/vscode-agent/` as prompt history.
+- Marked S5-T00 as `Review` while keeping S5-T01 through S5-T16 as draft future work.
+- Confirmed S5-T01 remains the hard gate before S5-T02+ search/timeline implementation.
+- Removed `prompts/stage-5a-onboarding/` after confirming it was empty and had no unique information to preserve.
+
+Reviewer result:
+
+- No blocking findings.
+- Updated the Stage 5 review-agent handoff prompt to describe the stage-5a cleanup candidates as resolved rather than current folders to inspect.
+- Marked S5-T00 as `Done`.
+
+Scope intentionally not implemented:
+
+- No app source code, tests, parser behavior, native dependency setup, evidence handling behavior, UI/reporting, Stage 4.5 first-testing implementation, Stage 5 search/timeline implementation, local artifacts, evidence files, fixtures, commit, or push.
+
+Verification:
+
+- Coding-agent run: `python -m pytest`: 152 passed in 7.15s.
+- Reviewer rerun after S5-T00 acceptance/status updates: `python -m pytest`: 152 passed in 5.58s.
+
 ## 2026-07-15 - Stage 5 Detailed Ticket Population
 
 Result: ready for user/review confirmation.

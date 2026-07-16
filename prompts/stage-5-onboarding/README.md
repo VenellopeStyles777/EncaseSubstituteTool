@@ -8,4 +8,4 @@ Use these files before reviewing Stage 5 or feeding Stage 5 prompts:
 
 - `stage-5-review-agent-handoff-prompt.md`: paste-ready prompt for the Stage 5 research/review agent inheriting the current project context and detailed S5-T00 through S5-T16 ticket queue.
 
-Do not confuse this folder with `prompts/stage-5a-onboarding/`, which is currently empty and should be treated as a cleanup candidate during S5-T00 unless later documentation gives it a real purpose.
+S5-T00 is done. It reviewed the unused `prompts/stage-5a-onboarding/` cleanup candidate and removed it because it was empty and contained no unique handoff content.

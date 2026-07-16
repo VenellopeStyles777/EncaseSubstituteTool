@@ -207,7 +207,7 @@ Stage 4 review-agent handoff:
 - Detailed Stage 4 tickets now live under `tickets/stage-4/`; S4-T01 contract-only implementation is reviewed and done.
 - S4-T02 provider-backed hashing, S4-T03 file signature detection, S4-T04 extension mismatch rules, S4-T05 fixture-sized known-file matching, and S4-T06 planning-only case-store persistence decision are reviewed and done.
 - S4-T07 documentation/review handoff is reviewed and done without code, schema, API, persistence, test, parser, UI, native dependency, or Stage 5 implementation changes.
-- A rough Stage 5 plan now lives under `tickets/stage-5/`. S5-T00 is ready as a documentation organization and duplication cleanup gate; search/timeline tickets remain `Draft`.
+- A detailed Stage 5 plan now lives under `tickets/stage-5/`. S5-T00 documentation organization cleanup is done; S5-T01 through S5-T16 remain `Draft`, and search/timeline implementation must wait for the S5-T01 Stage 4.5 completion gate.
 - An added Stage 4.5 first-testing scaffold now lives under `tickets/stage-4.5/`. Stage 4.5 is the next planning stage and should focus on direct manual testing with user-provided E01 files before any Stage 5 search/timeline work.
 - The main carryover risk is the missing real evidence-backed content path. Stage 4 can analyze explicit provider-backed bytes, but the current project cannot yet parse real E01 bytes, partitions, filesystems, or file content. Stage 4.5 must make that truth visible while planning command prompt or simple visual outputs for actual E01 inputs.
 

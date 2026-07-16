@@ -15,7 +15,7 @@ Current handoff:
 - S4-T01 through S4-T07 are reviewed and done.
 - Stage 4.5 planning prompts S4.5-T01 through S4.5-T08 are present; the next practical implementation prompt should be S4.5-IMP01 only if the user explicitly asks for it.
 - `2026-07-15-stage-4.5-first-testing-familiarization.md` is the added Stage 4.5 coding-agent onboarding prompt.
-- `2026-07-15-s5-t00-documentation-organization-cleanup.md` is the planned first Stage 5 prompt for documentation organization cleanup before search/timeline.
+- `2026-07-15-s5-t00-documentation-organization-cleanup.md` is the Stage 5 S5-T00 documentation cleanup prompt; S5-T00 is done.
 - Stage 5 prompt drafts S5-T01 through S5-T16 are present, but S5-T01 must gate search/timeline implementation on completed and reviewed Stage 4.5 substantial-test work before S5-T02 or later is fed.
 - Keep this coding-agent handoff separate from the Stage 4 research/review-agent packet in `prompts/stage-4-onboarding/`.
 - The coding-agent reflection may focus on implementation mechanics; the review-agent reflection focuses on review risk, forensic soundness, and future-stage guardrails.

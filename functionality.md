@@ -69,7 +69,7 @@ Initial feature groups to track:
 | Analysis-result persistence plan | 4 | Done | Untested | S4-T06 reviewed; it defers schema/behavior changes while documenting explicit opt-in future persistence requirements. |
 | Stage 4 documentation handoff | 4 | Done | Untested | S4-T07 reviewed; it reconciled Stage 4 docs and prepared Stage 5 readiness notes without code or behavior changes. |
 | First manual E01 testing workflow | 4.5 | Planned | Untested | Stage 4.5 planning package S4.5-T00 through S4.5-T08 is in review; next practical implementation slice is S4.5-IMP01 unless priority changes. No new command/parser behavior or reviewed manual E01 workflow exists yet. |
-| Documentation organization cleanup | 5 | Planned | Untested | S5-T00 is ready as the first Stage 5 gate to reduce duplication across `functionality.md`, `progression.md`, `log/`, `tickets/`, and `prompts/vscode-agent/` before search/timeline work starts. |
+| Documentation organization cleanup | 5 | Done | Untested | S5-T00 reduced duplicate status narratives, clarified source-of-truth ownership, and reviewed unused/confusing markdown structures before search/timeline work. |
 | Search/timeline | 5 | Deferred | Untested | Detailed Stage 5 tickets S5-T00 through S5-T16 are drafted behind S5-T00. Search/timeline implementation must wait until S5-T00 is accepted and S5-T01 confirms the Stage 4.5 substantial-test implementation runway is completed and reviewed. |
 | Reporting/workflow | 6 | Planned | Untested | Not started. |
 | Desktop UI/executable packaging | Later | Deferred | Untested | CLI/manual testing comes first. |

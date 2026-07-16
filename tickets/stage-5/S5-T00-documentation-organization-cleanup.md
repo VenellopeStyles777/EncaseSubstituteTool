@@ -1,6 +1,6 @@
 # S5-T00 - Documentation Organization And Duplication Cleanup
 
-Status: Ready
+Status: Done
 
 Stage: Stage 5 - documentation cleanup gate before search/timeline
 
@@ -77,6 +77,22 @@ Use this ownership split while cleaning up:
 - Unused or confusing markdown files/folders are either removed, archived, or explicitly documented as intentional.
 - Cross-links are updated so there are no obvious stale references to removed or renamed docs.
 - No behavior, schema, parser, dependency, evidence, UI, report, or test fixture changes are made.
+
+## Cleanup Result
+
+- `readme.md` and `plan.md` were shortened so they no longer repeat the same long stage-status narrative.
+- `tickets/` remains the source for ticket scope/status, and `prompts/vscode-agent/` remains the prompt-history index.
+- `prompts/stage-5a-onboarding/` was removed after confirming it was empty and had no unique information to preserve.
+- `tickets/stage-5a/` was checked and was not present.
+- Stage 5 search/timeline implementation remains deferred behind S5-T01, which must verify the Stage 4.5 implementation runway before S5-T02+.
+
+## Review Result - 2026-07-16
+
+- Accepted as documentation-only cleanup.
+- Reviewer fixed one stale Stage 5 onboarding prompt note so the stage-5a cleanup candidates are described as resolved rather than current folders to inspect.
+- Confirmed no app source, tests, schema, parser behavior, dependency setup, evidence files, fixtures, UI/reporting, Stage 4.5 implementation, or Stage 5 search/timeline implementation were added.
+- S5-T01 remains the next Stage 5 gate and must block S5-T02+ until the Stage 4.5 substantial-test implementation runway is completed and reviewed.
+- Reviewer verification: `python -m pytest` reported 152 passed in 5.58s.
 
 ## Test Expectations
 

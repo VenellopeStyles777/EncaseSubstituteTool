@@ -113,7 +113,7 @@ S5-T01 should block S5-T02 and later if the Stage 4.5 substantial-test runway is
 
 ## Detailed Stage 5 Ticket Queue
 
-- S5-T00: documentation organization, duplication cleanup, and unused/confusing structure review. Status: Ready.
+- S5-T00: documentation organization, duplication cleanup, and unused/confusing structure review. Status: Done.
 - S5-T01: readiness and Stage 4.5 completion gate. Status: Draft.
 - S5-T02: input inventory and provenance audit. Status: Draft.
 - S5-T03: searchable record contracts. Status: Draft.
@@ -131,9 +131,9 @@ S5-T01 should block S5-T02 and later if the Stage 4.5 substantial-test runway is
 - S5-T15: full-text search reality check. Status: Draft.
 - S5-T16: Stage 5 documentation and review handoff. Status: Draft.
 
-## S5-T00 Review Intent
+## S5-T00 Review Result
 
-S5-T00 is documentation-only. It should organize and de-duplicate documentation before feature work continues.
+S5-T00 is documentation-only and is now accepted. It organized and de-duplicated documentation before feature work continued.
 
 Main cleanup areas:
 
@@ -141,12 +141,12 @@ Main cleanup areas:
 - `tickets/` and `prompts/vscode-agent/`
 - unused or confusing markdown files/folders
 
-Known cleanup candidates to inspect:
+Resolved cleanup candidates:
 
-- empty `tickets/stage-5a/`
-- empty `prompts/stage-5a-onboarding/`
+- `tickets/stage-5a/` was checked and was not present.
+- `prompts/stage-5a-onboarding/` was removed after confirming it was empty and had no unique information to preserve.
 
-Do not delete or move markdown files until unique information has been preserved and references have been checked.
+For any future markdown cleanup, do not delete or move files until unique information has been preserved and references have been checked.
 
 Use the source-of-truth split from `workflow.md` and `tickets/stage-5/S5-T00-documentation-organization-cleanup.md`:
 
@@ -172,11 +172,11 @@ Default to a review stance:
 
 ## Latest Verification Known At Handoff
 
-The latest recorded verification in `review.md` for S4.5-T08:
+The latest recorded verification in `review.md` for S5-T00:
 
 ```powershell
 python -m pytest
-# 152 passed in 10.64s
+# 152 passed in 5.58s
 ```
 
 Run the suite again after any new edits or before final review acceptance.
@@ -184,6 +184,5 @@ Run the suite again after any new edits or before final review acceptance.
 ## Next Likely Moves
 
 1. Review S4.5-T08 and decide whether it can move from `Review` to `Done`.
-2. Ask the user whether to begin S4.5-IMP01 implementation planning or to start Stage 5 S5-T00 documentation cleanup.
-3. If Stage 5 starts, feed or review `prompts/vscode-agent/2026-07-15-s5-t00-documentation-organization-cleanup.md`.
-4. Do not proceed to Stage 5 search/timeline tickets until S5-T00 is accepted and S5-T01 confirms the Stage 4.5 substantial-test runway is completed and reviewed.
+2. Ask the user whether to begin S4.5-IMP01 implementation planning or to review/feed S5-T01 as a blocking readiness gate.
+3. If Stage 5 continues, do not proceed to S5-T02 or later search/timeline tickets until S5-T01 confirms the Stage 4.5 substantial-test runway is completed and reviewed.

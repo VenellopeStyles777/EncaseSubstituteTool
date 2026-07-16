@@ -2,6 +2,20 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-16 - S5-T00 Documentation Organization Cleanup
+
+- Marked `tickets/stage-5/S5-T00-documentation-organization-cleanup.md` as `Review`, then accepted it as `Done` after review.
+- Applied the S5-T00 source-of-truth model: `functionality.md` owns current feature/manual-test status, `plan.md` owns stage order and runways, `tickets/` owns ticket scope, `prompts/vscode-agent/` owns prompt history, `progression.md` owns concise chronology, `review.md` owns review/verification notes, and this log owns documentation-change history.
+- Shortened `readme.md` so it is a front-door status and navigation file instead of another long stage narrative.
+- Simplified `plan.md` by replacing older detailed Stage 1 through Stage 4 narratives with a compact completed-foundation matrix and preserving forward Stage 4.5/Stage 5 runway detail.
+- Updated Stage 5, ticket, prompt, and functionality indexes so S5-T00 is done and S5-T01 remains the hard gate before S5-T02+ search/timeline implementation.
+- Removed the empty `prompts/stage-5a-onboarding/` directory after confirming it had no unique information to preserve.
+- Confirmed `tickets/stage-5a/` was absent.
+- Updated the Stage 5 review-agent handoff prompt so it no longer describes the resolved stage-5a cleanup candidates as current folders to inspect.
+- Preserved the real-E01 limitation: segment filename discovery exists, but real EWF metadata, real verification, partition/filesystem parsing, and E01-backed file-content extraction do not.
+- Confirmed no app source, tests, schema, parser behavior, native dependency setup, evidence handling behavior, UI/reporting, Stage 4.5 implementation, Stage 5 search/timeline implementation, commit, or push were part of this cleanup.
+- Verification after cleanup: coding-agent `python -m pytest` reported 152 passed in 7.15s; reviewer rerun after S5-T00 acceptance/status updates reported 152 passed in 5.58s.
+
 ## 2026-07-15 - Stage 5 Detailed Ticket Population
 
 - Read `prompts/stage-5-onboarding/stage-5-review-agent-handoff-prompt.md` and expanded Stage 5 from a rough search/timeline outline into detailed tickets S5-T01 through S5-T16.

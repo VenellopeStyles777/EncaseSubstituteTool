@@ -12,6 +12,12 @@ YYYY-MM-DD
 - Next:
 ```
 
+2026-07-16
+- Completed: reviewed and accepted S5-T00 documentation organization cleanup and marked S5-T00 as `Done`.
+- Learned: `readme.md` and `plan.md` were the main places repeating long status narratives; they now point to `functionality.md`, `tickets/`, `review.md`, and `log/documentation.md` for their owned details. The Stage 5 onboarding handoff prompt also needed a stale stage-5a cleanup note updated after review.
+- Blocked by: no blocker for documentation cleanup; Stage 5 search/timeline implementation remains blocked until S5-T01 confirms the Stage 4.5 implementation runway is completed and reviewed.
+- Next: stop after S5-T00. Do not start S5-T01 until explicitly assigned. Reviewer verification: `python -m pytest` reported 152 passed in 5.58s.
+
 2026-07-15
 - Completed: populated Stage 5 with detailed tickets S5-T01 through S5-T16 and matching VS Code coding-agent prompts, after reading the Stage 5 review-agent handoff prompt.
 - Learned: Stage 5 needs a hard S5-T01 gate that checks completed and reviewed Stage 4.5 substantial-test implementation work before any S5-T02+ search/timeline implementation can proceed.
