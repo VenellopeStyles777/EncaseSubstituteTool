@@ -71,16 +71,16 @@ The current real-E01 truth is still limited:
 
 Stage 4.5 was added before Stage 5 because the user wants something testable and demonstrable with actual E01 files.
 
-Stage 4.5 remains planning-only at handoff time. S4.5-T00 through S4.5-T08 are in review. S4.5-T08 completed the documentation/review handoff and did not implement behavior.
+Stage 4.5 is no longer planning-only. S4.5-T00 through S4.5-T08 are planning/review records, and S4.5-IMP01 is reviewed and done as the first command-shell implementation slice.
 
-Before starting Stage 5, review S4.5-T08 as a normal review item. Confirm:
+Before starting Stage 5, confirm the current Stage 4.5 runway state:
 
-- no Python source behavior changed;
+- S4.5-IMP01 is done;
+- S4.5-IMP02 through S4.5-IMP06 remain incomplete unless newer reviewed work exists;
 - no dependencies were installed;
-- no E01 files or private outputs were added;
-- Stage 4.5 remains planning-only;
-- manual E01 test status remains `Untested`;
-- the next practical implementation slice is S4.5-IMP01, and Stage 5 search/timeline implementation should not push the Stage 4.5 substantial-test runway back.
+- no committed E01 files or private outputs were added;
+- manual E01 testing is only partial for the S4.5-IMP01 command shell;
+- the next practical implementation slice is S4.5-IMP02, and Stage 5 search/timeline implementation should not push the Stage 4.5 substantial-test runway back.
 
 The Stage 4.5 implementation runway is:
 
@@ -114,7 +114,8 @@ S5-T01 should block S5-T02 and later if the Stage 4.5 substantial-test runway is
 ## Detailed Stage 5 Ticket Queue
 
 - S5-T00: documentation organization, duplication cleanup, and unused/confusing structure review. Status: Done.
-- S5-T01: readiness and Stage 4.5 completion gate. Status: Draft.
+- S5-T01: readiness and Stage 4.5 completion gate. Status: Done; failed gate/blocker because the S4.5-IMP01 through S4.5-IMP06 runway is incomplete.
+- S5-T01A: Stage 4.5 gate language hardening. Status: Done.
 - S5-T02: input inventory and provenance audit. Status: Draft.
 - S5-T03: searchable record contracts. Status: Draft.
 - S5-T04: search query, filter, and sort contracts. Status: Draft.
@@ -183,6 +184,6 @@ Run the suite again after any new edits or before final review acceptance.
 
 ## Next Likely Moves
 
-1. Review S4.5-T08 and decide whether it can move from `Review` to `Done`.
-2. Ask the user whether to begin S4.5-IMP01 implementation planning or to review/feed S5-T01 as a blocking readiness gate.
-3. If Stage 5 continues, do not proceed to S5-T02 or later search/timeline tickets until S5-T01 confirms the Stage 4.5 substantial-test runway is completed and reviewed.
+1. Review the S5-T01 failed-gate record if needed.
+2. Prepare S4.5-IMP02 implementation planning when the user explicitly asks for the next Stage 4.5 slice.
+3. Do not proceed to S5-T02 or later search/timeline tickets until the Stage 4.5 substantial-test runway is completed and reviewed.

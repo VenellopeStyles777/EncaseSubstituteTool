@@ -13,10 +13,11 @@ Current handoff:
 
 - S3-T01 through S3-T06 are reviewed and done.
 - S4-T01 through S4-T07 are reviewed and done.
-- Stage 4.5 planning prompts S4.5-T01 through S4.5-T08 are present; the next practical implementation prompt should be S4.5-IMP01 only if the user explicitly asks for it.
+- Stage 4.5 planning prompts S4.5-T01 through S4.5-T08 are present; S4.5-IMP01 has been implemented, reviewed, and marked done.
 - `2026-07-15-stage-4.5-first-testing-familiarization.md` is the added Stage 4.5 coding-agent onboarding prompt.
 - `2026-07-15-s5-t00-documentation-organization-cleanup.md` is the Stage 5 S5-T00 documentation cleanup prompt; S5-T00 is done.
-- Stage 5 prompt drafts S5-T01 through S5-T16 are present, but S5-T01 must gate search/timeline implementation on completed and reviewed Stage 4.5 substantial-test work before S5-T02 or later is fed.
+- S5-T01 is done with a failed-gate/blocker result because the S4.5-IMP01 through S4.5-IMP06 runway is incomplete; S4.5-IMP01 is now done, while S4.5-IMP02 through S4.5-IMP06 remain incomplete.
+- S5-T01A is done after documentation hardening. Do not feed S5-T02 or later until the Stage 4.5 substantial-test runway is completed and reviewed.
 - Keep this coding-agent handoff separate from the Stage 4 research/review-agent packet in `prompts/stage-4-onboarding/`.
 - The coding-agent reflection may focus on implementation mechanics; the review-agent reflection focuses on review risk, forensic soundness, and future-stage guardrails.
 
@@ -35,8 +36,10 @@ Current major onboarding prompts:
 - `2026-07-15-s4.5-t06-file-list-output-plan.md`: Stage 4.5 S4.5-T06 documentation-only handoff prompt.
 - `2026-07-15-s4.5-t07-workflow-guardrail-review-optimization.md`: Stage 4.5 S4.5-T07 documentation-only handoff prompt.
 - `2026-07-15-s4.5-t08-documentation-review-handoff.md`: Stage 4.5 S4.5-T08 documentation-only handoff prompt.
+- `2026-07-16-s4.5-imp01-first-testing-command-shell.md`: Stage 4.5 S4.5-IMP01 first-testing command shell implementation prompt.
 - `2026-07-15-s5-t00-documentation-organization-cleanup.md`: Stage 5 S5-T00 documentation organization cleanup prompt.
 - `2026-07-15-s5-t01-readiness-and-stage-4.5-completion-gate.md`: Stage 5 S5-T01 readiness and Stage 4.5 completion gate prompt.
+- `2026-07-16-s5-t01a-stage-4.5-gate-language-hardening.md`: Stage 5 S5-T01A documentation-hardening prompt.
 - `2026-07-15-s5-t02-input-inventory-and-provenance-audit.md`: Stage 5 S5-T02 input inventory and provenance audit prompt.
 - `2026-07-15-s5-t03-searchable-record-contracts.md`: Stage 5 S5-T03 searchable record contracts prompt.
 - `2026-07-15-s5-t04-search-query-filter-sort-contracts.md`: Stage 5 S5-T04 search query, filter, and sort contracts prompt.

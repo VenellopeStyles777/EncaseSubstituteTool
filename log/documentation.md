@@ -2,6 +2,67 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-16 - S4.5-IMP01 Review Acceptance
+
+- Accepted S4.5-IMP01 and marked `tickets/stage-4.5/S4.5-IMP01-first-testing-command-shell.md` as `Done`.
+- Updated Stage 4.5, Stage 5, plan, README, goal, functionality, prompt, progression, and review records so S4.5-IMP01 is done while S4.5-IMP02 through S4.5-IMP06 remain required.
+- Recorded the reviewer real-image smoke run against ` Test Image/C16242-1-RL1-E003.E01`; output was written only under `.test-artifacts/first-testing/review-s4-5-imp01-real-image`.
+- Smoke result: `ok_with_unsupported_sections`, 53 segments, `metadata_unavailable`, pyewf unavailable, 4 audit events, 8 unsupported-section rows, `source_modified: false`, and `read_only_asserted: true`.
+- Confirmed no S4.5-IMP01 smoke output created file-list, CSV, static HTML, export, or report artifacts.
+- Verification: `python -m pytest app\tests\test_first_testing_command.py` reported 8 passed in 11.82s; `python -m pytest` reported 160 passed in 31.64s.
+
+## 2026-07-16 - S4.5-IMP01 First-Testing Command Shell Implementation
+
+- Added `app/backend/api/first_testing.py` as the Stage 4.5 first-testing command shell.
+- Exposed first-testing callables from `app/backend/api/__init__.py`.
+- Added focused S4.5-IMP01 tests in `app/tests/test_first_testing_command.py`.
+- Updated Stage 4.5, backend/API, manual-testing, feature inventory, plan, README, goal, prompt index, progression, and review docs so S4.5-IMP01 is `Review`.
+- Documented the S4.5-IMP01 artifact bundle: `case.db`, `run-manifest.json`, `command-summary.txt`, `intake.json`, `case.json`, `audit.json`, and `unsupported-sections.json`.
+- Preserved the real-E01 limitation: S4.5-IMP01 wraps existing segment/intake behavior in a workspace and artifact bundle, but real metadata, real verification, partition/filesystem parsing, E01-backed content extraction, file-list output, and static HTML remain future slices.
+- Confirmed no real E01 fixtures, native dependencies, parser behavior, search/timeline implementation, UI, reports, deleted recovery, carving, commit, or push were part of this implementation.
+- Focused verification: `python -m pytest app\tests\test_first_testing_command.py` reported 8 passed in 9.86s. Full-suite verification: `python -m pytest` reported 160 passed in 9.12s.
+
+## 2026-07-16 - S4.5-IMP01 Ticket Preparation
+
+- Added `tickets/stage-4.5/S4.5-IMP01-first-testing-command-shell.md` as the first Stage 4.5 implementation ticket.
+- Added `prompts/vscode-agent/2026-07-16-s4.5-imp01-first-testing-command-shell.md` as the matching handoff prompt for the existing VS Code coding-agent task.
+- Scoped S4.5-IMP01 to the first-testing command shell, safe case workspace, intake persistence, run manifest, command summary, audit artifact, and unsupported-section output.
+- Required the command to keep evidence read-only, reject unsafe evidence/case/output overlap before writing, preserve JSON paths locally, and optionally redact evidence paths in console/summary text.
+- Required unsupported-section rows for the later S4.5-IMP02 through S4.5-IMP06 work instead of fake parser outputs.
+- Updated Stage 4.5, Stage 5, plan, README, functionality, ticket, prompt, and goal indexes so S4.5-IMP01 is `Ready`, S5-T01A is `Done`, S5-T02 through S5-T16 remain `Draft`, and Stage 5 search/timeline remains blocked.
+- Confirmed no app source, tests, schema, parser behavior, native dependency setup, evidence fixtures, first-testing implementation, search/timeline implementation, UI, reports, commit, or push were part of ticket preparation.
+- Verification before coding-agent handoff: `python -m pytest` reported 152 passed in 3.25s.
+
+## 2026-07-16 - S5-T01A Stage 4.5 Gate Language Hardening
+
+- Marked `tickets/stage-5/S5-T01A-stage-4.5-gate-language-hardening.md` as `Review`, then accepted it as `Done` after review.
+- Hardened active Stage 4.5 wording in the Stage 4.5 ticket index, S4.5-T00, S4.5-T06, S4.5-T07, S4.5-T08, and the manual-testing guide.
+- Replaced bypass-style wording such as changing priority, explicitly setting Stage 4.5 aside, or explicitly moving on with the hard rule that S4.5-IMP01 through S4.5-IMP06 must be completed and reviewed before S5-T02 or later search/timeline implementation.
+- Clarified that the user may pause work, review docs, or choose when to start S4.5-IMP01, but Stage 5 search/timeline cannot proceed until the Stage 4.5 runway is complete and reviewed.
+- Updated Stage 5, ticket, prompt, plan, functionality, README, progression, and review indexes so S5-T01A is `Done`, S5-T01 remains `Done`, S5-T02 through S5-T16 remain `Draft`, and S4.5-IMP01 remains next.
+- Confirmed no app source, tests, schema, parser behavior, native dependency setup, evidence handling behavior, first-testing implementation, search/timeline implementation, UI, reports, commit, or push were part of this hardening.
+- Verification: focused active Stage 4.5 wording search found no remaining bypass-phrase matches; Stage 5 status search found no later Stage 5 ticket readiness entries in the checked indexes; `python -m pytest` reported 152 passed in 7.64s.
+
+## 2026-07-16 - S5-T01 Readiness Gate Result
+
+- Marked `tickets/stage-5/S5-T01-readiness-and-stage-4.5-completion-gate.md` as `Review` with a failed-gate/blocker result, then accepted it as `Done` after review.
+- Confirmed S5-T00 is accepted and done.
+- Confirmed no S4.5-IMP01 through S4.5-IMP06 implementation ticket files or prompt files exist under `tickets/` or `prompts/`.
+- Confirmed reviewed implementation has no first-testing command, real EWF metadata reader, real EWF verification, EWF-backed stream, real partition/filesystem parser, E01-backed content provider, file-list output bundle, static HTML output, or reviewed manual E01 workflow.
+- Updated Stage 5 status docs so S5-T02 through S5-T16 remain `Draft` and Stage 5 search/timeline remains blocked/deferred.
+- Recorded the S4.5-IMP01 through S4.5-IMP06 completion matrix, available Stage 5 record families, blocked real-E01 inputs, and provenance/status/warning labels to preserve.
+- Recorded a documentation wording finding for older Stage 4.5 lines that mention changing priority or explicitly setting first-testing aside; S5-T01 now overrides those for Stage 5 readiness.
+- Added `tickets/stage-5/S5-T01A-stage-4.5-gate-language-hardening.md` and `prompts/vscode-agent/2026-07-16-s5-t01a-stage-4.5-gate-language-hardening.md` as the small follow-up hardening ticket.
+- Confirmed no app source, tests, schema, parser behavior, native dependency setup, evidence files, fixtures, first-testing implementation, search/timeline implementation, UI, reports, commit, or push were part of this gate.
+- Verification: coding-agent `python -m pytest` reported 152 passed in 3.34s; reviewer rerun after S5-T01 acceptance and S5-T01A ticket creation reported 152 passed in 7.85s.
+
+## 2026-07-16 - S5-T01 Gate Preparation
+
+- Marked `tickets/stage-5/S5-T01-readiness-and-stage-4.5-completion-gate.md` as `Ready`.
+- Tightened S5-T01 and its VS Code coding-agent prompt around the current expected gate result: S5-T00 is done, but S4.5-IMP01 through S4.5-IMP06 are not present as implementation tickets and Stage 4.5 remains planning-only in the current docs.
+- Documented that S5-T01 should fail the Stage 5 readiness gate, keep S5-T02 and later as `Draft`, and recommend S4.5-IMP01 unless newer reviewed Stage 4.5 implementation work is found.
+- Added instructions to flag active wording that would bypass or push back the Stage 4.5 substantial-test runway, and to propose a small follow-up documentation ticket if needed.
+
 ## 2026-07-16 - S5-T00 Documentation Organization Cleanup
 
 - Marked `tickets/stage-5/S5-T00-documentation-organization-cleanup.md` as `Review`, then accepted it as `Done` after review.

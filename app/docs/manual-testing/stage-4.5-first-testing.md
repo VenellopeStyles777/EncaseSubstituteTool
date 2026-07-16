@@ -1,8 +1,8 @@
 # Stage 4.5 First Testing Plan
 
-Purpose: plan how the project will move from automated tests only to direct manual testing with user-provided E01 files.
+Purpose: track how the project moves from automated tests only to direct manual testing with user-provided E01 files.
 
-Stage 4.5 is planning-only at this point. It is not Stage 5 search/timeline.
+Stage 4.5 is not Stage 5 search/timeline. S4.5-IMP01 is reviewed and done as the first command-shell slice; it has a reviewer-run smoke test against the local ` Test Image` E01 set, while the broader parser/content/output workflow remains incomplete.
 
 ## What Is Implemented Now
 
@@ -11,6 +11,7 @@ The current backend can:
 - discover `.E01/.E02/.E03...` sibling segment names;
 - report missing or unsupported segment patterns;
 - run a JSON intake callable/CLI;
+- run the S4.5-IMP01 first-testing command shell to create a case workspace, persist the existing intake snapshot, write a run manifest, write command summary text, write audit JSON, and write unsupported-section JSON;
 - report whether the EWF reader dependency is unavailable or not implemented;
 - create a minimal SQLite case/evidence/audit schema when called explicitly;
 - run stubbed volume/filesystem/listing/preview/export workflows;
@@ -26,34 +27,32 @@ The current backend cannot yet:
 - hash or signature-check files extracted from E01 images;
 - show a UI or packaged executable.
 
-## Intended Manual E01 Workflow
+## Current Manual E01 Workflow
 
-Future Stage 4.5 implementation should work toward one command target similar to:
+S4.5-IMP01 adds this command target:
 
 ```powershell
 python -m app.backend.api.first_testing path\to\sample.E01 --case .test-artifacts\first-testing\case-001 --output .test-artifacts\first-testing\case-001\outputs
 ```
 
-The command should print a concise status summary and write JSON output. A later ticket may add a simple static HTML summary if it helps visual inspection.
+For dependency-free smoke checks, add `--adapter stub`. For a parseable stdout manifest, add `--json-only`. For shared console/summary text, add `--redact-paths`; local JSON artifacts keep original paths for examiner-owned review.
 
-Expected sections:
+Current S4.5-IMP01 sections:
 
 - input evidence path;
 - case workspace path and case/evidence identifiers;
 - discovered segment chain;
 - missing/unsupported segment warnings;
 - adapter and dependency status;
-- metadata status;
-- verification status;
-- volume/filesystem parser status;
-- file listing summary when real parser support exists;
-- selected file metadata, preview, hash, signature, and export results when supported;
+- metadata and verification status from the existing intake adapter boundary;
 - explicit current limitations;
-- output paths for JSON or HTML artifacts.
+- output paths for JSON artifacts.
+
+Later sections for volume/filesystem parser status, file listing, selected file metadata, preview, hash, signature, export results, CSV, and static HTML remain future S4.5-IMP02 through S4.5-IMP06 work.
 
 ## Planned Case Workspace
 
-The first command should use a case workspace rather than loose output files:
+The first command uses a case workspace rather than loose output files:
 
 ```text
 .test-artifacts/first-testing/local-runs/case-a/
@@ -65,12 +64,9 @@ The first command should use a case workspace rather than loose output files:
     case.json
     audit.json
     unsupported-sections.json
-    exports/
-    manifests/
-    reports/
 ```
 
-The command should create/open the SQLite case database with existing case-store helpers, persist the intake result as an evidence source, and record audit rows for the manual run. Until later tickets add real parsers, the summary should label metadata, verification, filesystem navigation, preview, export, hash/signature, and file-list export as unsupported or not yet implemented.
+The command creates the SQLite case database with existing case-store helpers, persists the intake result as an evidence source, and records audit rows for the run. Until later tickets add real parsers, the summary and unsupported-section JSON label real metadata, verification, filesystem navigation, preview, export, hash/signature, file-list export, and static HTML as unsupported or not yet implemented.
 
 ## Planned EWF Metadata And Verification Check
 
@@ -100,9 +96,9 @@ S4.5-T06 plans the output bundle that makes first testing inspectable without re
 
 The file list should start from `FilesystemEntry` records and preserve source path, volume id, file id/path/name, entry type, size, timestamps, allocation/deleted state, parser status, read-only assertion, and warnings. JSON should remain authoritative; CSV is for quick review. The optional HTML summary is a local artifact, not a UI/search/timeline feature.
 
-The implementation lineup is now: command shell and case workspace, real metadata/verification, EWF stream plus filesystem listing, selected-file content providers, output bundle, then guardrail/review handoff. Stage 5 search/timeline should wait until that first-testing path is reviewed or explicitly set aside.
+The implementation lineup is now: command shell and case workspace, real metadata/verification, EWF stream plus filesystem listing, selected-file content providers, output bundle, then guardrail/review handoff. Stage 5 search/timeline must wait until S4.5-IMP01 through S4.5-IMP06 are completed and reviewed.
 
-The next practical implementation ticket should be S4.5-IMP01 unless the user changes priority. That slice should create only the first-testing command shell, safe case workspace, intake persistence, manifest, and unsupported-section output; it should not start real parser work or Stage 5 search/timeline.
+The next practical implementation ticket is S4.5-IMP02. The user may pause or choose when to start it, but S5-T02 or later search/timeline implementation cannot proceed until the full Stage 4.5 implementation runway is complete and reviewed. S4.5-IMP01 creates only the first-testing command shell, safe case workspace, intake persistence, manifest, and unsupported-section output; real parser work and Stage 5 search/timeline remain later work.
 
 ## Minimum Demonstration Goal
 
@@ -193,6 +189,6 @@ Every Stage 4.5 implementation handoff should include:
 - confirmation that no evidence file was modified;
 - any redactions made in shared summaries.
 
-Manual-test status in `functionality.md` should remain `Untested` until the user confirms an implemented behavior against an approved real local E01/manual input. Mocked dependency tests, stub providers, generated dummy filenames, and dependency-unavailable output do not count as manual E01 testing.
+Manual-test status in `functionality.md` can record the S4.5-IMP01 command-shell smoke run as partial, because it used an approved local E01 set and produced reviewed artifacts. Mocked dependency tests, stub providers, generated dummy filenames, and dependency-unavailable output alone do not count as full manual E01 testing; later parser/content/output slices remain untested until those behaviors exist and are exercised.
 
 Shared transcripts, screenshots, HTML summaries, and file-list excerpts should redact evidence roots, user profile paths, case/client names, examiner names, evidence numbers, serial numbers, acquisition notes, and sensitive file paths unless the user explicitly approves disclosure.

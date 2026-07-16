@@ -9,17 +9,21 @@ __all__ = [
     "DEFAULT_MANIFEST_SUFFIX",
     "ExportAuditContext",
     "ExportContent",
+    "FIRST_TESTING_RUN_SCHEMA_VERSION",
     "StubExportContentProvider",
     "StubPreviewProvider",
     "directory_listing_to_json",
     "export_file",
     "export_file_to_json",
+    "first_testing_to_json",
+    "format_first_testing_summary",
     "intake_to_json",
     "list_directory",
     "main",
     "preview_file",
     "preview_file_to_json",
     "run_e01_intake",
+    "run_first_testing",
 ]
 
 
@@ -27,6 +31,15 @@ def __getattr__(name: str):
     if name in {"INTAKE_SCHEMA_VERSION", "intake_to_json", "main", "run_e01_intake"}:
         intake_module = import_module("app.backend.api.intake")
         return getattr(intake_module, name)
+
+    if name in {
+        "FIRST_TESTING_RUN_SCHEMA_VERSION",
+        "first_testing_to_json",
+        "format_first_testing_summary",
+        "run_first_testing",
+    }:
+        first_testing_module = import_module("app.backend.api.first_testing")
+        return getattr(first_testing_module, name)
 
     if name in {
         "DIRECTORY_LISTING_SCHEMA_VERSION",

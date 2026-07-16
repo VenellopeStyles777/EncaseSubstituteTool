@@ -6,7 +6,7 @@ Stage 4.5 is not search/timeline. It should not implement broad new forensic fea
 
 ## Stage 4.5 Status
 
-Status: T00 through T08 are planning in review. Stage 4.5 remains planning-only work; no behavior has been implemented.
+Status: T00 through T08 are planning in review. S4.5-IMP01 is reviewed and done as the first Stage 4.5 command-shell slice. Later Stage 4.5 parser/content/output slices remain unimplemented.
 
 ## Current Implemented Functionality Summary
 
@@ -19,7 +19,8 @@ The project currently implements these backend foundations:
   - dependency-free stub reader;
   - `pyewf` adapter skeleton with structured dependency-unavailable or real-reader-not-implemented status;
   - JSON intake callable/CLI;
-  - minimal SQLite case/evidence/audit schema.
+  - minimal SQLite case/evidence/audit schema;
+  - S4.5-IMP01 first-testing command shell that creates a safe case workspace, persists the existing intake snapshot, writes a manifest/summary/audit bundle, and marks later real-E01 sections unsupported.
 - Stage 2 browsing foundation:
   - read-only local file byte-stream abstraction for tiny local files;
   - whole-image volume boundary for readable non-empty streams;
@@ -44,7 +45,7 @@ The project currently implements these backend foundations:
 
 Current real-E01 truth:
 
-- The current CLI can run E01 segment discovery against a real user-provided `.E01` path.
+- The current CLIs can run E01 segment discovery against a real user-provided `.E01` path, and S4.5-IMP01 can wrap that intake in a case workspace plus manifest/audit/unsupported-section artifacts.
 - The current `pyewf` adapter does not yet read real EWF metadata or verify real EWF images.
 - The current backend does not parse real partitions, real filesystems, or real file content from E01 files.
 - Stage 4 hash/signature behavior operates on explicit provider bytes, not E01-extracted filesystem bytes.
@@ -55,9 +56,9 @@ This is the working map from the desired bare-minimum command-line workflow to t
 
 | Intended functionality | Current code to reuse | How it fits | Missing work |
 | --- | --- | --- | --- |
-| Accept E01 path in command prompt | `app.backend.api.intake.main()`, `run_e01_intake()`, `discover_e01_segments()` | Existing intake CLI proves path-in to JSON-out for segment discovery and adapter status | New `first_testing` orchestration command with `--case`, `--output`, summary mode, and artifact writes |
-| Create/open case file/workspace | `connect()`, `initialize_schema()`, `insert_case()`, `insert_evidence_source()`, `insert_audit_event()` in `app.backend.case_store` | SQLite foundation can store cases, evidence intake snapshots, and audit events when explicitly called | Case workspace folder layout, database path policy, CLI create/open behavior, automatic evidence registration |
-| Basic case/evidence info | `insert_case()`, `insert_evidence_source()`, intake result dicts | Intake JSON can become the saved evidence-source snapshot | Case naming/description arguments, evidence id policy, run manifest |
+| Accept E01 path in command prompt | `python -m app.backend.api.first_testing`, `run_first_testing()`, `run_e01_intake()`, `discover_e01_segments()` | S4.5-IMP01 accepts direct `.E01` and `--evidence-dir` plus `--first-segment`, then writes a case workspace and artifact bundle | Real metadata/verification, file listing, static HTML, and parser-backed output remain later slices |
+| Create/open case file/workspace | `connect()`, `initialize_schema()`, `insert_case()`, `insert_evidence_source()`, `insert_audit_event()` in `app.backend.case_store` | S4.5-IMP01 creates a case database, case row, evidence source row, and first-testing audit events | Reopening/updating existing cases remains outside this first command shell |
+| Basic case/evidence info | `insert_case()`, `insert_evidence_source()`, intake result dicts | S4.5-IMP01 saves the intake snapshot and writes `case.json` plus `run-manifest.json` | Later slices can add richer parser-backed evidence/file records |
 | Segment info | `discover_e01_segments()` and `SegmentDiscoveryResult.to_dict()` | Already works against real filenames without parsing evidence bytes | Human-readable summary and persisted run artifact |
 | EWF metadata | `EwfReaderAdapter`, `StubEwfReaderAdapter`, `PyewfEwfReaderAdapter.read_metadata()` | Adapter boundary exists and reports dependency/not-implemented states | Real `pyewf` metadata extraction, dependency install notes, structured partial/failure statuses |
 | Verification | `EwfReaderAdapter.verify()`, `VerificationStatus` | Result shape exists | Real EWF verification or clear unsupported/not-run reporting through libewf/pyewf |
@@ -88,21 +89,22 @@ Recommended Stage 4.5 ticket sequence:
 | S4.5-T06 | Review | File-list export, command prompt summary, and optional static HTML output plan |
 | S4.5-T07 | Review | Workflow, guardrail, and review optimization for manual testing |
 | S4.5-T08 | Review | Stage 4.5 documentation and review handoff |
+| S4.5-IMP01 | Done | First-testing command shell, safe case workspace, intake persistence, manifest, and unsupported-section output |
 
 ## Implementation Runway
 
-These planning tickets are intended to line up into implementation slices before Stage 5 search/timeline unless the user explicitly changes priority.
+These planning tickets line up into implementation slices that must be completed and reviewed before S5-T02 or later search/timeline implementation. The user may pause work, review documentation, or choose when to start S4.5-IMP01, but Stage 5 search/timeline cannot proceed until this runway is complete.
 
 | Future implementation slice | Planning source | Deliverable |
 | --- | --- | --- |
-| S4.5-IMP01 | S4.5-T01 and S4.5-T02 | First-testing command shell, safe case workspace, intake persistence, manifest, and unsupported-section output |
+| S4.5-IMP01 | S4.5-T01 and S4.5-T02 | First-testing command shell, safe case workspace, intake persistence, manifest, and unsupported-section output; reviewed and done |
 | S4.5-IMP02 | S4.5-T03 | Real `pyewf` metadata attempt and verification status while preserving dependency-free tests |
 | S4.5-IMP03 | S4.5-T04 | EWF-backed stream, partition discovery boundary, and root filesystem metadata/listing |
 | S4.5-IMP04 | S4.5-T05 | E01-backed selected-file content providers for preview/export/hash/signature under explicit size or streaming policy |
 | S4.5-IMP05 | S4.5-T06 | File-list JSON/CSV, command summary, artifact inventory, and optional static HTML |
 | S4.5-IMP06 | S4.5-T07 and S4.5-T08 | Manual-test guardrails, documentation reconciliation, and review handoff |
 
-The next practical implementation ticket should be S4.5-IMP01 unless the user changes priority. Do not add that implementation prompt until the user explicitly asks for it.
+The next practical implementation ticket is S4.5-IMP02. Stage 5 search/timeline remains blocked until S4.5-IMP01 through S4.5-IMP06 are completed and reviewed.
 
 ## Stage 4.5 Guardrails
 

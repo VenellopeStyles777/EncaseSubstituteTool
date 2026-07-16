@@ -7,6 +7,9 @@ segment-discovery-*/
 .coverage
 htmlcov/
 
+# Local evidence files
+ Test Image/
+
 # Virtual environments
 .venv/
 venv/

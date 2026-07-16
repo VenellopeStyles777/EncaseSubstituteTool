@@ -56,8 +56,8 @@ Current ticket folders:
 - `stage-2/`: volume/filesystem browsing MVP. Status: complete at Stage 2 handoff.
 - `stage-3/`: export/recovery foundation. Status: complete; S3-T01 through S3-T06 done.
 - `stage-4/`: hash/signature foundations. Status: complete; S4-T00 through S4-T07 done.
-- `stage-4.5/`: first testing with user-provided E01 files. Status: planning package in review; implementation remains unstarted until the user approves a future S4.5-IMP ticket.
-- `stage-5/`: documentation organization cleanup first, then search/timeline foundations. Status: deferred; S5-T00 is done, S5-T01 through S5-T16 are populated as detailed drafts, and S5-T01 must block S5-T02+ until the Stage 4.5 substantial-test implementation runway is completed and reviewed.
+- `stage-4.5/`: first testing with user-provided E01 files. Status: planning package in review; S4.5-IMP01 is reviewed and done as the first command-shell slice, while S4.5-IMP02 through S4.5-IMP06 remain unimplemented.
+- `stage-5/`: documentation organization cleanup first, then search/timeline foundations. Status: deferred; S5-T00 is done, S5-T01 is done with a failed-gate/blocker result, S5-T01A is done, S5-T02 through S5-T16 remain drafts, and S5-T02+ must stay blocked until the Stage 4.5 substantial-test implementation runway is completed and reviewed.
 - `future/`: cross-stage roadmap and weakest-point carryover notes.
 
 ## Approval Buffer

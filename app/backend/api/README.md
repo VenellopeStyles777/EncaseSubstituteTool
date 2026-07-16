@@ -13,7 +13,7 @@ These callables are backend-only and JSON-friendly. They do not provide UI, exec
 
 Stage 3 note: S3-T04 can optionally record export attempts in the case-store audit log when the caller supplies explicit audit context. It does not recover deleted files, parse real filesystems, run broader hash/signature analysis, or use preview-rendered text/hex as export bytes.
 
-Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. Stage 4.5 is a planning package in review for future first testing, but there is still no API callable/wrapper for a first-testing bundle, real E01 metadata, verification, E01-backed hash, signature, mismatch, known-file, or analysis-result persistence. Preview-rendered text/hex, preview providers, export providers, written export artifacts, and external known-file lists remain disallowed as implicit source analysis content.
+Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. S4.5-IMP01 adds a first-testing command shell and case-workspace bundle, but there is still no real E01 metadata, verification, E01-backed hash, signature, mismatch, known-file, or analysis-result persistence. Preview-rendered text/hex, preview providers, export providers, written export artifacts, and external known-file lists remain disallowed as implicit source analysis content.
 
 ## S1-T04 Intake Command
 
@@ -49,6 +49,64 @@ Current status values include:
 - `reader_error`: unexpected adapter exception caught at the command boundary.
 
 S1-T04 does not persist results automatically. Use the case-store helpers explicitly when a case workflow is ready.
+
+## S4.5-IMP01 First-Testing Command Shell
+
+Callable usage from Python:
+
+```python
+from app.backend.api import run_first_testing
+
+result = run_first_testing(
+    r"path\to\sample.E01",
+    case_path=r".test-artifacts\first-testing\case-a",
+    adapter_name="stub",
+)
+```
+
+Command-line usage from the repository root:
+
+```powershell
+python -m app.backend.api.first_testing path\to\sample.E01 --case .test-artifacts\first-testing\case-a
+```
+
+The alternate input form is:
+
+```powershell
+python -m app.backend.api.first_testing --evidence-dir path\to\evidence --first-segment sample.E01 --case .test-artifacts\first-testing\case-a
+```
+
+Useful options:
+
+- `--output`: artifact output directory; defaults to `<case>\outputs`.
+- `--case-name` / `--case-description`: saved case metadata.
+- `--actor`: optional audit actor.
+- `--adapter pyewf|stub`: defaults to dependency-safe `pyewf`; use `stub` for dependency-free smoke checks.
+- `--json-only`: prints the JSON run manifest instead of a text summary.
+- `--redact-paths`: redacts the evidence root as `<EVIDENCE_ROOT>` in console and `command-summary.txt`; local JSON artifacts keep original paths.
+
+S4.5-IMP01 creates:
+
+```text
+<case>\case.db
+<case>\run-manifest.json
+<case>\command-summary.txt
+<output>\intake.json
+<output>\case.json
+<output>\audit.json
+<output>\unsupported-sections.json
+```
+
+The command rejects `.E02+` as the primary input, unsupported extensions, missing/conflicting input forms, and evidence/case/output overlap before writing artifacts. It uses `run_e01_intake()`, persists the intake result with the existing case-store helpers, and records audit events for case creation, evidence intake completion, artifact writes, and run completion.
+
+Current S4.5-IMP01 status values include:
+
+- `ok_with_unsupported_sections`: orchestration, persistence, and artifact writes succeeded, while later real-E01 sections remain unsupported.
+- `invalid_input`: input validation failed before artifact writes.
+- `unsafe_output_path`: evidence/case/output path overlap was refused before artifact writes.
+- `intake_failed`: an unexpected intake status was persisted but the run should not be treated as a successful first-testing workflow.
+
+S4.5-IMP01 does not read real EWF metadata, verify real EWF images, parse partitions/filesystems, extract E01-backed file content, create file-list JSON/CSV, generate static HTML, start search/timeline, or add UI/reporting behavior.
 
 ## S2-T05 Directory Listing Callable
 

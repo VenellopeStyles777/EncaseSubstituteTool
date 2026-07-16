@@ -19,7 +19,7 @@ The backend package can be imported cleanly:
 - `app.backend.analysis_workers`
 - `app.backend.api`
 
-Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 added hash/signature analysis result contracts, provider-backed hash calculation, bounded provider-backed file signature detection over explicit analysis content providers, extension mismatch evaluation over reviewed signature results plus file metadata, fixture-sized known-file matching, a documentation-only analysis-result persistence plan, and the S4-T07 documentation handoff. Stage 4.5 is now a planning package in review for user-provided E01 first testing, but no Stage 4.5 backend behavior exists yet. The project remains backend-first and has no Stage 4.5 first-testing command, search/timeline/reporting/UI, or executable packaging yet.
+Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 added hash/signature analysis result contracts, provider-backed hash calculation, bounded provider-backed file signature detection over explicit analysis content providers, extension mismatch evaluation over reviewed signature results plus file metadata, fixture-sized known-file matching, a documentation-only analysis-result persistence plan, and the S4-T07 documentation handoff. Stage 4.5 planning is in review for user-provided E01 first testing, and S4.5-IMP01 is done with the first-testing command shell plus case-workspace artifact bundle. The project remains backend-first and has no real EWF metadata/verification, EWF-backed partition/filesystem parsing, E01-backed file-content extraction, search/timeline/reporting/UI, or executable packaging yet.
 
 ## Tests
 
@@ -39,7 +39,7 @@ python -m pip install pytest
 
 Current verification snapshot:
 
-- `python -m pytest`: 152 passed in 2.45s after the S4-T07 documentation/review handoff review.
+- `python -m pytest`: 160 passed in 9.12s after the S4.5-IMP01 first-testing command shell implementation.
 - The project config routes pytest temporary files to `.test-artifacts/pytest-temp` and disables pytest's optional cache provider.
 
 ## Stage 1 Intake Command
@@ -57,6 +57,24 @@ python -m app.backend.api.intake path\to\sample.E01 --adapter stub
 ```
 
 The command does not write to evidence files. It composes segment discovery with the EWF reader adapter boundary and prints JSON for later UI integration.
+
+## Stage 4.5 First-Testing Command Shell
+
+Run the current first-testing command shell from the repository root:
+
+```powershell
+python -m app.backend.api.first_testing path\to\sample.E01 --case .test-artifacts\first-testing\case-a
+```
+
+For dependency-free smoke checks:
+
+```powershell
+python -m app.backend.api.first_testing path\to\sample.E01 --case .test-artifacts\first-testing\case-a --adapter stub
+```
+
+S4.5-IMP01 creates a case workspace with `case.db`, `run-manifest.json`, `command-summary.txt`, and JSON artifacts under `<case>\outputs` by default. It persists the existing intake result and writes unsupported-section rows for later real-E01 features instead of pretending those parser-backed features exist.
+
+Limits: S4.5-IMP01 does not implement real metadata, verification, EWF byte streams, partition/filesystem parsing, E01-backed preview/export/hash/signature, file-list output, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, or required native dependencies.
 
 ## Stage 2 Capabilities And Limits
 

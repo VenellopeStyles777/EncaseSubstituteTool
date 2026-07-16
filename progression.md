@@ -13,6 +13,42 @@ YYYY-MM-DD
 ```
 
 2026-07-16
+- Completed: reviewed and accepted S4.5-IMP01 as `Done` after code inspection, focused tests, full-suite tests, artifact inspection, and a real-image smoke run against the local ` Test Image` E01 set.
+- Learned: the command shell works as an honest first-testing wrapper: it found 53 E01 segments and produced a safe case workspace, but dependency-unavailable pyewf output still means real EWF metadata and verification are not implemented.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP02 through S4.5-IMP06 still need implementation and review before the Stage 5 gate can pass.
+- Next: prepare S4.5-IMP02 for real EWF metadata and verification.
+
+2026-07-16
+- Completed: implemented S4.5-IMP01 first-testing command shell with safe `.E01` input handling, case workspace creation, intake persistence, run manifest, command summary, audit JSON, and unsupported-section output.
+- Learned: the first useful manual-test shell can reuse `run_e01_intake()` and the existing case-store helpers while keeping real EWF metadata, verification, filesystem parsing, E01-backed content, file-list output, static HTML, and Stage 5 search/timeline clearly unsupported.
+- Blocked by: Stage 5 search/timeline remains blocked until S4.5-IMP01 through S4.5-IMP06 are completed and reviewed; S4.5-IMP02 through S4.5-IMP06 still need implementation and review.
+- Next: hand S4.5-IMP01 to review, then prepare S4.5-IMP02 after acceptance. Focused verification: `python -m pytest app\tests\test_first_testing_command.py` reported 8 passed in 9.86s. Full-suite verification: `python -m pytest` reported 160 passed in 9.12s.
+
+2026-07-16
+- Completed: prepared S4.5-IMP01 as the next ready Stage 4.5 implementation ticket and created its matching VS Code coding-agent prompt.
+- Learned: the first implementation slice can reuse the existing intake command boundary and case-store helpers to produce a useful first-testing workspace without inventing real parser support.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP01 still needs coding-agent implementation and review before S4.5-IMP02 or any Stage 5 search/timeline ticket can move.
+- Next: feed S4.5-IMP01 to the existing coding agent, then review the command behavior, generated artifacts, tests, and documentation updates. Pre-handoff verification: `python -m pytest` reported 152 passed in 3.25s.
+
+2026-07-16
+- Completed: reviewed and accepted S5-T01A as `Done`, hardening active Stage 4.5 wording so it no longer permits Stage 5 search/timeline to bypass the Stage 4.5 implementation runway.
+- Learned: active Stage 4.5 docs now allow pausing or choosing when to start S4.5-IMP01, but no longer allow Stage 5 search/timeline to proceed before S4.5-IMP01 through S4.5-IMP06 are completed and reviewed. Remaining old-wording matches are historical or explanatory, not active bypass guidance.
+- Blocked by: Stage 5 search/timeline remains blocked; S5-T02 through S5-T16 remain `Draft`; S4.5-IMP01 through S4.5-IMP06 are still not created, implemented, or reviewed.
+- Next: prepare S4.5-IMP01 as the next practical implementation ticket.
+
+2026-07-16
+- Completed: reviewed and accepted S5-T01 as `Done` with a failed-gate/blocker result, then created S5-T01A as the ready wording-hardening follow-up.
+- Learned: S5-T00 is accepted and done, but S4.5-IMP01 through S4.5-IMP06 have no ticket files, no prompt files, no reviewed implementation, and no confirmed manual E01 workflow. The reviewed code still stops at segment filename discovery, dependency-safe adapter skeletons, and explicit stub/provider-backed foundations. Active Stage 4.5 wording still needs one small hardening pass before S4.5-IMP01.
+- Blocked by: Stage 5 search/timeline remains blocked; S5-T02 through S5-T16 must stay `Draft` until the Stage 4.5 implementation runway is completed and reviewed.
+- Next: feed S5-T01A to harden active docs, then prepare S4.5-IMP01 as the next practical implementation ticket unless newer reviewed Stage 4.5 implementation work appears. Reviewer verification after S5-T01 acceptance and S5-T01A ticket creation: `python -m pytest` reported 152 passed in 7.85s.
+
+2026-07-16
+- Completed: prepared S5-T01 as the next ready Stage 5 gate ticket and tightened the coding-agent prompt around the current Stage 4.5 implementation gap.
+- Learned: S5-T01 should currently fail the readiness gate unless newer reviewed S4.5-IMP01 through S4.5-IMP06 implementation work exists outside the visible docs.
+- Blocked by: Stage 5 search/timeline remains blocked until S5-T01 confirms the Stage 4.5 substantial-test implementation runway is completed and reviewed.
+- Next: feed S5-T01 to the existing coding agent; if it records a failed gate, review the blocker and prepare S4.5-IMP01 or a smaller documentation-fix ticket as appropriate.
+
+2026-07-16
 - Completed: reviewed and accepted S5-T00 documentation organization cleanup and marked S5-T00 as `Done`.
 - Learned: `readme.md` and `plan.md` were the main places repeating long status narratives; they now point to `functionality.md`, `tickets/`, `review.md`, and `log/documentation.md` for their owned details. The Stage 5 onboarding handoff prompt also needed a stale stage-5a cleanup note updated after review.
 - Blocked by: no blocker for documentation cleanup; Stage 5 search/timeline implementation remains blocked until S5-T01 confirms the Stage 4.5 implementation runway is completed and reviewed.

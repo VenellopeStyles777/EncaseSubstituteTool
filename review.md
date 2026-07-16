@@ -12,6 +12,159 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-16 - S4.5-IMP01 Review Result
+
+Result: accepted; S4.5-IMP01 marked `Done`.
+
+Findings:
+
+- No blocking findings.
+- The command implements the requested S4.5-IMP01 shell without adding real parser behavior or Stage 5 search/timeline work.
+- Evidence/case/output overlap checks happen before workspace/artifact creation.
+- The artifact bundle contains the expected `case.db`, `run-manifest.json`, `command-summary.txt`, `intake.json`, `case.json`, `audit.json`, and `unsupported-sections.json`.
+- Unsupported sections clearly identify later owners S4.5-IMP02 through S4.5-IMP06.
+- Manual status is only partial: the command shell was smoke-tested against a real local E01 set, but real EWF metadata, verification, partition/filesystem parsing, E01-backed content extraction, file-list output, and static HTML remain unimplemented.
+
+Reviewer verification:
+
+- Focused automated test rerun: `python -m pytest app\tests\test_first_testing_command.py`: 8 passed in 11.82s.
+- Full-suite rerun: `python -m pytest`: 160 passed in 31.64s.
+- Real-image smoke command used ` Test Image/C16242-1-RL1-E003.E01` with output under `.test-artifacts/first-testing/review-s4-5-imp01-real-image`.
+- Smoke result: `ok_with_unsupported_sections`; 53 segments discovered; intake status `metadata_unavailable`; adapter `pyewf-reader`; dependency unavailable; `read_only_asserted: true`; `source_modified: false`; 4 audit events; 8 unsupported rows.
+- Artifact check found no file-list, CSV, static HTML, export, or report artifacts from S4.5-IMP01.
+
+Next:
+
+- Prepare S4.5-IMP02 for real EWF metadata and verification work.
+- Keep S5-T02 through S5-T16 `Draft` until S4.5-IMP01 through S4.5-IMP06 are completed and reviewed.
+
+## 2026-07-16 - S4.5-IMP01 First-Testing Command Shell Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- Added `app/backend/api/first_testing.py` with `python -m app.backend.api.first_testing`.
+- Exposed `run_first_testing()`, `first_testing_to_json()`, and `format_first_testing_summary()` from `app.backend.api`.
+- Added validation for direct `.E01` input and `--evidence-dir` plus `--first-segment`, required `--case`, optional `--output`, `--case-name`, `--case-description`, `--actor`, `--adapter pyewf|stub`, `--json-only`, and `--redact-paths`.
+- Rejected `.E02+` primary inputs, unsupported extensions, missing/conflicting input forms, direct directories, and unsafe evidence/case/output overlap before artifact writes.
+- Created the required S4.5-IMP01 artifact layout: `case.db`, `run-manifest.json`, `command-summary.txt`, `intake.json`, `case.json`, `audit.json`, and `unsupported-sections.json`.
+- Reused `run_e01_intake()`, `connect()`, `initialize_schema()`, `insert_case()`, `insert_evidence_source()`, `insert_audit_event()`, and `list_audit_events()`.
+- Added focused tests in `app/tests/test_first_testing_command.py`.
+
+Scope intentionally not implemented:
+
+- No real EWF metadata or verification.
+- No EWF-backed stream, partition/filesystem parsing, E01-backed content provider, file-list output, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, native dependency installation, real E01 fixture, commit, or push.
+- Manual E01 status remains `Untested`.
+
+Verification:
+
+- Focused run: `python -m pytest app\tests\test_first_testing_command.py`: 8 passed in 9.86s.
+- Full run: `python -m pytest`: 160 passed in 9.12s.
+
+## 2026-07-16 - S4.5-IMP01 Ticket Preparation
+
+Result: ready for coding-agent handoff; implementation not started by reviewer.
+
+Prepared:
+
+- Added `tickets/stage-4.5/S4.5-IMP01-first-testing-command-shell.md`.
+- Added `prompts/vscode-agent/2026-07-16-s4.5-imp01-first-testing-command-shell.md`.
+- Scoped the ticket to the first-testing command shell, safe case workspace, intake persistence, run manifest, command summary, audit artifact, and unsupported-section output.
+- Required reuse of existing intake and case-store helpers: `run_e01_intake()`, `connect()`, `initialize_schema()`, `insert_case()`, `insert_evidence_source()`, `insert_audit_event()`, and `list_audit_events()`.
+- Required focused automated coverage without real E01 fixtures or native forensic dependencies.
+
+Scope intentionally excluded:
+
+- No real EWF metadata, real EWF verification, EWF-backed stream, partition/filesystem parsing, E01-backed content provider, file-list output, static HTML output, search/timeline implementation, UI, reports, deleted recovery, carving, packaging, commit, or push.
+
+Reviewer notes:
+
+- S5-T01A is accepted and done, so active guidance no longer permits bypassing the Stage 4.5 implementation runway.
+- S4.5-IMP01 is the next practical implementation ticket.
+- S5-T02 through S5-T16 remain `Draft`; Stage 5 search/timeline remains blocked until S4.5-IMP01 through S4.5-IMP06 are completed and reviewed.
+
+Verification:
+
+- Pre-handoff status scan confirmed the S4.5-IMP01 ticket and prompt are present and Stage 5 remains blocked.
+- `python -m pytest`: 152 passed in 3.25s.
+
+## 2026-07-16 - S5-T01A Stage 4.5 Gate Language Hardening
+
+Result: accepted; S5-T01A marked `Done`.
+
+Implemented:
+
+- Removed active Stage 4.5 wording that implied the user could bypass or set aside the Stage 4.5 implementation runway to begin Stage 5 search/timeline.
+- Clarified that the user may pause work, review documentation, or choose when to start S4.5-IMP01, but S5-T02 or later search/timeline implementation must wait for S4.5-IMP01 through S4.5-IMP06 to be completed and reviewed.
+- Kept S5-T01 as `Done` with the accepted failed-gate/blocker result.
+- Kept S5-T02 through S5-T16 as `Draft`.
+- Kept S4.5-IMP01 as the next practical implementation ticket.
+
+Reviewer result:
+
+- No blocking findings.
+- Confirmed active Stage 4.5 and manual-testing guidance no longer allows Stage 5 search/timeline to proceed by setting aside or bypassing S4.5-IMP01 through S4.5-IMP06.
+- Confirmed remaining old-wording matches are historical or explanatory, not active bypass guidance.
+- Marked S5-T01A as `Done`.
+
+Scope intentionally not implemented:
+
+- No app source code, tests, schema, parser behavior, evidence handling behavior, evidence fixtures, first-testing implementation, search/timeline implementation, UI, reports, local artifacts, commit, or push.
+
+Verification:
+
+- Focused active Stage 4.5 wording search: no remaining `set aside`, `priority changes`, `changes priority`, `unless the user changes priority`, `explicitly set aside`, `explicitly moves on`, `user changes priority`, or `unless priority changes` matches.
+- Stage 5 status search: no readiness drift for S5-T02 through S5-T16 in the checked indexes.
+- Remaining old-wording matches are historical review/log/prompt-history notes, privacy wording unrelated to bypassing, or S5-T01/S5-T01A descriptions of the wording that was hardened.
+- `python -m pytest`: 152 passed in 7.64s.
+
+## 2026-07-16 - S5-T01 Readiness And Stage 4.5 Completion Gate
+
+Result: accepted as a completed failed gate; S5-T01 marked `Done`.
+
+Findings:
+
+- S5-T00 is accepted and done.
+- No `S4.5-IMP01` through `S4.5-IMP06` implementation ticket files or prompt files were found.
+- `app/backend/api/first_testing.py` is absent.
+- Reviewed backend code still has only the existing `pyewf` dependency-safe reader skeleton and `pytsk3` dependency-safe filesystem skeleton; real metadata, real verification, EWF-backed streams, real partition/filesystem parsing, and E01-backed file-content providers are not implemented.
+- Stage 4.5 has no reviewed first-testing command, output bundle, file-list artifacts, static HTML summary, or confirmed manual E01 workflow.
+- Manual E01 status remains `Untested`.
+- S5-T02 through S5-T16 must remain `Draft`; Stage 5 search/timeline implementation remains blocked/deferred.
+
+Stage 4.5 completion matrix summary:
+
+- S4.5-IMP01: not created / not implemented / not reviewed.
+- S4.5-IMP02: not created / not implemented / not reviewed.
+- S4.5-IMP03: not created / not implemented / not reviewed.
+- S4.5-IMP04: not created / not implemented / not reviewed.
+- S4.5-IMP05: not created / not implemented / not reviewed.
+- S4.5-IMP06: not created / not implemented / not reviewed.
+
+Allowed Stage 5 planning inputs remain limited to reviewed record families with honest labels: intake/segment discovery results, explicit case/evidence/audit rows, Stage 2 local-file/stub/provider filesystem and preview records, Stage 3 export manifests/results, and Stage 4 provider-backed hash/signature/mismatch/known-file records. Blocked inputs include real parser-backed E01 metadata, first-testing manifests/file-list artifacts, real EWF verification, EWF-backed partition/filesystem records, E01-backed file-content records, and full-text records from E01 content.
+
+Documentation wording note:
+
+- Current Stage 5 docs and `workflow.md` enforce S5-T01 as the hard gate.
+- Older active Stage 4.5 planning/manual-testing docs still contain softer "user changes priority" or "explicitly set aside" wording. This S5-T01 result overrides that wording for Stage 5 readiness.
+
+Reviewer result:
+
+- No blocking issue with the S5-T01 failed-gate record itself.
+- Accepted S5-T01 as `Done` with Stage 5 search/timeline still blocked/deferred.
+- Created S5-T01A as a small documentation-hardening follow-up before S4.5-IMP01 preparation.
+
+Scope intentionally not implemented:
+
+- No app source code, tests, parser behavior, schema, native dependency setup, evidence fixtures, first-testing implementation, search/timeline implementation, UI, reports, local artifacts, commit, or push.
+
+Verification:
+
+- Coding-agent run: `python -m pytest`: 152 passed in 3.34s.
+- Reviewer rerun after S5-T01 acceptance and S5-T01A ticket creation: `python -m pytest`: 152 passed in 7.85s.
+
 ## 2026-07-16 - S5-T00 Documentation Organization Cleanup
 
 Result: accepted; S5-T00 marked `Done`.

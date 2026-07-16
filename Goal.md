@@ -48,7 +48,7 @@ Out of initial scope:
 2. Volume/filesystem view: establish image/byte-stream fixtures, discover whole-image volumes, and browse a stubbed filesystem with metadata and bounded preview output. Status: complete as of S2-T07 final review.
 3. Export/recovery: export selected files with provenance and lay groundwork for deleted-file recovery where supported. Status: complete as a backend fixture/stub export foundation after S3-T06 final review.
 4. Hash/signature analysis: add file hashing, known-file matching, file type detection, and mismatch flags. Status: complete as of S4-T07 final documentation/review handoff.
-4.5. First testing: summarize implemented functionality and plan direct manual testing with user-provided E01 files, command prompt output, optional simple visual output, and stronger workflow/review guardrails. Status: planning package in review; no first-testing command or parser behavior has been implemented.
+4.5. First testing: summarize implemented functionality and build direct manual testing support for user-provided E01 files, command prompt output, optional simple visual output, and stronger workflow/review guardrails. Status: planning package in review; S4.5-IMP01 is reviewed and done as the first command-shell slice; real parser behavior remains unimplemented.
 5. Documentation cleanup, then search/timeline: first organize and de-duplicate project docs, then add filename search, metadata filters, full-text search, and timestamp timeline.
 6. Reporting/workflow: bookmarks, examiner notes, audit log, and report generation.
 7. Advanced features: carving, artifact parsers, archive expansion, shadow copies, encryption detection, OCR, and optional AI triage.
@@ -207,9 +207,9 @@ Stage 4 review-agent handoff:
 - Detailed Stage 4 tickets now live under `tickets/stage-4/`; S4-T01 contract-only implementation is reviewed and done.
 - S4-T02 provider-backed hashing, S4-T03 file signature detection, S4-T04 extension mismatch rules, S4-T05 fixture-sized known-file matching, and S4-T06 planning-only case-store persistence decision are reviewed and done.
 - S4-T07 documentation/review handoff is reviewed and done without code, schema, API, persistence, test, parser, UI, native dependency, or Stage 5 implementation changes.
-- A detailed Stage 5 plan now lives under `tickets/stage-5/`. S5-T00 documentation organization cleanup is done; S5-T01 through S5-T16 remain `Draft`, and search/timeline implementation must wait for the S5-T01 Stage 4.5 completion gate.
-- An added Stage 4.5 first-testing scaffold now lives under `tickets/stage-4.5/`. Stage 4.5 is the next planning stage and should focus on direct manual testing with user-provided E01 files before any Stage 5 search/timeline work.
-- The main carryover risk is the missing real evidence-backed content path. Stage 4 can analyze explicit provider-backed bytes, but the current project cannot yet parse real E01 bytes, partitions, filesystems, or file content. Stage 4.5 must make that truth visible while planning command prompt or simple visual outputs for actual E01 inputs.
+- A detailed Stage 5 plan now lives under `tickets/stage-5/`. S5-T00 documentation organization cleanup is done; S5-T01 is `Done` with a failed-gate/blocker result, S5-T01A is `Done`, S5-T02 through S5-T16 remain `Draft`, and search/timeline implementation remains blocked until the Stage 4.5 implementation runway is completed and reviewed.
+- An added Stage 4.5 first-testing scaffold now lives under `tickets/stage-4.5/`. S4.5-IMP01 is done as the first implementation slice and focuses on the first-testing command shell before any Stage 5 search/timeline work.
+- The main carryover risk is the missing real evidence-backed content path. Stage 4 can analyze explicit provider-backed bytes, and S4.5-IMP01 can now create a first-testing workspace from an E01 path, but the current project cannot yet parse real E01 bytes, partitions, filesystems, or file content. Stage 4.5 must keep that truth visible in command prompt or simple visual outputs for actual E01 inputs.
 
 ## Stage 4.5 Detailed Targets
 
@@ -219,7 +219,7 @@ Targets:
 
 - Write a concise implemented-functionality summary for Stages 1 through 4.
 - Define a manual testing workflow for user-provided E01 segment sets.
-- Define expected command prompt output and JSON output for E01 intake checks.
+- Maintain the S4.5-IMP01 command prompt and JSON output for E01 intake checks while expanding later reviewed slices only when ready.
 - Plan optional simple static visual output, such as an HTML summary, if it helps inspect results without building a UI.
 - Document evidence handling rules: read-only inputs, no committed E01 files, output outside evidence folders, and redacted shared logs.
 - Plan the smallest optional real `pyewf` metadata/verification investigation while keeping default tests dependency-free.
@@ -229,8 +229,8 @@ Targets:
 Stage 4.5 acceptance criteria:
 
 - The user can read what functionality has been implemented and what remains stubbed/deferred.
-- The project has a detailed plan for one future command or workflow that can be run against user-provided E01 files.
-- The planned output makes segment discovery, adapter/dependency status, metadata status, verification status, and limitations visible.
+- The project has a reviewed command/workflow path that can be run against user-provided E01 files without writing beside evidence.
+- The output makes segment discovery, adapter/dependency status, metadata status, verification status, and limitations visible.
 - Review guardrails explain how to record manual E01 tests without committing evidence or leaking sensitive paths.
 - Stage 5 search/timeline implementation remains deferred until the Stage 4.5 substantial-test implementation runway is completed and reviewed.
 
