@@ -13,6 +13,18 @@ YYYY-MM-DD
 ```
 
 2026-07-16
+- Completed: added S4.5-IMP07 as a drafted command-line testing guide and evidence workflow instruction ticket with a matching coding-agent prompt.
+- Learned: the first-testing runway should end with exact user/reviewer instructions for what commands to run, where outputs go, how to inspect artifacts, and what each command proves or does not prove.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP02 through S4.5-IMP07 still need implementation/review before the Stage 5 gate can pass.
+- Next: feed S4.5-IMP02 to the existing coding agent after the expanded runway is accepted. Verification: `python -m pytest` reported 160 passed in 15.73s.
+
+2026-07-16
+- Completed: populated the remaining Stage 4.5 implementation runway with S4.5-IMP02 through S4.5-IMP06 and matching coding-agent prompts.
+- Learned: the original Stage 4.5 planning tickets should become explicit implementation tickets before any more coding handoff, because the goal is a first level of real-evidence testing that can be displayed visually before Stage 5 search/timeline.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP02 through S4.5-IMP06 still need implementation and review.
+- Next: feed S4.5-IMP02 to the existing coding agent after this ticket-population pass is accepted. Verification: `python -m pytest` reported 160 passed in 18.27s.
+
+2026-07-16
 - Completed: reviewed and accepted S4.5-IMP01 as `Done` after code inspection, focused tests, full-suite tests, artifact inspection, and a real-image smoke run against the local ` Test Image` E01 set.
 - Learned: the command shell works as an honest first-testing wrapper: it found 53 E01 segments and produced a safe case workspace, but dependency-unavailable pyewf output still means real EWF metadata and verification are not implemented.
 - Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP02 through S4.5-IMP06 still need implementation and review before the Stage 5 gate can pass.

@@ -6,7 +6,7 @@ Stage 4.5 is not search/timeline. It should not implement broad new forensic fea
 
 ## Stage 4.5 Status
 
-Status: T00 through T08 are planning in review. S4.5-IMP01 is reviewed and done as the first Stage 4.5 command-shell slice. Later Stage 4.5 parser/content/output slices remain unimplemented.
+Status: T00 through T08 are planning in review. S4.5-IMP01 is reviewed and done as the first Stage 4.5 command-shell slice. S4.5-IMP02 is ready as the next implementation slice, and S4.5-IMP03 through S4.5-IMP07 are drafted to preserve the full first-testing runway and command-line testing guide.
 
 ## Current Implemented Functionality Summary
 
@@ -90,21 +90,37 @@ Recommended Stage 4.5 ticket sequence:
 | S4.5-T07 | Review | Workflow, guardrail, and review optimization for manual testing |
 | S4.5-T08 | Review | Stage 4.5 documentation and review handoff |
 | S4.5-IMP01 | Done | First-testing command shell, safe case workspace, intake persistence, manifest, and unsupported-section output |
+| S4.5-IMP02 | Ready | Real EWF metadata and verification status while preserving dependency-free tests |
+| S4.5-IMP03 | Draft | EWF-backed stream, partition boundary, and root filesystem listing |
+| S4.5-IMP04 | Draft | E01-backed selected-file content providers for preview/export/hash/signature |
+| S4.5-IMP05 | Draft | File-list JSON/CSV, command summary, artifact inventory, and optional static HTML |
+| S4.5-IMP06 | Draft | Final guardrail review, documentation reconciliation, and Stage 5 handoff |
+| S4.5-IMP07 | Draft | Command-line testing guide and evidence workflow instructions |
 
 ## Implementation Runway
 
-These planning tickets line up into implementation slices that must be completed and reviewed before S5-T02 or later search/timeline implementation. The user may pause work, review documentation, or choose when to start S4.5-IMP01, but Stage 5 search/timeline cannot proceed until this runway is complete.
+These planning tickets line up into implementation slices that must be completed and reviewed before S5-T02 or later search/timeline implementation. The user may pause work, review documentation, or choose when to start S4.5-IMP02, but Stage 5 search/timeline cannot proceed until this runway is complete.
 
 | Future implementation slice | Planning source | Deliverable |
 | --- | --- | --- |
 | S4.5-IMP01 | S4.5-T01 and S4.5-T02 | First-testing command shell, safe case workspace, intake persistence, manifest, and unsupported-section output; reviewed and done |
-| S4.5-IMP02 | S4.5-T03 | Real `pyewf` metadata attempt and verification status while preserving dependency-free tests |
-| S4.5-IMP03 | S4.5-T04 | EWF-backed stream, partition discovery boundary, and root filesystem metadata/listing |
-| S4.5-IMP04 | S4.5-T05 | E01-backed selected-file content providers for preview/export/hash/signature under explicit size or streaming policy |
-| S4.5-IMP05 | S4.5-T06 | File-list JSON/CSV, command summary, artifact inventory, and optional static HTML |
-| S4.5-IMP06 | S4.5-T07 and S4.5-T08 | Manual-test guardrails, documentation reconciliation, and review handoff |
+| S4.5-IMP02 | S4.5-T03 | Real `pyewf` metadata attempt and verification status while preserving dependency-free tests; ready |
+| S4.5-IMP03 | S4.5-T04 | EWF-backed stream, partition discovery boundary, and root filesystem metadata/listing; drafted |
+| S4.5-IMP04 | S4.5-T05 | E01-backed selected-file content providers for preview/export/hash/signature under explicit size or streaming policy; drafted |
+| S4.5-IMP05 | S4.5-T06 | File-list JSON/CSV, command summary, artifact inventory, and optional static HTML; drafted |
+| S4.5-IMP06 | S4.5-T07 and S4.5-T08 | Manual-test guardrails, documentation reconciliation, and review handoff; drafted |
+| S4.5-IMP07 | S4.5-T07 and S4.5-T08 | User-facing command-line testing guide, PowerShell commands, artifact inspection steps, troubleshooting, and proof boundaries; drafted |
 
-The next practical implementation ticket is S4.5-IMP02. Stage 5 search/timeline remains blocked until S4.5-IMP01 through S4.5-IMP06 are completed and reviewed.
+The next practical implementation ticket is S4.5-IMP02. Stage 5 search/timeline remains blocked until S4.5-IMP01 through S4.5-IMP07 are completed and reviewed.
+
+Matching implementation prompts now live under `prompts/vscode-agent/`:
+
+- `2026-07-16-s4.5-imp02-real-ewf-metadata-verification.md`
+- `2026-07-16-s4.5-imp03-ewf-stream-partition-filesystem.md`
+- `2026-07-16-s4.5-imp04-e01-file-content-providers.md`
+- `2026-07-16-s4.5-imp05-file-list-output-visual-summary.md`
+- `2026-07-16-s4.5-imp06-final-guardrail-review-handoff.md`
+- `2026-07-16-s4.5-imp07-command-line-testing-guide.md`
 
 ## Stage 4.5 Guardrails
 

@@ -48,7 +48,7 @@ Out of initial scope:
 2. Volume/filesystem view: establish image/byte-stream fixtures, discover whole-image volumes, and browse a stubbed filesystem with metadata and bounded preview output. Status: complete as of S2-T07 final review.
 3. Export/recovery: export selected files with provenance and lay groundwork for deleted-file recovery where supported. Status: complete as a backend fixture/stub export foundation after S3-T06 final review.
 4. Hash/signature analysis: add file hashing, known-file matching, file type detection, and mismatch flags. Status: complete as of S4-T07 final documentation/review handoff.
-4.5. First testing: summarize implemented functionality and build direct manual testing support for user-provided E01 files, command prompt output, optional simple visual output, and stronger workflow/review guardrails. Status: planning package in review; S4.5-IMP01 is reviewed and done as the first command-shell slice; real parser behavior remains unimplemented.
+4.5. First testing: summarize implemented functionality and build direct manual testing support for user-provided E01 files, command prompt output, optional simple visual output, and stronger workflow/review guardrails. Status: planning package in review; S4.5-IMP01 is done, S4.5-IMP02 is ready, and S4.5-IMP03 through S4.5-IMP07 are drafted; real parser behavior remains unimplemented.
 5. Documentation cleanup, then search/timeline: first organize and de-duplicate project docs, then add filename search, metadata filters, full-text search, and timestamp timeline.
 6. Reporting/workflow: bookmarks, examiner notes, audit log, and report generation.
 7. Advanced features: carving, artifact parsers, archive expansion, shadow copies, encryption detection, OCR, and optional AI triage.
@@ -208,7 +208,7 @@ Stage 4 review-agent handoff:
 - S4-T02 provider-backed hashing, S4-T03 file signature detection, S4-T04 extension mismatch rules, S4-T05 fixture-sized known-file matching, and S4-T06 planning-only case-store persistence decision are reviewed and done.
 - S4-T07 documentation/review handoff is reviewed and done without code, schema, API, persistence, test, parser, UI, native dependency, or Stage 5 implementation changes.
 - A detailed Stage 5 plan now lives under `tickets/stage-5/`. S5-T00 documentation organization cleanup is done; S5-T01 is `Done` with a failed-gate/blocker result, S5-T01A is `Done`, S5-T02 through S5-T16 remain `Draft`, and search/timeline implementation remains blocked until the Stage 4.5 implementation runway is completed and reviewed.
-- An added Stage 4.5 first-testing scaffold now lives under `tickets/stage-4.5/`. S4.5-IMP01 is done as the first implementation slice and focuses on the first-testing command shell before any Stage 5 search/timeline work.
+- An added Stage 4.5 first-testing scaffold now lives under `tickets/stage-4.5/`. S4.5-IMP01 is done as the first implementation slice, S4.5-IMP02 is ready, and S4.5-IMP03 through S4.5-IMP07 are drafted before any Stage 5 search/timeline work.
 - The main carryover risk is the missing real evidence-backed content path. Stage 4 can analyze explicit provider-backed bytes, and S4.5-IMP01 can now create a first-testing workspace from an E01 path, but the current project cannot yet parse real E01 bytes, partitions, filesystems, or file content. Stage 4.5 must keep that truth visible in command prompt or simple visual outputs for actual E01 inputs.
 
 ## Stage 4.5 Detailed Targets

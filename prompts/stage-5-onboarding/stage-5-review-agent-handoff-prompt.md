@@ -71,12 +71,12 @@ The current real-E01 truth is still limited:
 
 Stage 4.5 was added before Stage 5 because the user wants something testable and demonstrable with actual E01 files.
 
-Stage 4.5 is no longer planning-only. S4.5-T00 through S4.5-T08 are planning/review records, and S4.5-IMP01 is reviewed and done as the first command-shell implementation slice.
+Stage 4.5 is no longer planning-only. S4.5-T00 through S4.5-T08 are planning/review records, S4.5-IMP01 is reviewed and done as the first command-shell implementation slice, S4.5-IMP02 is ready, and S4.5-IMP03 through S4.5-IMP07 are drafted.
 
 Before starting Stage 5, confirm the current Stage 4.5 runway state:
 
 - S4.5-IMP01 is done;
-- S4.5-IMP02 through S4.5-IMP06 remain incomplete unless newer reviewed work exists;
+- S4.5-IMP02 is ready and S4.5-IMP03 through S4.5-IMP07 are drafted but incomplete unless newer reviewed work exists;
 - no dependencies were installed;
 - no committed E01 files or private outputs were added;
 - manual E01 testing is only partial for the S4.5-IMP01 command shell;
@@ -85,11 +85,12 @@ Before starting Stage 5, confirm the current Stage 4.5 runway state:
 The Stage 4.5 implementation runway is:
 
 - S4.5-IMP01: first-testing command shell, safe case workspace, intake persistence, manifest, unsupported-section output.
-- S4.5-IMP02: real `pyewf` metadata and verification status.
-- S4.5-IMP03: EWF-backed stream, partition boundary, root filesystem metadata/listing.
-- S4.5-IMP04: E01-backed selected-file content providers for preview/export/hash/signature.
-- S4.5-IMP05: file-list JSON/CSV, command summary, artifact inventory, optional static HTML.
-- S4.5-IMP06: manual-test guardrails, documentation reconciliation, and review handoff.
+- S4.5-IMP02: real `pyewf` metadata and verification status. Status: Ready.
+- S4.5-IMP03: EWF-backed stream, partition boundary, root filesystem metadata/listing. Status: Draft.
+- S4.5-IMP04: E01-backed selected-file content providers for preview/export/hash/signature. Status: Draft.
+- S4.5-IMP05: file-list JSON/CSV, command summary, artifact inventory, optional static HTML. Status: Draft.
+- S4.5-IMP06: manual-test guardrails, documentation reconciliation, and review handoff. Status: Draft.
+- S4.5-IMP07: command-line testing guide and evidence workflow instructions. Status: Draft.
 
 ## Stage 5 Entry Rule
 
@@ -105,7 +106,7 @@ The older readiness/risk audit is now the hard gate:
 
 Search/timeline work starts only after:
 
-- Stage 4.5 first-testing implementation runway S4.5-IMP01 through S4.5-IMP06 is completed and reviewed;
+- Stage 4.5 first-testing implementation runway S4.5-IMP01 through S4.5-IMP07 is completed and reviewed;
 - S5-T00 documentation cleanup is accepted;
 - S5-T01 confirms what data search/timeline can honestly operate on.
 

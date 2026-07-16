@@ -12,6 +12,56 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-16 - S4.5-IMP07 Testing Guide Ticket Addition
+
+Result: added as draft; no coding-agent handoff yet.
+
+Prepared:
+
+- Added `tickets/stage-4.5/S4.5-IMP07-command-line-testing-guide.md`.
+- Added `prompts/vscode-agent/2026-07-16-s4.5-imp07-command-line-testing-guide.md`.
+- Updated Stage 4.5 and Stage 5 gate language so the pre-Stage-5 runway is S4.5-IMP01 through S4.5-IMP07.
+
+Purpose:
+
+- Ensure the real-evidence first-testing work produces a practical command-line guide, not just implementation artifacts.
+- Require exact PowerShell commands, expected artifacts, inspection steps, troubleshooting, proof boundaries, privacy/redaction rules, and reviewer transcript templates.
+
+Scope intentionally not implemented:
+
+- No app behavior, parser behavior, dependencies, evidence handling, real evidence artifacts, Stage 5 search/timeline, UI, reports, commit, or push.
+
+Verification:
+
+- `python -m pytest`: 160 passed in 15.73s.
+
+## 2026-07-16 - S4.5-IMP02 Through S4.5-IMP06 Ticket Population
+
+Result: implementation runway populated; no coding-agent handoff yet.
+
+Prepared:
+
+- Added `S4.5-IMP02-real-ewf-metadata-verification.md` as `Ready`.
+- Added `S4.5-IMP03-ewf-stream-partition-filesystem.md` as `Draft`.
+- Added `S4.5-IMP04-e01-file-content-providers.md` as `Draft`.
+- Added `S4.5-IMP05-file-list-output-visual-summary.md` as `Draft`.
+- Added `S4.5-IMP06-final-guardrail-review-handoff.md` as `Draft`.
+- Added matching VS Code coding-agent prompts for S4.5-IMP02 through S4.5-IMP06.
+
+Reviewer rationale:
+
+- Stage 4.5 planning was created to reach a substantial real-evidence first-testing display before Stage 5 search/timeline.
+- Generating the remaining IMP tickets now makes that runway explicit and prevents S5-T02 from absorbing unfinished first-testing work.
+- S4.5-IMP02 is next because S4.5-IMP01 produced the command shell and case workspace, but metadata/verification are still unavailable.
+
+Scope intentionally not implemented:
+
+- No app behavior, parser behavior, schema change, dependency installation, evidence handling, output artifact, visual summary, search/timeline, UI, report, commit, or push.
+
+Verification:
+
+- `python -m pytest`: 160 passed in 18.27s.
+
 ## 2026-07-16 - S4.5-IMP01 Review Result
 
 Result: accepted; S4.5-IMP01 marked `Done`.

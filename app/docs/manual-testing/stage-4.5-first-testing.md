@@ -48,7 +48,7 @@ Current S4.5-IMP01 sections:
 - explicit current limitations;
 - output paths for JSON artifacts.
 
-Later sections for volume/filesystem parser status, file listing, selected file metadata, preview, hash, signature, export results, CSV, and static HTML remain future S4.5-IMP02 through S4.5-IMP06 work.
+Later sections for volume/filesystem parser status, file listing, selected file metadata, preview, hash, signature, export results, CSV, static HTML, final handoff, and command-line testing guidance remain future S4.5-IMP02 through S4.5-IMP07 work.
 
 ## Planned Case Workspace
 
@@ -96,9 +96,9 @@ S4.5-T06 plans the output bundle that makes first testing inspectable without re
 
 The file list should start from `FilesystemEntry` records and preserve source path, volume id, file id/path/name, entry type, size, timestamps, allocation/deleted state, parser status, read-only assertion, and warnings. JSON should remain authoritative; CSV is for quick review. The optional HTML summary is a local artifact, not a UI/search/timeline feature.
 
-The implementation lineup is now: command shell and case workspace, real metadata/verification, EWF stream plus filesystem listing, selected-file content providers, output bundle, then guardrail/review handoff. Stage 5 search/timeline must wait until S4.5-IMP01 through S4.5-IMP06 are completed and reviewed.
+The implementation lineup is now: command shell and case workspace, real metadata/verification, EWF stream plus filesystem listing, selected-file content providers, output bundle, guardrail/review handoff, then command-line testing guide. Stage 5 search/timeline must wait until S4.5-IMP01 through S4.5-IMP07 are completed and reviewed.
 
-The next practical implementation ticket is S4.5-IMP02. The user may pause or choose when to start it, but S5-T02 or later search/timeline implementation cannot proceed until the full Stage 4.5 implementation runway is complete and reviewed. S4.5-IMP01 creates only the first-testing command shell, safe case workspace, intake persistence, manifest, and unsupported-section output; real parser work and Stage 5 search/timeline remain later work.
+The next practical implementation ticket is S4.5-IMP02. The user may pause or choose when to start it, but S5-T02 or later search/timeline implementation cannot proceed until the full Stage 4.5 implementation runway through S4.5-IMP07 is complete and reviewed. S4.5-IMP01 creates only the first-testing command shell, safe case workspace, intake persistence, manifest, and unsupported-section output; real parser work and Stage 5 search/timeline remain later work.
 
 ## Minimum Demonstration Goal
 

@@ -2,6 +2,25 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-16 - S4.5-IMP07 Testing Guide Ticket Addition
+
+- Added `tickets/stage-4.5/S4.5-IMP07-command-line-testing-guide.md` as the command-line testing guide and evidence workflow instruction ticket.
+- Added `prompts/vscode-agent/2026-07-16-s4.5-imp07-command-line-testing-guide.md`.
+- Updated Stage 4.5, Stage 5, plan, README, goal, functionality, prompt, progression, and review indexes so the Stage 4.5 pre-Stage-5 runway is S4.5-IMP01 through S4.5-IMP07.
+- Defined required guide content: prerequisites, evidence safety, exact PowerShell commands, local ` Test Image/` example, artifact inspection, expected statuses, troubleshooting, proof boundaries, and reviewer transcript template.
+- Confirmed this pass did not implement app behavior, parser behavior, dependencies, evidence handling, Stage 5 search/timeline, UI, reports, commit, or push.
+- Verification: `python -m pytest` reported 160 passed in 15.73s.
+
+## 2026-07-16 - S4.5 Implementation Runway Ticket Population
+
+- Added S4.5-IMP02 through S4.5-IMP06 ticket files under `tickets/stage-4.5/`.
+- Added matching VS Code coding-agent prompts under `prompts/vscode-agent/`.
+- Marked S4.5-IMP02 `Ready` and S4.5-IMP03 through S4.5-IMP06 `Draft`.
+- Updated Stage 4.5, Stage 5, plan, README, goal, functionality, prompt, progression, and review indexes to show the full Stage 4.5 implementation runway before Stage 5 search/timeline.
+- Preserved S4.5-IMP01 as `Done` and Stage 5 S5-T02 through S5-T16 as blocked/draft.
+- Confirmed this pass did not implement app behavior, parser behavior, dependencies, evidence handling, visual output, search/timeline, UI, reports, commit, or push.
+- Verification: `python -m pytest` reported 160 passed in 18.27s.
+
 ## 2026-07-16 - S4.5-IMP01 Review Acceptance
 
 - Accepted S4.5-IMP01 and marked `tickets/stage-4.5/S4.5-IMP01-first-testing-command-shell.md` as `Done`.
