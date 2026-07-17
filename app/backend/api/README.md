@@ -13,7 +13,7 @@ These callables are backend-only and JSON-friendly. They do not provide UI, exec
 
 Stage 3 note: S3-T04 can optionally record export attempts in the case-store audit log when the caller supplies explicit audit context. It does not recover deleted files, parse real filesystems, run broader hash/signature analysis, or use preview-rendered text/hex as export bytes.
 
-Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. S4.5-IMP01 adds a first-testing command shell and case-workspace bundle. S4.5-IMP02 adds best-effort `pyewf` metadata and separate verification status when the optional dependency exposes safe APIs. There is still no E01-backed hash, signature, mismatch, known-file, or analysis-result persistence. Preview-rendered text/hex, preview providers, export providers, written export artifacts, and external known-file lists remain disallowed as implicit source analysis content.
+Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. S4.5-IMP01 adds a first-testing command shell and case-workspace bundle. S4.5-IMP02 adds best-effort `pyewf` metadata and separate verification status when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 adds the first EWF stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts and is reviewed done. S4.5-IMP04 adds selected-file E01 content providers for preview/export/hash/signature only when an explicit parser-backed root entry is selected. Preview-rendered text/hex, written export artifacts, and external known-file lists remain disallowed as implicit source analysis content.
 
 ## S1-T04 Intake Command
 
@@ -84,6 +84,10 @@ Useful options:
 - `--adapter pyewf|stub`: defaults to dependency-safe `pyewf`; use `stub` for dependency-free smoke checks.
 - `--json-only`: prints the JSON run manifest instead of a text summary.
 - `--redact-paths`: redacts the evidence root as `<EVIDENCE_ROOT>` in console and `command-summary.txt`; local JSON artifacts keep original paths.
+- `--selected-file-id` / `--selected-file-path`: explicitly select one root entry from `root-listing.json` for preview/analysis/export.
+- `--selected-file-export-dir` / `--selected-file-export-name`: opt in to selected-file export and choose a safe output location/name.
+- `--selected-file-preview-mode raw|text|hex`: preview rendering mode for an explicit selection.
+- `--selected-file-max-bytes`: first-testing in-memory limit for selected-file hash/export.
 
 S4.5-IMP01 and S4.5-IMP02 create:
 
@@ -96,6 +100,15 @@ S4.5-IMP01 and S4.5-IMP02 create:
 <output>\metadata.json
 <output>\verification.json
 <output>\segment-discovery.json
+<output>\ewf-stream.json
+<output>\volumes.json
+<output>\filesystems.json
+<output>\root-listing.json
+<output>\demo-readiness.json
+<output>\selected-file-readiness.json
+<output>\selected-file-preview.json
+<output>\selected-file-analysis.json
+<output>\selected-file-export.json
 <output>\audit.json
 <output>\unsupported-sections.json
 ```
@@ -117,7 +130,21 @@ S4.5-IMP02 metadata/verification behavior:
 - Verification runs only when the reader exposes an explicit safe method such as `verify()`, `verify_media()`, `check_media()`, or `verify_hashes()`.
 - Verification statuses include `verification_ok`, `verification_failed`, `verification_error`, `verification_partial`, `not_supported`, and `not_run`.
 
-The command still does not parse partitions/filesystems, extract E01-backed file content, create file-list JSON/CSV, generate static HTML, start search/timeline, or add UI/reporting behavior.
+S4.5-IMP03 stream/filesystem behavior:
+
+- `EwfImageByteStream` opens the discovered EWF segment set as a read-only logical image when `pyewf` is available.
+- `discover_volumes(..., strategy="partition_table")` can use `pytsk3.Volume_Info` over that stream and emits byte offsets/lengths in existing `VolumeInfo` shapes.
+- `Pytsk3FilesystemAdapter(image_stream=...)` can inspect a volume root directory and map real parser-backed entries into `FilesystemEntry` records.
+- The first-testing command records EWF stream, volume, filesystem, root-listing, and demo-readiness status separately.
+
+S4.5-IMP04 selected-file content behavior:
+
+- `E01SelectedFileContentReader` reads bytes only for an explicitly selected parser-backed root file through the EWF stream plus `pytsk3`.
+- `E01PreviewContentProvider`, `E01ExportContentProvider`, and `E01AnalysisContentProvider` feed the existing preview, export, hash, signature, and extension-mismatch surfaces.
+- If no file is selected, selected-file artifacts are written with `not_run` statuses and no file is auto-selected.
+- Directories, deleted/unallocated entries, metadata-only entries, unavailable dependencies, unreadable files, and files above the in-memory hash/export limit return structured statuses.
+
+The command still does not create full file-list JSON/CSV, generate static HTML, start search/timeline, or add UI/reporting behavior.
 
 ## S2-T05 Directory Listing Callable
 

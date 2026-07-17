@@ -2,6 +2,86 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-17 - S4.5-IMP04 Review Acceptance
+
+- Marked `tickets/stage-4.5/S4.5-IMP04-e01-file-content-providers.md` as `Done` after reviewer acceptance.
+- Updated active Stage 4.5, Stage 5, README, goal, plan, functionality, prompt, progression, review, backend/core, and manual-testing docs so S4.5-IMP04 is reviewed and done while S4.5-IMP05 through S4.5-IMP07 remain incomplete.
+- Recorded reviewer verification: focused portable-runtime tests reported 80 passed in 20.75s, and the full portable-runtime test suite reported 183 passed in 20.82s.
+- Recorded reviewer real-image no-selection smoke: exit 0, `ok_with_unsupported_sections`, selected-file readiness/preview/analysis/hash/signature/export all `not_run`, and no file-list, CSV, HTML, selected export output, or selected export manifest artifacts.
+- Documented that no real selected-file extraction smoke was run because no explicit safe file selection was approved; dependency-free fake-parser tests cover the provider path without exposing real evidence content.
+- Confirmed S4.5-IMP05 file-list/output bundle work is now the next practical implementation slice, and Stage 5 search/timeline remains blocked.
+
+## 2026-07-17 - S4.5-IMP04 Selected-File Content Providers Implementation
+
+- Marked `tickets/stage-4.5/S4.5-IMP04-e01-file-content-providers.md` as `Review`.
+- Added selected-file provider documentation for `app/backend/forensic_core/selected_file_content.py`.
+- Updated backend/API/core/manual-testing docs with selected-file command flags, artifact names, statuses, and the first-testing in-memory policy.
+- Updated Stage 4.5, Stage 5, README, goal, plan, functionality, ticket, prompt, progression, and review status docs so S4.5-IMP04 is in review while S4.5-IMP05 through S4.5-IMP07 remain incomplete and Stage 5 stays blocked.
+- Recorded that selected-file operations run only for an explicit parser-backed root-entry selection and stay `not_run` otherwise.
+- Confirmed S4.5-IMP04 did not create file-list JSON/CSV, static HTML, broad crawl, search/timeline, UI, report, deleted-recovery, carving, packaging, commit, or push work.
+- Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_selected_file_content.py app\tests\test_file_preview.py app\tests\test_file_export.py app\tests\test_content_analysis_hashing.py app\tests\test_content_analysis_signatures.py app\tests\test_first_testing_command.py` reported 80 passed in 22.41s.
+- Full-suite verification: `.\.python312-embed\python.exe -m pytest` reported 183 passed in 26.98s.
+- Optional real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, EWF stream `ok`, partition-table status `ok` with 5 volumes, filesystem status `ok`, and a `real_parser_backed` root listing with 11 entries; selected-file readiness, preview, hash, signature, and export remained `not_run` because no explicit safe file was selected.
+
+## 2026-07-17 - S4.5-IMP04 Ready Ticket
+
+- Expanded `tickets/stage-4.5/S4.5-IMP04-e01-file-content-providers.md` from a draft into a ready implementation ticket.
+- Rewrote `prompts/vscode-agent/2026-07-16-s4.5-imp04-e01-file-content-providers.md` to match the ready scope.
+- Defined the selected-file-only boundary: shared parser-backed content reader plus preview/export/analysis provider wrappers.
+- Required reuse of `preview_file()`, `export_file()`, `hash_file_content()`, and `detect_file_signature()`.
+- Added explicit guardrails against stub fallback, arbitrary auto-selection/export, full file-list output, static HTML, search/timeline, UI/reporting, deleted recovery, carving, and packaging.
+- Added bounded in-memory policy requirements for real E01-backed hash/export and redaction rules for sensitive real evidence names, paths, metadata, and content.
+- Updated Stage 4.5, Stage 5, ticket, plan, progression, and prompt indexes so S4.5-IMP04 is ready while S4.5-IMP05 through S4.5-IMP07 remain drafted.
+
+## 2026-07-17 - S4.5-IMP03 Real Filesystem Demo Implementation
+
+- Marked `tickets/stage-4.5/S4.5-IMP03-ewf-stream-partition-filesystem.md` as `Done` after reviewer acceptance.
+- Added `EwfImageByteStream` for read-only logical image access through the discovered EWF segment set.
+- Added a `partition_table` volume-discovery strategy and parser-backed root listing support through optional `pytsk3`.
+- Added first-testing artifacts for `ewf-stream.json`, `volumes.json`, `filesystems.json`, `root-listing.json`, and `demo-readiness.json`.
+- Updated Stage 4.5, Stage 5, backend/API/core, manual-testing, README, goal, plan, functionality, prompt, progression, and review docs so S4.5-IMP03 is done while S4.5-IMP04 through S4.5-IMP07 remain incomplete.
+- Real-image smoke used the local ` Test Image` E01 set and wrote output only under `.test-artifacts/first-testing/s4-5-imp03-real-filesystem-demo`.
+- Smoke result: exit code 0, `ok_with_unsupported_sections`, 53 segments, `metadata_available`, verification `not_supported`, EWF stream `ok`, logical media size 1,024,209,543,168 bytes, partition-table status `ok` with 5 volumes, filesystem status `ok`, and a `real_parser_backed` root listing with 11 entries.
+- Confirmed no file-list JSON/CSV, selected-file preview/export/hash/signature artifacts, exports, reports, static HTML, search/timeline artifacts, UI/report work, commit, or push were part of S4.5-IMP03.
+- Sensitive real-E01 metadata values and root entry names were not quoted in shared docs or handoffs.
+- Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_volume_discovery.py app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py` reported 48 passed in 41.99s.
+- Full-suite verification: `.\.python312-embed\python.exe -m pytest` reported 174 passed in 51.01s.
+- Reviewer verification: focused portable-runtime tests reported 48 passed in 21.79s; full portable-runtime tests reported 174 passed in 25.71s; reviewer real-image smoke exited 0 with the same real-parser-backed root-listing gate result.
+- Reviewer correction: updated the stale `run_first_testing()` docstring so it no longer says filesystem parsing is absent after S4.5-IMP03.
+
+## 2026-07-17 - S4.5-IMP03 Dependency Setup Cleared
+
+- Added `.python312/` and `.python312-embed/` to `.gitignore` for local dependency/runtime artifacts.
+- Set up project-local portable Python 3.12.10 at `.\.python312-embed\python.exe`.
+- Installed `libewf-python 20240506`, `pytsk3 20260715`, and `pytest 9.1.1` into the portable runtime.
+- Confirmed the portable runtime reports `pyewf=available` and `pytsk3=available`.
+- Confirmed focused parser-boundary verification in the portable runtime reported 56 passed in 8.40s.
+- Confirmed full-suite verification in the portable runtime reported 167 passed in 14.99s.
+- Ran a setup smoke against the local ` Test Image` E01 set: it exited 0, discovered 53 segments, reached `metadata_available`, and reported verification `not_supported`.
+- Recorded that no `ewf-stream.json`, `volumes.json`, `filesystems.json`, or `root-listing.json` artifacts exist yet because S4.5-IMP03 app behavior still needs implementation.
+- Updated active Stage 4.5, Stage 5, plan, functionality, README, ticket, prompt, progression, review, and manual-testing docs so S4.5-IMP03 is ready again and should use `.\.python312-embed\python.exe`.
+- Preserved the S4.5-IMP03 success gate: real-parser-backed root listing from the actual evidence, or a precise new blocker.
+
+## 2026-07-17 - S4.5-IMP03 Blocked Demo Gate
+
+- Marked `tickets/stage-4.5/S4.5-IMP03-ewf-stream-partition-filesystem.md` as `Blocked`.
+- Preflight found `pyewf` missing and `pytsk3` missing in the active Python environment.
+- Confirmed local evidence exists at ` Test Image/C16242-1-RL1-E003.E01`; first segment size observed locally was 2,147,479,074 bytes.
+- Ran the exact real-image smoke command against `.test-artifacts/first-testing/s4-5-imp03-real-filesystem-demo`.
+- Smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, `metadata_unavailable`, verification `not_run`, `source_modified: false`, and `read_only_asserted: true`, but produced no `ewf-stream.json`, `volumes.json`, `filesystems.json`, or `root-listing.json`.
+- Confirmed the smoke did not create `file-list.json`, `file-list.csv`, exports, reports, or HTML artifacts.
+- Updated Stage 4.5, Stage 5, ticket, prompt, plan, functionality, README, manual-testing, progression, and review docs so S4.5-IMP03 is blocked and S4.5-IMP04 through S4.5-IMP07 remain drafted/incomplete.
+- Recommended next step: get user approval for a native dependency setup pass for `pyewf`/libewf and `pytsk3`/The Sleuth Kit, then rerun the S4.5-IMP03 demo gate.
+- Focused verification: `python -m pytest app\tests\test_image_stream.py app\tests\test_volume_discovery.py app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py` reported 41 passed in 16.15s.
+- Full-suite verification: `python -m pytest` reported 167 passed in 23.39s.
+
+## 2026-07-17 - S4.5-IMP03 Demo Gate Revision
+
+- Rewrote `tickets/stage-4.5/S4.5-IMP03-ewf-stream-partition-filesystem.md` so S4.5-IMP03 is the hard real-E01 filesystem demo gate.
+- Rewrote `prompts/vscode-agent/2026-07-16-s4.5-imp03-ewf-stream-partition-filesystem.md` with the same gate: produce a real-parser-backed root listing from ` Test Image/C16242-1-RL1-E003.E01`, or mark the ticket `Blocked` with exact dependency/API evidence.
+- Updated active Stage 4.5, Stage 5, plan, README, functionality, progression, review, prompt, and manual-testing docs so S4.5-IMP03 is `Ready` and S4.5-IMP04 through S4.5-IMP07 remain drafted.
+- Local dependency preflight still reports `pyewf=missing` and `pytsk3=missing`; no native dependency installation was attempted.
+
 ## 2026-07-17 - S4.5-IMP02 And S4.5-IMP02A Review Acceptance
 
 - Marked `tickets/stage-4.5/S4.5-IMP02-real-ewf-metadata-verification.md` and `tickets/stage-4.5/S4.5-IMP02A-metadata-warning-semantics.md` as `Done`.

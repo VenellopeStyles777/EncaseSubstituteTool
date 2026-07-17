@@ -8,6 +8,7 @@ from app.backend.forensic_core.image_stream import ImageByteStream
 
 
 VOLUME_DISCOVERY_SCHEMA_VERSION = "stage2.volume_discovery.v1"
+_AUTO_IMPORT = object()
 
 
 @dataclass(frozen=True)
@@ -109,6 +110,8 @@ def discover_volumes(
     image_stream: ImageByteStream,
     *,
     strategy: str = "whole_image",
+    pytsk3_module: object | None = _AUTO_IMPORT,
+    import_error: BaseException | None = None,
 ) -> VolumeDiscoveryResult:
     """Discover volumes for a read-only image stream.
 
@@ -118,25 +121,8 @@ def discover_volumes(
 
     stream_info = image_stream.describe()
 
-    if strategy != "whole_image":
-        return VolumeDiscoveryResult(
-            schema_version=VOLUME_DISCOVERY_SCHEMA_VERSION,
-            source_path=stream_info.source_path,
-            stream_type=stream_info.stream_type,
-            source_size=stream_info.size,
-            read_only=stream_info.read_only,
-            strategy=strategy,
-            status=VolumeDiscoveryStatus(
-                code="partition_parsing_unsupported",
-                message="Real partition-table parsing is not implemented in S2-T03.",
-            ),
-            warnings=(
-                VolumeDiscoveryWarning(
-                    code="partition_parsing_deferred",
-                    message="Use the whole_image strategy for S2-T03 fixture-backed behavior.",
-                ),
-            ),
-        )
+    if strategy not in {"whole_image", "partition_table", "auto"}:
+        return _unsupported_strategy_result(stream_info, strategy)
 
     if not stream_info.status.ok:
         return VolumeDiscoveryResult(
@@ -158,6 +144,37 @@ def discover_volumes(
             ),
         )
 
+    if strategy in {"partition_table", "auto"}:
+        partition_result = _discover_partition_table_volumes(
+            image_stream,
+            stream_info=stream_info,
+            strategy=strategy,
+            pytsk3_module=pytsk3_module,
+            import_error=import_error,
+        )
+        if partition_result.status.ok or strategy == "partition_table":
+            return partition_result
+
+        if strategy == "auto":
+            fallback = _whole_image_result(image_stream, stream_info, strategy="whole_image")
+            return VolumeDiscoveryResult(
+                schema_version=fallback.schema_version,
+                source_path=fallback.source_path,
+                stream_type=fallback.stream_type,
+                source_size=fallback.source_size,
+                read_only=fallback.read_only,
+                strategy="auto",
+                status=fallback.status,
+                volumes=fallback.volumes,
+                warnings=partition_result.warnings
+                + (
+                    VolumeDiscoveryWarning(
+                        code="whole_image_fallback",
+                        message="Partition parsing did not produce volumes; emitted whole-image fallback.",
+                    ),
+                ),
+            )
+
     if stream_info.size == 0:
         return VolumeDiscoveryResult(
             schema_version=VOLUME_DISCOVERY_SCHEMA_VERSION,
@@ -178,6 +195,15 @@ def discover_volumes(
             ),
         )
 
+    return _whole_image_result(image_stream, stream_info, strategy=strategy)
+
+
+def _whole_image_result(
+    image_stream: ImageByteStream,
+    stream_info,
+    *,
+    strategy: str,
+) -> VolumeDiscoveryResult:
     source_size = stream_info.size or 0
     volume = VolumeInfo(
         volume_id="volume-0",
@@ -209,3 +235,251 @@ def discover_volumes(
         ),
         volumes=(volume,),
     )
+
+
+def _unsupported_strategy_result(stream_info, strategy: str) -> VolumeDiscoveryResult:
+    return VolumeDiscoveryResult(
+        schema_version=VOLUME_DISCOVERY_SCHEMA_VERSION,
+        source_path=stream_info.source_path,
+        stream_type=stream_info.stream_type,
+        source_size=stream_info.size,
+        read_only=stream_info.read_only,
+        strategy=strategy,
+        status=VolumeDiscoveryStatus(
+            code="partition_parsing_unsupported",
+            message="Requested volume discovery strategy is not implemented.",
+        ),
+        warnings=(
+            VolumeDiscoveryWarning(
+                code="partition_parsing_deferred",
+                message="Use whole_image, partition_table, or auto.",
+            ),
+        ),
+    )
+
+
+def _discover_partition_table_volumes(
+    image_stream: ImageByteStream,
+    *,
+    stream_info,
+    strategy: str,
+    pytsk3_module: object | None,
+    import_error: BaseException | None,
+) -> VolumeDiscoveryResult:
+    pytsk3 = _resolve_pytsk3(pytsk3_module)
+    if pytsk3 is None:
+        message = "pytsk3/The Sleuth Kit dependency is unavailable; partition table was not parsed."
+        if import_error is not None:
+            message = f"{message} Import error: {import_error}"
+        return VolumeDiscoveryResult(
+            schema_version=VOLUME_DISCOVERY_SCHEMA_VERSION,
+            source_path=stream_info.source_path,
+            stream_type=stream_info.stream_type,
+            source_size=stream_info.size,
+            read_only=stream_info.read_only,
+            strategy=strategy,
+            status=VolumeDiscoveryStatus(
+                code="partition_dependency_unavailable",
+                message=message,
+            ),
+            warnings=(
+                VolumeDiscoveryWarning(
+                    code="partition_dependency_unavailable",
+                    message="pytsk3 is unavailable; no partition records were emitted.",
+                ),
+            ),
+        )
+
+    image_info = _Pytsk3ImageInfo(image_stream, pytsk3)
+    try:
+        try:
+            raw_volumes = list(pytsk3.Volume_Info(image_info))
+        except Exception as error:
+            return VolumeDiscoveryResult(
+                schema_version=VOLUME_DISCOVERY_SCHEMA_VERSION,
+                source_path=stream_info.source_path,
+                stream_type=stream_info.stream_type,
+                source_size=stream_info.size,
+                read_only=stream_info.read_only,
+                strategy=strategy,
+                status=VolumeDiscoveryStatus(
+                    code="partition_parse_error",
+                    message=f"Partition table parsing failed: {error}",
+                ),
+                warnings=(
+                    VolumeDiscoveryWarning(
+                        code="partition_parse_error",
+                        message="pytsk3 could not parse a partition table from the image stream.",
+                    ),
+                ),
+            )
+    finally:
+        image_info.close()
+
+    sector_size = _sector_size(image_stream)
+    if sector_size is None:
+        return VolumeDiscoveryResult(
+            schema_version=VOLUME_DISCOVERY_SCHEMA_VERSION,
+            source_path=stream_info.source_path,
+            stream_type=stream_info.stream_type,
+            source_size=stream_info.size,
+            read_only=stream_info.read_only,
+            strategy=strategy,
+            status=VolumeDiscoveryStatus(
+                code="partition_parse_error",
+                message="Partition parser produced sector units, but sector size is unavailable.",
+            ),
+            warnings=(
+                VolumeDiscoveryWarning(
+                    code="sector_size_unavailable",
+                    message="Could not convert partition sector offsets to bytes.",
+                ),
+            ),
+        )
+
+    allocated_flag = int(getattr(pytsk3, "TSK_VS_PART_FLAG_ALLOC", 1))
+    volumes: list[VolumeInfo] = []
+    skipped = 0
+    for raw_index, part in enumerate(raw_volumes):
+        flags = int(getattr(part, "flags", 0) or 0)
+        start = int(getattr(part, "start", 0) or 0)
+        length = int(getattr(part, "len", 0) or 0)
+        if length <= 0 or not flags & allocated_flag:
+            skipped += 1
+            continue
+
+        offset = start * sector_size
+        byte_length = length * sector_size
+        description = _partition_description(part)
+        volume = VolumeInfo(
+            volume_id=f"volume-{len(volumes)}",
+            volume_index=len(volumes),
+            source_path=stream_info.source_path,
+            stream_type=stream_info.stream_type,
+            source_size=stream_info.size or 0,
+            offset=offset,
+            length=byte_length,
+            volume_type=description or "partition",
+            description=description or f"Partition {raw_index}",
+            read_only=stream_info.read_only,
+            status=VolumeDiscoveryStatus(
+                code="ok",
+                message="Partition volume discovered.",
+            ),
+        )
+        volumes.append(volume)
+
+    if not volumes:
+        return VolumeDiscoveryResult(
+            schema_version=VOLUME_DISCOVERY_SCHEMA_VERSION,
+            source_path=stream_info.source_path,
+            stream_type=stream_info.stream_type,
+            source_size=stream_info.size,
+            read_only=stream_info.read_only,
+            strategy=strategy,
+            status=VolumeDiscoveryStatus(
+                code="partition_table_not_found",
+                message="Partition parser ran but emitted no allocated partition volumes.",
+            ),
+            warnings=(
+                VolumeDiscoveryWarning(
+                    code="partition_table_not_found",
+                    message="No allocated partition entries were available for filesystem parsing.",
+                ),
+            ),
+        )
+
+    warnings: tuple[VolumeDiscoveryWarning, ...] = ()
+    if skipped:
+        warnings = (
+            VolumeDiscoveryWarning(
+                code="partition_entries_skipped",
+                message=f"Skipped {skipped} metadata, safety, unallocated, or zero-length partition entries.",
+            ),
+        )
+
+    return VolumeDiscoveryResult(
+        schema_version=VOLUME_DISCOVERY_SCHEMA_VERSION,
+        source_path=stream_info.source_path,
+        stream_type=stream_info.stream_type,
+        source_size=stream_info.size,
+        read_only=stream_info.read_only,
+        strategy=strategy,
+        status=VolumeDiscoveryStatus(
+            code="ok",
+            message="Partition table parsing completed.",
+        ),
+        volumes=tuple(volumes),
+        warnings=warnings,
+    )
+
+
+def _resolve_pytsk3(pytsk3_module: object | None) -> object | None:
+    if pytsk3_module is not _AUTO_IMPORT:
+        return pytsk3_module
+    try:
+        import pytsk3  # type: ignore[import-not-found]
+    except ImportError:
+        return None
+    return pytsk3
+
+
+class _Pytsk3ImageInfo:
+    def __new__(cls, image_stream: ImageByteStream, pytsk3_module: object):
+        base = getattr(pytsk3_module, "Img_Info")
+
+        class ImageInfo(base):
+            def __init__(self, stream: ImageByteStream, module: object) -> None:
+                self._image_stream = stream
+                self._native_handle = _open_native_handle(stream)
+                image_type = getattr(module, "TSK_IMG_TYPE_EXTERNAL", 0)
+                super().__init__(url="", type=image_type)
+
+            def close(self) -> None:
+                handle = getattr(self, "_native_handle", None)
+                if handle is not None:
+                    close = getattr(handle, "close", None)
+                    if callable(close):
+                        close()
+                    self._native_handle = None
+
+            def read(self, offset: int, size: int) -> bytes:
+                handle = getattr(self, "_native_handle", None)
+                if handle is not None:
+                    read_at = getattr(handle, "read_buffer_at_offset", None)
+                    if callable(read_at):
+                        return read_at(size, offset)
+
+                result = self._image_stream.read_at(offset, size)
+                if not result.status.ok:
+                    return b""
+                return result.data
+
+            def get_size(self) -> int:
+                info = self._image_stream.describe()
+                return int(info.size or 0)
+
+        return ImageInfo(image_stream, pytsk3_module)
+
+
+def _open_native_handle(image_stream: ImageByteStream) -> object | None:
+    open_handle = getattr(image_stream, "_open_native_handle", None)
+    if callable(open_handle):
+        return open_handle()
+    return None
+
+
+def _sector_size(image_stream: ImageByteStream) -> int | None:
+    bytes_per_sector = getattr(image_stream, "bytes_per_sector", None)
+    if callable(bytes_per_sector):
+        value = bytes_per_sector()
+        if value:
+            return int(value)
+    return 512
+
+
+def _partition_description(part: object) -> str:
+    raw = getattr(part, "desc", "")
+    if isinstance(raw, bytes):
+        return raw.decode("utf-8", "replace").strip()
+    return str(raw).strip()

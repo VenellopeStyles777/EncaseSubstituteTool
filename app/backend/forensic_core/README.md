@@ -43,7 +43,7 @@ Stage 4 contract start:
 - S4-T06 documents future case-store persistence requirements and keeps current analysis helpers non-persistent.
 - S4-T07 reconciles documentation/status only and adds no core behavior.
 - Per-file analysis content remains separate from Stage 2 preview rendering, Stage 3 export-output verification, and future whole-image verification.
-- Stage 4.5 is the first-testing stage for user-provided E01 files before search/timeline. S4.5-IMP01 is done with a command shell and case-workspace artifact bundle. S4.5-IMP02 upgrades the `pyewf` adapter to attempt best-effort metadata and explicit verification when the optional dependency exposes safe APIs. Partition parsing, filesystem parsing, EWF-backed streams, and E01-backed file-content providers are not implemented yet.
+- Stage 4.5 is the first-testing stage for user-provided E01 files before search/timeline. S4.5-IMP01 is done with a command shell and case-workspace artifact bundle. S4.5-IMP02 upgrades the `pyewf` adapter to attempt best-effort metadata and explicit verification when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 is done with an EWF-backed stream, partition-table volume discovery, and real-parser-backed root listing path. S4.5-IMP04 is done with selected-file E01 content providers for explicit root-entry preview/export/hash/signature.
 
 ## S1-T02 Segment Discovery
 
@@ -73,23 +73,35 @@ The adapter layer is intentionally separate from segment discovery. Stage 1 does
 
 ## S2-T02 Image Byte-Stream Abstraction
 
-`image_stream.py` defines the first Stage 2 read-only byte access boundary:
+`image_stream.py` defines the read-only byte access boundary:
 
 - `ImageByteStream`: protocol for stream metadata and bounded byte-range reads.
 - `LocalFileImageStream`: local file-backed implementation for tiny generated fixtures and later raw-image experiments.
+- `EwfImageByteStream`: optional `pyewf`-backed implementation for segmented EWF images; it uses the discovered segment set, reports logical media size, and supports bounded read-only ranges for parser consumers.
 - `ImageStreamInfo`: source metadata and provenance, including source path, stream type, size, read-only assertion, status, and warnings.
 - `ImageReadResult`: bounded read result, including offset, requested length, source size, bytes read, read-only assertion, status, warnings, and raw `bytes` for backend callers.
 - `ImageStreamStatus` and `ImageStreamWarning`: structured status/warning objects for normal and error paths.
 
 Current behavior:
 
-- opens local sources only in read-only binary mode;
+- opens local sources only in read-only binary mode, and opens EWF segment sets through `pyewf` when the optional dependency is available;
 - supports bounded reads by explicit offset and length;
 - reports missing paths, directory paths, unreadable files, invalid negative ranges, and reads beyond the end of the source as structured statuses;
 - truncates reads that extend past EOF and emits a `read_truncated_at_eof` warning;
-- uses tiny generated files in tests and does not require real evidence, EWF parsing, `pyewf`, libewf, `pytsk3`, or The Sleuth Kit.
+- uses tiny generated files and fakes in default tests and does not require real evidence, `pyewf`, libewf, `pytsk3`, or The Sleuth Kit.
 
-S2-T02 does not parse partitions, discover volumes, parse filesystems, list directories, render previews, export files, or hash evidence. Those remain later tickets.
+S2-T02/S4.5-IMP03 stream code does not render previews, export files, or hash evidence by itself. S4.5-IMP04 adds selected-file provider wrappers for explicit parser-backed root entries only; broad crawls and file-list output remain later tickets.
+
+## S4.5-IMP04 Selected-File Content Providers
+
+`selected_file_content.py` defines the first E01-backed file-byte bridge:
+
+- `E01SelectedFileContentReader`: validates parser-backed provenance, opens the selected file through the EWF image stream and `pytsk3`, and returns structured content-read statuses.
+- `E01PreviewContentProvider`: supplies bounded bytes to `preview_file()`.
+- `E01ExportContentProvider`: supplies full bytes to `export_file()` only under the first-testing in-memory limit.
+- `E01AnalysisContentProvider`: supplies bytes to `hash_file_content()` or bounded signature detection.
+
+The reader refuses metadata-only entries, directories, deleted/unallocated entries, unavailable dependencies, unsupported/unsafe selections, unreadable parser results, and files above the in-memory hash/export policy. It never uses stub provider bytes while labeling content as `real_parser`.
 
 ## S2-T03 Volume Discovery Boundary
 
@@ -103,11 +115,12 @@ S2-T02 does not parse partitions, discover volumes, parse filesystems, list dire
 Current behavior:
 
 - emits one `whole_image` volume for a readable non-empty local file stream;
+- can emit allocated partition-table volumes through `pytsk3.Volume_Info` when `strategy="partition_table"` and an image stream is available;
 - returns `empty_image` with no volumes for a zero-byte source;
 - returns `image_stream_unavailable` with stream-status warning details for missing, directory, unreadable, or otherwise unavailable image streams;
-- returns `partition_parsing_unsupported` for non-`whole_image` strategies so future real partition parsers have a documented boundary.
+- returns structured dependency, parser, and no-partition-table statuses for the parser-backed strategy.
 
-S2-T03 does not parse real partition tables, parse filesystems, list directories, render previews, export files, hash evidence, or require `pytsk3`, The Sleuth Kit, `pyewf`, libewf, or real forensic images.
+S2-T03/S4.5-IMP03 volume discovery does not list directories, render previews, export files, hash evidence, or require `pytsk3`, The Sleuth Kit, `pyewf`, libewf, or real forensic images for default tests.
 
 ## S2-T04 Filesystem Adapter Boundary
 
@@ -124,10 +137,10 @@ Current behavior:
 - stub adapter returns deterministic root entries for `/Documents` and `/hello.txt`;
 - stub entries are allocated and not deleted;
 - pytsk3 adapter returns `dependency_unavailable` when `pytsk3` is missing;
-- importable pytsk3 remains `real_parser_not_implemented` until a later ticket intentionally adds real parsing;
+- importable pytsk3 can inspect a root directory when an image stream and volume are supplied, mapping real parser entries into `FilesystemEntry` shapes and labeling parser-backed results with warnings/provenance;
 - tests do not require real evidence, real filesystems, `pytsk3`, or The Sleuth Kit.
 
-S2-T04 does not add a directory-listing command/workflow, parse real filesystems, render previews, export files, recover deleted files, hash evidence, or require native forensic dependencies. `FilesystemEntry.allocated` and `FilesystemEntry.deleted` are metadata fields only; they do not expose recoverable byte ranges or content providers.
+S2-T04/S4.5-IMP03 does not render previews, export files, recover deleted files, hash evidence, or require native forensic dependencies for default tests. `FilesystemEntry.allocated` and `FilesystemEntry.deleted` are metadata fields only; they do not expose recoverable byte ranges or content providers.
 
 ## S2-T05 Directory Listing And File Metadata View
 
@@ -141,9 +154,10 @@ Current behavior:
 - uses adapter-provided `FilesystemEntry` metadata without mutating adapter results;
 - preserves source path, volume id, volume offset/length, filesystem type, adapter/dependency information, read-only assertion, entry status/warnings, allocation/deleted state, and timestamps;
 - root listing with `StubFilesystemAdapter` returns `/Documents` and `/hello.txt`;
+- root listing with a successful S4.5-IMP03 parser-backed adapter can return real root entries from an EWF-backed image stream;
 - non-root directories return `path_unsupported`, files return `path_not_directory`, unknown paths return `path_not_found`, and dependency-unavailable/not-implemented adapters return `filesystem_unavailable`.
 
-S2-T05 does not read file content, render previews, parse real filesystems, export/recover files, compute hashes, add UI, or require native forensic dependencies. Raw/text/hex preview remains S2-T06.
+S2-T05 does not read file content, render previews, export/recover files, compute hashes, add UI, or require native forensic dependencies for default tests. Raw/text/hex preview remains S2-T06.
 
 ## S2-T06 Raw/Text/Hex Preview Foundation
 

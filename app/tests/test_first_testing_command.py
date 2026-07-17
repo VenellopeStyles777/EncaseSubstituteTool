@@ -12,7 +12,12 @@ from app.backend.api.first_testing import (
     run_first_testing,
 )
 from app.backend.case_store import connect
-from app.backend.forensic_core import PyewfEwfReaderAdapter
+from app.backend.forensic_core import (
+    PyewfEwfReaderAdapter,
+    SelectedFileContentResult,
+    SelectedFileContentStatus,
+    SelectedFileContentWarning,
+)
 
 
 class FakePyewf:
@@ -46,6 +51,92 @@ class FakeHandle:
 
     def verify(self):
         return True
+
+
+SELECTED_BYTES = b"%PDF-1.7\nselected bytes"
+
+
+class FakeSelectedFileContentReader:
+    provider_name = "fake-selected-file-content-reader"
+    source_kind = "real_parser"
+    parser_name = "pytsk3"
+    parser_version = "fake-pytsk3"
+    read_only = True
+    synthetic = False
+
+    def __init__(self, image_stream, volume, file_entry, **kwargs):
+        self.file_entry = dict(file_entry)
+
+    def check(self):
+        return self._result(SelectedFileContentStatus("ok", "available"), b"")
+
+    def read_range(self, offset: int, length: int):
+        return self._result(
+            SelectedFileContentStatus("ok", "read"),
+            SELECTED_BYTES[offset : offset + length],
+            requested_offset=offset,
+            requested_length=length,
+        )
+
+    def read_full(self, *, max_bytes: int):
+        if int(self.file_entry.get("size") or 0) > max_bytes:
+            return self._result(
+                SelectedFileContentStatus(
+                    "file_too_large_for_in_memory_provider",
+                    "too large",
+                ),
+                b"",
+            )
+        return self._result(
+            SelectedFileContentStatus("ok", "read"),
+            SELECTED_BYTES,
+            requested_offset=0,
+            requested_length=len(SELECTED_BYTES),
+        )
+
+    def _result(
+        self,
+        status,
+        data: bytes,
+        *,
+        requested_offset=None,
+        requested_length=None,
+    ):
+        return SelectedFileContentResult(
+            status=status,
+            file_entry=self.file_entry,
+            source_path=self.file_entry.get("source_path"),
+            volume_id=self.file_entry.get("volume_id"),
+            volume_offset=self.file_entry.get("volume_offset"),
+            volume_length=self.file_entry.get("volume_length"),
+            file_id=self.file_entry.get("file_id"),
+            file_path=self.file_entry.get("path"),
+            file_name=self.file_entry.get("name"),
+            entry_type=self.file_entry.get("entry_type"),
+            filesystem_type=self.file_entry.get("filesystem_type"),
+            adapter_name=self.file_entry.get("adapter_name"),
+            source_kind="real_parser" if status.ok else "metadata_only",
+            provider_name=self.provider_name,
+            parser_name=self.parser_name if status.ok else None,
+            parser_version=self.parser_version if status.ok else None,
+            read_only=True,
+            source_content_size=self.file_entry.get("size"),
+            requested_offset=requested_offset,
+            requested_length=requested_length,
+            bytes_read=len(data),
+            data=data,
+            synthetic=False,
+            warnings=(
+                SelectedFileContentWarning(
+                    code="real_parser_content",
+                    message="fake parser bytes",
+                    path=self.file_entry.get("path"),
+                    source="selected_file_content_reader",
+                ),
+            )
+            if status.ok
+            else (),
+        )
 
 
 @contextmanager
@@ -87,6 +178,15 @@ def _required_artifacts(case_dir: Path, output_dir: Path) -> list[Path]:
         output_dir / "metadata.json",
         output_dir / "verification.json",
         output_dir / "segment-discovery.json",
+        output_dir / "ewf-stream.json",
+        output_dir / "volumes.json",
+        output_dir / "filesystems.json",
+        output_dir / "root-listing.json",
+        output_dir / "demo-readiness.json",
+        output_dir / "selected-file-readiness.json",
+        output_dir / "selected-file-preview.json",
+        output_dir / "selected-file-analysis.json",
+        output_dir / "selected-file-export.json",
         output_dir / "audit.json",
         output_dir / "unsupported-sections.json",
     ]
@@ -101,6 +201,77 @@ def _audit_actions(case_db: Path) -> set[str]:
         }
     finally:
         connection.close()
+
+
+def _fake_selected_file_demo_artifacts(*, selected_path, intake_result, adapter_name):
+    entry = {
+        "file_id": "volume-0:42",
+        "path": "/document.pdf",
+        "name": "document.pdf",
+        "entry_type": "file",
+        "size": len(SELECTED_BYTES),
+        "allocated": True,
+        "deleted": False,
+        "source_path": str(selected_path),
+        "volume_id": "volume-0",
+        "volume_offset": 512,
+        "volume_length": 2048,
+        "filesystem_type": "ntfs",
+        "adapter_name": "pytsk3-filesystem-adapter",
+        "read_only": True,
+        "timestamps": {},
+    }
+    volume = {
+        "volume_id": "volume-0",
+        "volume_index": 0,
+        "source_path": str(selected_path),
+        "stream_type": "ewf",
+        "source_size": 4096,
+        "offset": 512,
+        "length": 2048,
+        "volume_type": "ntfs",
+        "description": "fake volume",
+        "read_only": True,
+        "status": {"code": "ok", "ok": True, "message": "ok"},
+        "warnings": [],
+    }
+    return {
+        "ewf_stream": {
+            "schema_version": "stage4_5.first_testing_ewf_stream.v1",
+            "status": "ok",
+            "logical_media_size": 4096,
+        },
+        "volumes": {
+            "schema_version": "stage4_5.first_testing_volumes.v1",
+            "status": "ok",
+            "strategy": "partition_table",
+            "volume_count": 1,
+            "volume_discovery": {
+                "schema_version": "stage2.volume_discovery.v1",
+                "status": {"code": "ok", "ok": True, "message": "ok"},
+                "volumes": [volume],
+            },
+        },
+        "filesystems": {
+            "schema_version": "stage4_5.first_testing_filesystems.v1",
+            "status": "ok",
+            "filesystem_count": 1,
+            "filesystems": [],
+        },
+        "root_listing": {
+            "schema_version": "stage4_5.first_testing_root_listing.v1",
+            "status": "ok",
+            "parser_backing": "real_parser_backed",
+            "entry_count": 1,
+            "entries": [entry],
+        },
+        "demo_readiness": {
+            "schema_version": "stage4_5.first_testing_demo_readiness.v1",
+            "status": "real_parser_backed_root_listing_available",
+            "root_entry_count": 1,
+            "root_listing_parser_backing": "real_parser_backed",
+        },
+    }
 
 
 def test_direct_e01_with_stub_creates_case_artifacts_and_persistence():
@@ -127,6 +298,12 @@ def test_direct_e01_with_stub_creates_case_artifacts_and_persistence():
             connection.close()
 
         audit = json.loads((output_dir / "audit.json").read_text(encoding="utf-8"))
+        selected_readiness = json.loads(
+            (output_dir / "selected-file-readiness.json").read_text(encoding="utf-8")
+        )
+        selected_preview = json.loads(
+            (output_dir / "selected-file-preview.json").read_text(encoding="utf-8")
+        )
         artifact_exists = all(path.exists() for path in _required_artifacts(case_dir, output_dir))
         actions = _audit_actions(case_dir / "case.db")
         audit_actions = {event["action"] for event in audit["events"]}
@@ -137,6 +314,10 @@ def test_direct_e01_with_stub_creates_case_artifacts_and_persistence():
     assert result["adapter"]["name"] == "stub-ewf-reader"
     assert result["source_modified"] is False
     assert result["read_only_asserted"] is True
+    assert result["selected_file"]["requested"] is False
+    assert result["selected_file"]["selection_status"] == "not_run"
+    assert selected_readiness["status"]["code"] == "not_run"
+    assert selected_preview["status"] == "not_run"
     assert artifact_exists
     assert len(evidence_rows) == 1
     assert evidence_rows[0]["source_path"] == str((evidence_dir / "sample.E01").resolve())
@@ -197,6 +378,12 @@ def test_default_pyewf_dependency_unavailable_path_writes_honest_unsupported_out
         unsupported = json.loads(
             (case_dir / "outputs" / "unsupported-sections.json").read_text(encoding="utf-8")
         )
+        ewf_stream = json.loads(
+            (case_dir / "outputs" / "ewf-stream.json").read_text(encoding="utf-8")
+        )
+        root_listing = json.loads(
+            (case_dir / "outputs" / "root-listing.json").read_text(encoding="utf-8")
+        )
 
     assert result["status"] == "ok_with_unsupported_sections"
     assert intake["status"] == "metadata_unavailable"
@@ -206,8 +393,11 @@ def test_default_pyewf_dependency_unavailable_path_writes_honest_unsupported_out
     assert intake["verification"]["status"] == "not_run"
     assert metadata["status"] == "metadata_unavailable"
     assert verification["status"] == "not_run"
+    assert ewf_stream["status"] == "dependency_unavailable"
+    assert root_listing["parser_backing"] == "dependency_blocked"
     assert not any(section["section"] == "real_ewf_metadata" for section in unsupported["sections"])
     assert not any(section["section"] == "real_ewf_verification" for section in unsupported["sections"])
+    assert not any(section["owner"] == "S4.5-IMP03" for section in unsupported["sections"])
     assert all(section["status"] == "not_implemented" for section in unsupported["sections"])
 
 
@@ -231,6 +421,8 @@ def test_first_testing_writes_metadata_and_verification_artifacts_with_fake_pyew
         metadata = json.loads((output_dir / "metadata.json").read_text(encoding="utf-8"))
         verification = json.loads((output_dir / "verification.json").read_text(encoding="utf-8"))
         segments = json.loads((output_dir / "segment-discovery.json").read_text(encoding="utf-8"))
+        ewf_stream = json.loads((output_dir / "ewf-stream.json").read_text(encoding="utf-8"))
+        root_listing = json.loads((output_dir / "root-listing.json").read_text(encoding="utf-8"))
         summary = (case_dir / "command-summary.txt").read_text(encoding="utf-8")
         unsupported = json.loads(
             (output_dir / "unsupported-sections.json").read_text(encoding="utf-8")
@@ -253,11 +445,152 @@ def test_first_testing_writes_metadata_and_verification_artifacts_with_fake_pyew
     assert verification["status"] == "verification_ok"
     assert verification["stored_hashes_are_verification"] is False
     assert segments["segment_count"] == 1
+    assert ewf_stream["schema_version"] == "stage4_5.first_testing_ewf_stream.v1"
+    assert root_listing["schema_version"] == "stage4_5.first_testing_root_listing.v1"
     assert "Metadata status: metadata_available" in summary
     assert "Verification status: verification_ok" in summary
+    assert "EWF stream status:" in summary
+    assert "Root listing:" in summary
     assert not any(section["section"] == "real_ewf_metadata" for section in unsupported["sections"])
     assert not any(section["section"] == "real_ewf_verification" for section in unsupported["sections"])
+    assert not any(section["owner"] == "S4.5-IMP03" for section in unsupported["sections"])
     assert later_artifacts_exist == [False, False, False, False, False]
+
+
+def test_first_testing_manifest_can_record_real_parser_backed_root_listing(monkeypatch):
+    def fake_demo_artifacts(*, selected_path, intake_result, adapter_name):
+        entry = {
+            "path": "/Users",
+            "name": "Users",
+            "entry_type": "directory",
+            "adapter_name": "pytsk3-filesystem-adapter",
+            "read_only": True,
+        }
+        return {
+            "ewf_stream": {
+                "schema_version": "stage4_5.first_testing_ewf_stream.v1",
+                "status": "ok",
+                "logical_media_size": 4096,
+            },
+            "volumes": {
+                "schema_version": "stage4_5.first_testing_volumes.v1",
+                "status": "ok",
+                "strategy": "partition_table",
+                "volume_count": 1,
+            },
+            "filesystems": {
+                "schema_version": "stage4_5.first_testing_filesystems.v1",
+                "status": "ok",
+                "filesystem_count": 1,
+                "filesystems": [],
+            },
+            "root_listing": {
+                "schema_version": "stage4_5.first_testing_root_listing.v1",
+                "status": "ok",
+                "parser_backing": "real_parser_backed",
+                "entry_count": 1,
+                "entries": [entry],
+            },
+            "demo_readiness": {
+                "schema_version": "stage4_5.first_testing_demo_readiness.v1",
+                "status": "real_parser_backed_root_listing_available",
+                "root_entry_count": 1,
+                "root_listing_parser_backing": "real_parser_backed",
+            },
+        }
+
+    monkeypatch.setattr(first_testing_api, "_filesystem_demo_artifacts", fake_demo_artifacts)
+    with _dummy_first_testing_directory("parser-backed-manifest") as directory:
+        evidence_dir = directory / "evidence"
+        _touch_files(evidence_dir, "sample.E01")
+        case_dir = directory / "case"
+        output_dir = directory / "output"
+
+        result = run_first_testing(
+            evidence_dir / "sample.E01",
+            case_path=case_dir,
+            output_path=output_dir,
+            adapter_name="stub",
+        )
+        root_listing = json.loads((output_dir / "root-listing.json").read_text(encoding="utf-8"))
+        demo_readiness = json.loads(
+            (output_dir / "demo-readiness.json").read_text(encoding="utf-8")
+        )
+
+    assert result["ewf_stream"]["status"] == "ok"
+    assert result["volumes"]["volume_count"] == 1
+    assert result["filesystem"]["status"] == "ok"
+    assert result["root_listing"]["parser_backing"] == "real_parser_backed"
+    assert result["root_listing"]["entry_count"] == 1
+    assert root_listing["entries"][0]["adapter_name"] == "pytsk3-filesystem-adapter"
+    assert demo_readiness["status"] == "real_parser_backed_root_listing_available"
+
+
+def test_first_testing_selected_file_artifacts_use_explicit_selection(monkeypatch):
+    monkeypatch.setattr(
+        first_testing_api,
+        "_filesystem_demo_artifacts",
+        _fake_selected_file_demo_artifacts,
+    )
+    monkeypatch.setattr(
+        first_testing_api,
+        "E01SelectedFileContentReader",
+        FakeSelectedFileContentReader,
+    )
+
+    with _dummy_first_testing_directory("selected-file") as directory:
+        evidence_dir = directory / "evidence"
+        _touch_files(evidence_dir, "sample.E01")
+        case_dir = directory / "case"
+        output_dir = directory / "output"
+        export_dir = directory / "exports"
+
+        result = run_first_testing(
+            evidence_dir / "sample.E01",
+            case_path=case_dir,
+            output_path=output_dir,
+            adapter_name="stub",
+            selected_file_id="volume-0:42",
+            selected_file_export_dir=export_dir,
+            selected_file_export_name="selected.bin",
+        )
+        readiness = json.loads(
+            (output_dir / "selected-file-readiness.json").read_text(encoding="utf-8")
+        )
+        preview = json.loads(
+            (output_dir / "selected-file-preview.json").read_text(encoding="utf-8")
+        )
+        analysis = json.loads(
+            (output_dir / "selected-file-analysis.json").read_text(encoding="utf-8")
+        )
+        export = json.loads(
+            (output_dir / "selected-file-export.json").read_text(encoding="utf-8")
+        )
+        exported_bytes = (export_dir / "selected.bin").read_bytes()
+        later_artifacts_exist = [
+            (output_dir / "file-list.json").exists(),
+            (output_dir / "file-list.csv").exists(),
+            any(output_dir.rglob("*.html")),
+        ]
+
+    assert result["selected_file"]["requested"] is True
+    assert result["selected_file"]["selection_status"] == "ok"
+    assert result["selected_file"]["preview"]["status"] == "ok"
+    assert result["selected_file"]["analysis"]["hash_status"] == "ok"
+    assert result["selected_file"]["analysis"]["signature_status"] == "ok"
+    assert result["selected_file"]["export"]["status"] == "ok"
+    assert readiness["status"]["code"] == "ok"
+    assert readiness["source_kind"] == "real_parser"
+    assert preview["status"] == "ok"
+    assert preview["preview"]["provider"]["name"] == "e01-preview-content-provider"
+    assert analysis["hash"]["status"]["code"] == "ok"
+    assert analysis["hash"]["content_source"]["source_kind"] == "real_parser"
+    assert analysis["signature"]["status"]["code"] == "ok"
+    assert analysis["signature"]["detected_type"] == "pdf"
+    assert export["status"] == "ok"
+    assert export["export"]["content_source"]["source_kind"] == "real_parser"
+    assert exported_bytes == SELECTED_BYTES
+    assert later_artifacts_exist == [False, False, False]
 
 
 def test_e02_primary_input_is_rejected_before_artifact_writes():

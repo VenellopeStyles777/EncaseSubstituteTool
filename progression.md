@@ -13,6 +13,54 @@ YYYY-MM-DD
 ```
 
 2026-07-17
+- Completed: reviewed and accepted S4.5-IMP04 as done after independent focused tests, full-suite tests, a real-E01 no-selection smoke, and artifact checks.
+- Learned: the selected-file bridge can now prove the app can reach parser-backed bytes only when a root entry is explicitly selected; the default no-selection path is correctly non-invasive and does not export or expose evidence content.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP05 through S4.5-IMP07 still need implementation/review before the Stage 5 gate can pass.
+- Next: prepare S4.5-IMP05 for file-list JSON/CSV, command summary, artifact inventory, and optional static HTML. Reviewer verification: focused portable-runtime tests reported 80 passed in 20.75s; full portable-runtime tests reported 183 passed in 20.82s; reviewer real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, selected-file operations `not_run`, and no file-list, HTML, selected export output, or selected export manifest artifacts.
+
+2026-07-17
+- Completed: implemented S4.5-IMP04 selected-file E01-backed content providers and marked the ticket ready for review.
+- Learned: explicit selected-file provider wrappers can reuse the existing preview/export/hash/signature surfaces without adding broad crawls or auto-selection; real-parser provenance must stay attached to content-read status, provider identity, parser identity, volume/file identity, and read-only assertions.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP05 through S4.5-IMP07 still need implementation/review before the Stage 5 gate can pass.
+- Next: review S4.5-IMP04, then proceed to S4.5-IMP05 for file-list JSON/CSV, command summary, artifact inventory, and optional static HTML. Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_selected_file_content.py app\tests\test_file_preview.py app\tests\test_file_export.py app\tests\test_content_analysis_hashing.py app\tests\test_content_analysis_signatures.py app\tests\test_first_testing_command.py` reported 80 passed in 22.41s. Full-suite verification: `.\.python312-embed\python.exe -m pytest` reported 183 passed in 26.98s. Real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, EWF stream `ok`, partition-table status `ok` with 5 volumes, filesystem status `ok`, `real_parser_backed` root listing with 11 entries, and selected-file operations `not_run`.
+
+2026-07-17
+- Completed: expanded S4.5-IMP04 into a ready implementation ticket and refreshed its VS Code coding-agent prompt for selected-file E01-backed content providers.
+- Learned: the ticket must stay selected-file only and reuse existing preview/export/hash/signature surfaces through provider wrappers; broad file-list output, static HTML, search/timeline, UI, and reports remain later work.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP04 through S4.5-IMP07 still need implementation/review before the Stage 5 gate can pass.
+- Next: feed S4.5-IMP04 to the existing Stage 4.5 coding-agent task and review its handoff when complete.
+
+2026-07-17
+- Completed: reviewed and accepted S4.5-IMP03 as done after independent focused tests, full-suite tests, artifact consistency checks, and a fresh real-E01 smoke.
+- Learned: the Stage 4.5 first-testing command can now prove a real E01-backed path through segment discovery, metadata, EWF logical stream, partition-table volume discovery, filesystem parsing, and root listing, while still keeping selected-file content and later outputs out of scope.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP04 through S4.5-IMP07 still need implementation/review before the Stage 5 gate can pass.
+- Next: prepare S4.5-IMP04 for E01-backed selected-file content providers. Reviewer verification: focused portable-runtime tests reported 48 passed in 21.79s; full portable-runtime tests reported 174 passed in 25.71s; reviewer real-image smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, EWF stream `ok`, partition-table status `ok` with 5 volumes, filesystem status `ok`, and a `real_parser_backed` root listing with 11 entries.
+
+2026-07-17
+- Completed: implemented S4.5-IMP03 as the real-E01 filesystem demo gate and marked it ready for review.
+- Learned: the portable runtime at `.\.python312-embed\python.exe` can open the local E01 segment set through `pyewf`, expose an EWF-backed logical stream, discover partition-table volumes through `pytsk3`, and produce a real-parser-backed root listing without quoting sensitive metadata values.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP04 through S4.5-IMP07 still need implementation/review before the Stage 5 gate can pass.
+- Next: review S4.5-IMP03, then after acceptance proceed to S4.5-IMP04 for E01-backed selected-file content providers. Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_volume_discovery.py app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py` reported 48 passed in 41.99s. Full-suite verification: `.\.python312-embed\python.exe -m pytest` reported 174 passed in 51.01s. Real-image smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, `metadata_available`, verification `not_supported`, EWF stream `ok`, logical media size 1,024,209,543,168 bytes, partition-table status `ok` with 5 volumes, filesystem status `ok`, and a `real_parser_backed` root listing with 11 entries.
+
+2026-07-17
+- Completed: resolved the S4.5-IMP03 dependency blocker for a project-local portable Python 3.12 runtime and updated active docs so S4.5-IMP03 is ready again instead of blocked by missing imports.
+- Learned: `.\.python312-embed\python.exe` can import both `pyewf` and `pytsk3`; the real E01 setup smoke discovers 53 segments and reaches real metadata availability, but no EWF stream, volume, filesystem, or root-listing artifacts exist until S4.5-IMP03 app behavior is implemented.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP03 still must produce a real-parser-backed root listing or return a new precise API/implementation blocker.
+- Next: feed S4.5-IMP03 back to the coding agent with instructions to use `.\.python312-embed\python.exe`, avoid quoting sensitive metadata, and stop after S4.5-IMP03. Portable-runtime verification: focused parser-boundary tests reported 56 passed in 8.40s; full-suite verification reported 167 passed in 14.99s.
+
+2026-07-17
+- Completed: processed S4.5-IMP03 as the real-E01 filesystem demo gate and marked it blocked instead of review.
+- Learned: the local evidence file exists and the command can still discover 53 E01 segments, but `pyewf` and `pytsk3` are both missing, so no EWF stream, volume, filesystem, or real-parser-backed root listing can be produced in this environment.
+- Blocked by: user-approved native dependency setup for `pyewf`/libewf and `pytsk3`/The Sleuth Kit is needed before S4.5-IMP03 can be rerun as a real filesystem demo.
+- Next: do not start S4.5-IMP04 or Stage 5; get approval for dependency setup, then rerun S4.5-IMP03. Focused verification: `python -m pytest app\tests\test_image_stream.py app\tests\test_volume_discovery.py app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py` reported 41 passed in 16.15s. Full-suite verification: `python -m pytest` reported 167 passed in 23.39s. Real-image smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, `metadata_unavailable`, verification `not_run`, no root listing, and no file-list/export/report/HTML artifacts.
+
+2026-07-17
+- Completed: revised S4.5-IMP03 from a soft stream/filesystem slice into a hard real-E01 filesystem demo gate.
+- Learned: local dependency preflight still reports `pyewf=missing` and `pytsk3=missing`, so S4.5-IMP03 must either produce a real root listing after approved dependency setup or return `Blocked` with exact dependency evidence rather than passing with placeholders.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP03 must be implemented or correctly blocked before S4.5-IMP04.
+- Next: feed S4.5-IMP03 to the coding agent only with the demo gate language intact.
+
+2026-07-17
 - Completed: reviewed and accepted S4.5-IMP02 and S4.5-IMP02A as done after the warning-semantics correction passed local focused and full-suite verification.
 - Learned: metadata warning labels now distinguish incomplete metadata from conservative stored-hash handling, which keeps the first-testing evidence output cleaner for later manual review.
 - Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP03 through S4.5-IMP07 still need implementation/review before the gate can pass.

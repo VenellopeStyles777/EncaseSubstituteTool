@@ -2,7 +2,7 @@
 
 Purpose: track how the project moves from automated tests only to direct manual testing with user-provided E01 files.
 
-Stage 4.5 is not Stage 5 search/timeline. S4.5-IMP01 is reviewed and done as the first command-shell slice. S4.5-IMP02 is implemented and in review as the best-effort metadata/verification slice. The broader stream, parser, content, output, visual-summary, and testing-guide workflow remains incomplete.
+Stage 4.5 is not Stage 5 search/timeline. S4.5-IMP01 is reviewed and done as the first command-shell slice. S4.5-IMP02 and S4.5-IMP02A are reviewed and done as the best-effort metadata/verification slice plus warning-semantics correction. S4.5-IMP03 is reviewed and done after the project-local portable Python 3.12 runtime produced EWF stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts from the local E01 set. S4.5-IMP04 is reviewed and done after adding explicit selected-file content providers and selected-file artifacts. File-list output, visual-summary, final handoff, and testing-guide work remains incomplete.
 
 ## What Is Implemented Now
 
@@ -14,6 +14,10 @@ The current backend can:
 - run the S4.5-IMP01 first-testing command shell to create a case workspace, persist the existing intake snapshot, write a run manifest, write command summary text, write audit JSON, and write unsupported-section JSON;
 - attempt best-effort real EWF metadata through `pyewf` when it is importable, while preserving dependency-unavailable output when it is missing;
 - keep verification separate from metadata and report `verification_ok`, `verification_failed`, `verification_error`, `verification_partial`, `not_supported`, or `not_run`;
+- open an EWF-backed logical image stream with `EwfImageByteStream` when `pyewf` is available;
+- discover partition-table volume candidates with `pytsk3` when available;
+- map a real-parser-backed root filesystem listing into existing directory-listing result shapes;
+- run selected-file preview/export/hash/signature only when an explicit parser-backed root entry is selected and the operation fits the documented first-testing policy;
 - create a minimal SQLite case/evidence/audit schema when called explicitly;
 - run stubbed volume/filesystem/listing/preview/export workflows;
 - run provider-backed hash/signature/mismatch/known-file helpers over explicit provider bytes.
@@ -22,10 +26,9 @@ The current backend cannot yet:
 
 - guarantee real EWF metadata when `pyewf` is missing or metadata fields are unavailable;
 - guarantee real EWF verification when no safe `pyewf` verification API is exposed;
-- parse real partition tables;
-- parse real filesystems;
-- extract real file content from E01 images;
-- hash or signature-check files extracted from E01 images;
+- crawl or auto-select files from E01 images;
+- hash/export selected files above the documented in-memory limit without future streaming support;
+- create file-list JSON/CSV or static HTML output;
 - show a UI or packaged executable.
 
 ## Current Manual E01 Workflow
@@ -38,6 +41,14 @@ python -m app.backend.api.first_testing path\to\sample.E01 --case .test-artifact
 
 For dependency-free smoke checks, add `--adapter stub`. For a parseable stdout manifest, add `--json-only`. For shared console/summary text, add `--redact-paths`; local JSON artifacts keep original paths for examiner-owned review.
 
+S4.5-IMP04 selected-file options are explicit and opt-in:
+
+```powershell
+.\.python312-embed\python.exe -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case .test-artifacts\first-testing\case-selected --selected-file-id "<root-entry-file-id>" --selected-file-export-dir .test-artifacts\first-testing\case-selected\exports --redact-paths
+```
+
+Use either `--selected-file-id` or `--selected-file-path`, not both. Do not choose arbitrary evidence files for shared testing; select only a reviewed safe, regular, allocated root entry. If no explicit file is selected, the command writes selected-file artifacts with `not_run` statuses.
+
 Current S4.5-IMP01 sections:
 
 - input evidence path;
@@ -46,10 +57,12 @@ Current S4.5-IMP01 sections:
 - missing/unsupported segment warnings;
 - adapter and dependency status;
 - metadata and verification status from the existing intake adapter boundary, including S4.5-IMP02 `metadata.json` and `verification.json`;
+- EWF stream, volume, filesystem, root-listing, and demo-readiness status artifacts from S4.5-IMP03 when the portable runtime can use `pyewf` and `pytsk3`;
+- selected-file readiness, preview, analysis, and export status when a file is explicitly selected, or `not_run` when no file is selected;
 - explicit current limitations;
 - output paths for JSON artifacts.
 
-Later sections for volume/filesystem parser status, file listing, selected file metadata, preview, hash, signature, export results, CSV, static HTML, final handoff, and command-line testing guidance remain future S4.5-IMP03 through S4.5-IMP07 work.
+Later sections for file-list JSON/CSV, static HTML, final handoff, and command-line testing guidance remain future S4.5-IMP05 through S4.5-IMP07 work.
 
 ## Planned Case Workspace
 
@@ -66,11 +79,20 @@ The first command uses a case workspace rather than loose output files:
     metadata.json
     verification.json
     segment-discovery.json
+    ewf-stream.json
+    volumes.json
+    filesystems.json
+    root-listing.json
+    demo-readiness.json
+    selected-file-readiness.json
+    selected-file-preview.json
+    selected-file-analysis.json
+    selected-file-export.json
     audit.json
     unsupported-sections.json
 ```
 
-The command creates the SQLite case database with existing case-store helpers, persists the intake result as an evidence source, and records audit rows for the run. S4.5-IMP02 writes metadata and verification artifacts. Until later tickets add real parsers, the summary and unsupported-section JSON keep filesystem navigation, preview, export, hash/signature, file-list export, and static HTML as unsupported or not yet implemented.
+The command creates the SQLite case database with existing case-store helpers, persists the intake result as an evidence source, and records audit rows for the run. S4.5-IMP02 writes metadata and verification artifacts. S4.5-IMP03 writes stream, volume, filesystem, root-listing, and demo-readiness artifacts when the parser stack is available. S4.5-IMP04 writes selected-file artifacts and runs selected-file preview/export/hash/signature only for an explicit parser-backed root-entry selection. Until later tickets add output bundles, the summary and unsupported-section JSON keep file-list export and static HTML as unsupported or not yet implemented.
 
 ## Current EWF Metadata And Verification Check
 
@@ -78,21 +100,26 @@ S4.5-IMP02 implements the first `pyewf` metadata/verification attempt. The metad
 
 Verification is separate from metadata. Reading stored EWF hash values is not the same as verifying the image. Verification runs only when the installed or injected `pyewf` API exposes an explicit safe method; otherwise the first-testing command shows `not_run` or `not_supported`.
 
-## Planned Stream, Volume, And Filesystem Bridge
+## Current Stream, Volume, And Filesystem Bridge
 
-S4.5-T04 plans the missing path from E01 container bytes to navigable filesystem metadata:
+S4.5-IMP03 implements the first path from E01 container bytes to navigable root filesystem metadata:
 
 ```text
 selected .E01 -> EWF-backed image stream -> volume records -> filesystem entries -> directory listing
 ```
 
-This remains unimplemented. The future stream should implement the existing `ImageByteStream` protocol instead of treating `.E01` as a raw local file. Partition parsing should continue to emit `VolumeInfo` records, and filesystem parsing should continue to emit `FilesystemResult` and `FilesystemEntry` records so `list_directory()` can keep its current response shape. File byte extraction for preview/export/hash/signature remains a later S4.5-T05 concern.
+Use `.\.python312-embed\python.exe` for this path because that local runtime has `pyewf` and `pytsk3` available. The stream implements the existing `ImageByteStream` protocol instead of treating `.E01` as a raw local file. Partition parsing emits `VolumeInfo` records, and filesystem parsing emits `FilesystemResult` and `FilesystemEntry` records so `list_directory()` keeps its current response shape.
 
-## Planned File-Content Provider Bridge
+## Current File-Content Provider Bridge
 
-S4.5-T05 plans how a real parser-backed file entry should supply bytes to the existing preview, export, and analysis functions. The intended shape is a shared selected-file content reader with thin wrappers for preview, export, and analysis provider protocols.
+S4.5-IMP04 implements the first selected-file content bridge:
 
-The command must not fall back to stub providers while claiming E01-backed output. If parser-backed content is unavailable, preview/export/hash/signature sections should say so directly. Large-file behavior also needs an explicit policy: either refuse full-file export/hash above a documented first-testing limit or add streaming support before claiming large real-file operations.
+- `E01SelectedFileContentReader` validates that a selected root entry is parser-backed, allocated, regular, and readable through the EWF stream plus parser APIs.
+- Thin preview/export/analysis providers feed existing `preview_file()`, `export_file()`, `hash_file_content()`, `detect_file_signature()`, and `evaluate_extension_mismatch()` behavior.
+- Preview and signature use bounded bytes.
+- Hash and export are full-file only at or below the documented in-memory limit.
+- The command must not fall back to stub providers while claiming E01-backed output.
+- If parser-backed content is unavailable, selected-file artifacts say so directly with structured statuses.
 
 ## Planned File List And Output Bundle
 
@@ -102,7 +129,7 @@ The file list should start from `FilesystemEntry` records and preserve source pa
 
 The implementation lineup is now: command shell and case workspace, real metadata/verification, EWF stream plus filesystem listing, selected-file content providers, output bundle, guardrail/review handoff, then command-line testing guide. Stage 5 search/timeline must wait until S4.5-IMP01 through S4.5-IMP07 are completed and reviewed.
 
-The next practical implementation ticket after S4.5-IMP02 review is S4.5-IMP03. The user may pause or choose when to start it, but S5-T02 or later search/timeline implementation cannot proceed until the full Stage 4.5 implementation runway through S4.5-IMP07 is complete and reviewed. S4.5-IMP01 creates the first-testing command shell and S4.5-IMP02 adds metadata/verification artifacts; real stream/filesystem/content parser work and Stage 5 search/timeline remain later work.
+S4.5-IMP04 is reviewed and done. The real-E01 no-selection smoke discovered 53 segments, produced `metadata_available`, verification `not_supported`, EWF stream status `ok`, partition-table volume status `ok` with 5 volumes, filesystem status `ok`, and a `real_parser_backed` root listing with 11 entries; selected-file readiness/preview/hash/signature/export were all `not_run` because no explicit safe file was selected. The next practical implementation slice is S4.5-IMP05 for file-list/output bundle work. S5-T02 or later search/timeline implementation cannot proceed until the full Stage 4.5 implementation runway through S4.5-IMP07 is complete and reviewed.
 
 ## Minimum Demonstration Goal
 
@@ -114,12 +141,12 @@ At the bare minimum, the first-testing workflow should eventually show:
 - verification status;
 - file-structure navigation;
 - file metadata;
-- basic analysis: file hash and signature;
-- raw/text/hex preview;
-- selected file export;
+- basic analysis: file hash and signature for an explicitly selected root file;
+- raw/text/hex preview for an explicitly selected root file;
+- selected file export for an explicit, size-limited root file and explicit export destination;
 - file-list export.
 
-Current code has foundations for several of these, but the full real E01-backed path is still missing. Segment discovery can run against an actual E01 path now, and metadata/verification can be attempted through optional `pyewf`. Volume parsing, filesystem parsing, file-content preview, file-content hash/signature analysis, and real file export require additional implementation.
+Current code has foundations for several of these, and S4.5-IMP04 adds the first explicit selected-file content path. File-list export, static HTML, nested traversal, and a final command-line testing guide require additional implementation.
 
 ## Current Code To Reuse
 
@@ -129,9 +156,9 @@ Current code has foundations for several of these, but the full real E01-backed 
 | Case workspace | `connect()`, `initialize_schema()`, `insert_case()`, `insert_evidence_source()`, `insert_audit_event()` | Create/open case database and record manual-test actions |
 | EWF metadata/verification | `EwfReaderAdapter`, `PyewfEwfReaderAdapter`, `EwfMetadataResult`, `VerificationStatus` | S4.5-IMP02 attempts best-effort metadata/verification when available |
 | Volumes/filesystem entries | `ImageByteStream`, `discover_volumes()`, `VolumeInfo`, `FilesystemAdapter`, `FilesystemEntry`, `list_directory()` | Preserve shapes while adding EWF/TSK-backed implementations |
-| Preview | `preview_file()` | Reuse raw/text/hex rendering once real file bytes are provided |
-| Export | `export_file()`, `ExportAuditContext` | Reuse destination safety, manifest, SHA-256 verification, and audit hook |
-| Analysis | `hash_file_content()`, `detect_file_signature()`, `evaluate_extension_mismatch()` | Reuse existing provider-backed analysis over E01-backed file bytes |
+| Preview | `preview_file()` | S4.5-IMP04 reuses raw/text/hex rendering for explicit selected-file bytes |
+| Export | `export_file()`, `ExportAuditContext` | S4.5-IMP04 reuses destination safety, manifest, SHA-256 verification, and audit hook for explicit selected-file bytes |
+| Analysis | `hash_file_content()`, `detect_file_signature()`, `evaluate_extension_mismatch()` | S4.5-IMP04 reuses existing provider-backed analysis over explicit selected-file bytes |
 | File list | Directory listing dictionaries and `FilesystemEntry.to_dict()` | Add JSON/CSV file-list export |
 
 ## Ticket Ownership
@@ -193,6 +220,6 @@ Every Stage 4.5 implementation handoff should include:
 - confirmation that no evidence file was modified;
 - any redactions made in shared summaries.
 
-Manual-test status in `functionality.md` can record the S4.5-IMP01 command-shell smoke run as partial, because it used an approved local E01 set and produced reviewed artifacts. Mocked dependency tests, stub providers, generated dummy filenames, and dependency-unavailable output alone do not count as full manual E01 testing; later parser/content/output slices remain untested until those behaviors exist and are exercised.
+Manual-test status in `functionality.md` can remain partial, because local real-E01 smokes have produced reviewed intake, metadata, stream, volume, filesystem, root-listing, and no-selection selected-file artifacts. Mocked dependency tests, stub providers, generated dummy filenames, dependency-unavailable output, and no-selection selected-file output do not count as full selected-file real-E01 testing; later output/guide slices and any selected-file real-content run remain untested until those behaviors are exercised with approved selections.
 
 Shared transcripts, screenshots, HTML summaries, and file-list excerpts should redact evidence roots, user profile paths, case/client names, examiner names, evidence numbers, serial numbers, acquisition notes, and sensitive file paths unless the user explicitly approves disclosure.

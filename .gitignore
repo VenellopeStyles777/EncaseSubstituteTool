@@ -12,6 +12,8 @@ htmlcov/
 
 # Virtual environments
 .venv/
+.python312/
+.python312-embed/
 venv/
 env/
 

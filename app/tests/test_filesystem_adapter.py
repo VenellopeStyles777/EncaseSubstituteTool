@@ -1,14 +1,87 @@
 """Tests for the S2-T04 filesystem adapter boundary."""
 
 import json
+from pathlib import Path
+import shutil
 
 from app.backend.forensic_core import (
     FILESYSTEM_ADAPTER_SCHEMA_VERSION,
+    LocalFileImageStream,
     Pytsk3FilesystemAdapter,
     StubFilesystemAdapter,
     VolumeDiscoveryStatus,
     VolumeInfo,
 )
+
+
+class FakeImgInfo:
+    def __init__(self, *args, **kwargs):
+        pass
+
+
+class FakeName:
+    def __init__(self, name, flags=1, meta_addr=42):
+        self.name = name
+        self.flags = flags
+        self.meta_addr = meta_addr
+
+
+class FakeMeta:
+    def __init__(self, meta_type, addr, size):
+        self.type = meta_type
+        self.addr = addr
+        self.size = size
+        self.crtime = 0
+        self.mtime = 1_700_000_000
+        self.atime = 0
+        self.ctime = 0
+
+
+class FakeEntryInfo:
+    def __init__(self, name, meta):
+        self.name = name
+        self.meta = meta
+
+
+class FakeEntry:
+    def __init__(self, name, meta_type, addr, size):
+        self.info = FakeEntryInfo(
+            FakeName(name.encode("utf-8"), meta_addr=addr),
+            FakeMeta(meta_type, addr, size),
+        )
+
+
+class FakeFsInfo:
+    def __init__(self, ftype):
+        self.ftype = ftype
+
+
+class FakeFs:
+    def __init__(self, module):
+        self.info = FakeFsInfo(module.TSK_FS_TYPE_NTFS)
+        self._module = module
+
+    def open_dir(self, path="/"):
+        return [
+            FakeEntry(".", self._module.TSK_FS_META_TYPE_DIR, 1, 0),
+            FakeEntry("Users", self._module.TSK_FS_META_TYPE_DIR, 2, 0),
+            FakeEntry("note.txt", self._module.TSK_FS_META_TYPE_REG, 3, 12),
+        ]
+
+
+class FakePytsk3:
+    TSK_IMG_TYPE_EXTERNAL = 0
+    TSK_FS_META_TYPE_DIR = 1
+    TSK_FS_META_TYPE_REG = 2
+    TSK_FS_META_TYPE_LNK = 3
+    TSK_FS_NAME_FLAG_ALLOC = 1
+    TSK_FS_NAME_FLAG_UNALLOC = 2
+    TSK_FS_TYPE_NTFS = 99
+    Img_Info = FakeImgInfo
+
+    @staticmethod
+    def FS_Info(_image_info, offset=0):
+        return FakeFs(FakePytsk3)
 
 
 def _sample_volume() -> VolumeInfo:
@@ -28,6 +101,15 @@ def _sample_volume() -> VolumeInfo:
             message="Whole-image volume discovered.",
         ),
     )
+
+
+def _filesystem_fixture_directory(name: str) -> Path:
+    root = Path.cwd() / ".test-artifacts" / "filesystem-adapter"
+    directory = root / name
+    if directory.exists():
+        shutil.rmtree(directory, ignore_errors=True)
+    directory.mkdir(parents=True)
+    return directory
 
 
 def test_stub_filesystem_result_shape_and_metadata():
@@ -124,3 +206,28 @@ def test_pytsk3_importable_skeleton_is_not_reported_as_ok():
     assert [warning.code for warning in result.warnings] == [
         "real_parser_not_implemented"
     ]
+
+
+def test_pytsk3_fake_parser_maps_root_entries():
+    directory = _filesystem_fixture_directory("fake-parser")
+    try:
+        source = directory / "tiny.raw"
+        source.write_bytes(b"\0" * 4096)
+        volume = _sample_volume()
+
+        result = Pytsk3FilesystemAdapter(
+            pytsk3_module=FakePytsk3,
+            image_stream=LocalFileImageStream(source),
+        ).inspect_volume(volume)
+    finally:
+        shutil.rmtree(directory, ignore_errors=True)
+
+    assert result.status.code == "ok"
+    assert result.adapter_available is True
+    assert result.filesystem_type == "ntfs"
+    assert [entry.path for entry in result.entries] == ["/Users", "/note.txt"]
+    assert [entry.entry_type for entry in result.entries] == ["directory", "file"]
+    assert result.entries[1].size == 12
+    assert result.entries[1].adapter_name == "pytsk3-filesystem-adapter"
+    assert result.entries[1].read_only is True
+    assert result.warnings[0].code == "real_parser_backed"

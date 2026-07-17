@@ -12,6 +12,201 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-17 - S4.5-IMP04 Review Acceptance
+
+Result: accepted; S4.5-IMP04 is done.
+
+Findings:
+
+- No blocking issues found.
+- Selected-file preview/export/hash/signature now run only through explicit parser-backed root-entry selection and reuse the existing provider surfaces instead of creating a separate behavior path.
+- The default real-E01 smoke stayed non-invasive: no file was auto-selected, selected-file operations stayed `not_run`, and no selected export artifacts were created.
+- Review caveat: I did not run a real selected-file extraction smoke because no explicit safe real file selection was approved. Dependency-free fake-parser tests cover the selected-byte provider path without exposing real evidence content.
+
+Verification:
+
+- Focused portable-runtime run: `.\.python312-embed\python.exe -m pytest app\tests\test_selected_file_content.py app\tests\test_file_preview.py app\tests\test_file_export.py app\tests\test_content_analysis_hashing.py app\tests\test_content_analysis_signatures.py app\tests\test_first_testing_command.py`: 80 passed in 20.75s.
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 183 passed in 20.82s.
+- Reviewer real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`; selected-file readiness, preview, analysis, hash, signature, and export statuses were all `not_run`.
+- Artifact check confirmed no `file-list.json`, `file-list.csv`, `report.html`, selected export output, or selected export manifest was created by the no-selection smoke.
+
+Remaining scope:
+
+- S4.5-IMP05 file-list JSON/CSV, command summary, artifact inventory, optional static HTML, S4.5-IMP06 handoff reconciliation, S4.5-IMP07 command-line guide, search/timeline, UI, reports, deleted recovery, carving, packaging, commit, and push remain out of scope.
+- Stage 5 search/timeline remains blocked until S4.5-IMP05 through S4.5-IMP07 are completed and reviewed.
+
+## 2026-07-17 - S4.5-IMP04 Implementation Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- Added a selected-file content reader and provider wrappers for preview, export, and analysis over explicit parser-backed E01 root entries.
+- Reused `preview_file()`, `export_file()`, `hash_file_content()`, `detect_file_signature()`, and `evaluate_extension_mismatch()` instead of replacing those surfaces.
+- Added first-testing selected-file flags and artifacts: `selected-file-readiness.json`, `selected-file-preview.json`, `selected-file-analysis.json`, and `selected-file-export.json`.
+- Kept selected-file operations `not_run` when no file is explicitly selected and refused unsupported/deleted/metadata-only/unreadable/large-file paths with structured statuses.
+
+Verification:
+
+- Focused portable-runtime run: `.\.python312-embed\python.exe -m pytest app\tests\test_selected_file_content.py app\tests\test_file_preview.py app\tests\test_file_export.py app\tests\test_content_analysis_hashing.py app\tests\test_content_analysis_signatures.py app\tests\test_first_testing_command.py`: 80 passed in 22.41s.
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 183 passed in 26.98s.
+- Real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, EWF stream `ok`, logical media size 1,024,209,543,168 bytes, partition-table status `ok` with 5 volumes, filesystem status `ok`, a `real_parser_backed` root listing with 11 entries, and selected-file readiness/preview/hash/signature/export all `not_run` because no explicit safe file was selected.
+- Artifact check found no `file-list.json`, `file-list.csv`, or HTML artifacts from S4.5-IMP04.
+
+Scope intentionally not implemented:
+
+- No S4.5-IMP05 file-list JSON/CSV, static HTML, broad filesystem crawl, arbitrary auto-selection/export, search/timeline, UI, reports, deleted recovery, carving, packaging, commit, or push.
+- No real evidence files were added to the repository, and sensitive real evidence filenames, paths, root entry names, metadata values, and content are not quoted in shared summaries.
+
+## 2026-07-17 - S4.5-IMP03 Review Acceptance
+
+Result: accepted; S4.5-IMP03 is done.
+
+Findings:
+
+- No blocking issues found.
+- The hard gate passed under reviewer rerun: the local real-E01 smoke produced a `real_parser_backed` root listing with 11 entries from the actual evidence.
+- Root-listing artifact consistency check confirmed entries came from `pytsk3-filesystem-adapter` and were marked read-only.
+- Later-slice artifacts checked during review: no `file-list.json`, `file-list.csv`, or `report.html` was created.
+- Review correction: updated a stale `run_first_testing()` docstring that still said filesystem parsing was not added. This was documentation-only inside code and did not change behavior.
+
+Verification:
+
+- Focused portable-runtime run: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_volume_discovery.py app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py`: 48 passed in 21.79s.
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 174 passed in 25.71s.
+- Reviewer real-image smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, `metadata_available`, verification `not_supported`, EWF stream `ok`, logical media size 1,024,209,543,168 bytes, partition-table status `ok` with 5 volumes, filesystem status `ok`, and `real_parser_backed` root listing with 11 entries.
+
+Remaining scope:
+
+- S4.5-IMP04 selected-file content providers, E01-backed preview/export/hash/signature, file-list JSON/CSV, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, commit, and push remain out of scope.
+- Stage 5 search/timeline remains blocked until S4.5-IMP04 through S4.5-IMP07 are completed and reviewed.
+
+## 2026-07-17 - S4.5-IMP03 Implementation Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- Added `EwfImageByteStream` for read-only EWF-backed logical-image metadata and bounded reads.
+- Added a `partition_table` volume discovery path over `pytsk3.Volume_Info` while preserving existing whole-image behavior.
+- Upgraded `Pytsk3FilesystemAdapter` so an image-stream-backed volume can return real parser-backed root entries in existing `FilesystemResult` and `FilesystemEntry` shapes.
+- Integrated first-testing artifacts for `ewf-stream.json`, `volumes.json`, `filesystems.json`, `root-listing.json`, and `demo-readiness.json`.
+- Updated the command summary and run manifest so EWF stream, volume, filesystem, root-listing, and demo-readiness states stay separate.
+
+Verification:
+
+- Focused run: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_volume_discovery.py app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py`: 48 passed in 41.99s.
+- Full run: `.\.python312-embed\python.exe -m pytest`: 174 passed in 51.01s.
+
+Real-image smoke:
+
+- Command: `.\.python312-embed\python.exe -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case ".test-artifacts\first-testing\s4-5-imp03-real-filesystem-demo" --redact-paths`
+- Exit code: 0.
+- Run status: `ok_with_unsupported_sections`.
+- Segment count: 53.
+- Metadata status: `metadata_available`.
+- Verification status: `not_supported`.
+- EWF stream status: `ok`.
+- Logical media size: 1,024,209,543,168 bytes.
+- Volume strategy/status/count: `partition_table` / `ok` / 5.
+- Filesystem status: `ok`.
+- Root listing: `real_parser_backed`, 11 entries.
+- Demo readiness: `real_parser_backed_root_listing_available`.
+- Source modified: `false`; read-only asserted: `true`.
+
+Scope intentionally not implemented:
+
+- No S4.5-IMP04 selected-file byte providers, preview/export/hash/signature over E01 content, file-list JSON/CSV, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, commit, or push.
+- No real evidence files or generated real-evidence outputs were added for commit.
+- Sensitive real-E01 metadata values and root entry names are not quoted in shared summaries.
+
+## 2026-07-17 - S4.5-IMP03 Dependency Setup Review
+
+Result: blocker cleared for retry, not yet a completed S4.5-IMP03 demo.
+
+Setup accepted for local development:
+
+- Project-local runtime: `.\.python312-embed\python.exe`, Python 3.12.10.
+- Runtime folders `.python312/` and `.python312-embed/` are ignored by git.
+- Installed packages: `libewf-python 20240506` as import module `pyewf`, `pytsk3 20260715`, and `pytest 9.1.1`.
+- Import preflight: `pyewf=available`; `pytsk3=available`.
+
+Verification:
+
+- Focused portable-runtime run: 56 passed in 8.40s.
+- Full portable-runtime run: 167 passed in 14.99s.
+
+Real-image setup smoke:
+
+- Command exited 0 against the local ` Test Image` E01 set.
+- Segment count: 53.
+- Adapter/dependency: `pyewf-reader` available; `pyewf` available.
+- Metadata status: `metadata_available`.
+- Verification status: `not_supported`.
+- No `ewf-stream.json`, `volumes.json`, `filesystems.json`, or `root-listing.json` was created yet because S4.5-IMP03 app behavior is still unimplemented.
+
+Review guardrails:
+
+- Do not quote sensitive real-E01 metadata values in shared summaries.
+- The S4.5-IMP03 success gate is unchanged: a `Review` handoff must include a real-parser-backed root listing from the actual evidence, or the ticket must return `Blocked` with the next precise API/implementation blocker.
+- Do not start S4.5-IMP04 or Stage 5 search/timeline.
+
+## 2026-07-17 - S4.5-IMP03 Real E01 Filesystem Demo Gate
+
+Result: blocked, not ready for review.
+
+Preflight:
+
+- `pyewf`: missing.
+- `pytsk3`: missing.
+- Local evidence exists: ` Test Image/C16242-1-RL1-E003.E01`.
+- First segment size observed locally: 2,147,479,074 bytes.
+
+Manual smoke attempted:
+
+- Command: `python -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case ".test-artifacts\first-testing\s4-5-imp03-real-filesystem-demo" --redact-paths`
+- Exit code: 0.
+- Status: `ok_with_unsupported_sections`.
+- Segment count: 53.
+- Adapter/dependency: `pyewf-reader`, available `False`; `pyewf`, available `False`.
+- Metadata status: `metadata_unavailable`.
+- Verification status: `not_run`.
+- Source modified: `false`.
+- Read-only asserted: `true`.
+- EWF stream status: unavailable; no `ewf-stream.json` artifact was created.
+- Partition/volume status/count: unavailable; no `volumes.json` artifact and no real volume count.
+- Filesystem status: unavailable; no `filesystems.json` artifact.
+- Root listing: no `root-listing.json`; root entry count unavailable/0; no real-parser-backed entries.
+
+Blocker:
+
+- S4.5-IMP03 cannot satisfy the non-negotiable demo gate until `pyewf`/libewf and `pytsk3`/The Sleuth Kit are installed and usable in the active environment.
+- Dependency-unavailable output remains honest, but it is not a successful real-E01 filesystem demo.
+
+Verification:
+
+- Focused run: `python -m pytest app\tests\test_image_stream.py app\tests\test_volume_discovery.py app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py`: 41 passed in 16.15s.
+- Full run: `python -m pytest`: 167 passed in 23.39s.
+
+Scope intentionally not implemented:
+
+- No EWF-backed stream, partition/filesystem parser, E01-backed content provider, file-list output, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, native dependency installation, commit, or push.
+
+## 2026-07-17 - S4.5-IMP03 Demo Gate Revision
+
+Result: S4.5-IMP03 revised and ready for coding-agent handoff.
+
+Review direction:
+
+- S4.5-IMP03 is now the first hard real-E01 filesystem demo gate.
+- A successful `Review` handoff must include a real-parser-backed root listing from ` Test Image/C16242-1-RL1-E003.E01`.
+- If `pyewf`, `pytsk3`, libewf, The Sleuth Kit, build tooling, or API mismatch blocks that demo, the coding agent must mark S4.5-IMP03 `Blocked`, not `Review`, and return exact blocker evidence plus recommended setup.
+
+Local preflight:
+
+- `pyewf=missing`
+- `pytsk3=missing`
+
 ## 2026-07-17 - S4.5-IMP02 And S4.5-IMP02A Acceptance
 
 Result: accepted; both tickets marked done.

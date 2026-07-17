@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Protocol
 
+from app.backend.forensic_core.image_stream import ImageByteStream
 from app.backend.forensic_core.volume_discovery import VolumeInfo
 
 
@@ -278,7 +280,9 @@ class Pytsk3FilesystemAdapter:
         self,
         pytsk3_module: object | None = _AUTO_IMPORT,
         import_error: BaseException | None = None,
+        image_stream: ImageByteStream | None = None,
     ) -> None:
+        self._image_stream = image_stream
         if pytsk3_module is _AUTO_IMPORT:
             try:
                 import pytsk3  # type: ignore[import-not-found]
@@ -341,6 +345,72 @@ class Pytsk3FilesystemAdapter:
                 ),
             )
 
+        if self._image_stream is None:
+            return FilesystemResult(
+                schema_version=FILESYSTEM_ADAPTER_SCHEMA_VERSION,
+                adapter_name=self.name,
+                adapter_available=True,
+                dependency=dependency,
+                source_path=volume.source_path,
+                volume_id=volume.volume_id,
+                volume_offset=volume.offset,
+                volume_length=volume.length,
+                filesystem_type="unknown",
+                read_only=self.read_only and volume.read_only,
+                status=FilesystemStatus(
+                    code="real_parser_not_implemented",
+                    message="pytsk3 is importable, but no image stream was supplied for filesystem parsing.",
+                ),
+                root_path="/",
+                warnings=(
+                    FilesystemWarning(
+                        code="real_parser_not_implemented",
+                        message="pytsk3 adapter could not parse without an image stream.",
+                    ),
+                ),
+            )
+
+        image_info = _Pytsk3ImageInfo(self._image_stream, self._pytsk3)
+        try:
+            try:
+                filesystem = self._pytsk3.FS_Info(image_info, offset=volume.offset)
+                root_directory = filesystem.open_dir(path="/")
+                entries = tuple(
+                    entry
+                    for entry in (
+                        _filesystem_entry(self._pytsk3, filesystem, volume, raw_entry)
+                        for raw_entry in root_directory
+                    )
+                    if entry is not None
+                )
+            except Exception as error:
+                return FilesystemResult(
+                    schema_version=FILESYSTEM_ADAPTER_SCHEMA_VERSION,
+                    adapter_name=self.name,
+                    adapter_available=True,
+                    dependency=dependency,
+                    source_path=volume.source_path,
+                    volume_id=volume.volume_id,
+                    volume_offset=volume.offset,
+                    volume_length=volume.length,
+                    filesystem_type="unknown",
+                    read_only=self.read_only and volume.read_only,
+                    status=FilesystemStatus(
+                        code="filesystem_parse_error",
+                        message=f"pytsk3 could not parse filesystem root entries: {error}",
+                    ),
+                    root_path="/",
+                    warnings=(
+                        FilesystemWarning(
+                            code="filesystem_parse_error",
+                            message="pytsk3 could not parse filesystem root entries.",
+                        ),
+                    ),
+                )
+        finally:
+            image_info.close()
+
+        filesystem_type = _filesystem_type(self._pytsk3, filesystem)
         return FilesystemResult(
             schema_version=FILESYSTEM_ADAPTER_SCHEMA_VERSION,
             adapter_name=self.name,
@@ -350,17 +420,177 @@ class Pytsk3FilesystemAdapter:
             volume_id=volume.volume_id,
             volume_offset=volume.offset,
             volume_length=volume.length,
-            filesystem_type="unknown",
+            filesystem_type=filesystem_type,
             read_only=self.read_only and volume.read_only,
             status=FilesystemStatus(
-                code="real_parser_not_implemented",
-                message="pytsk3 is importable, but real filesystem parsing is deferred beyond S2-T04.",
+                code="ok",
+                message="pytsk3 parsed root filesystem entries.",
             ),
             root_path="/",
+            entries=entries,
             warnings=(
                 FilesystemWarning(
-                    code="real_parser_not_implemented",
-                    message="pytsk3 adapter skeleton did not parse filesystem entries.",
+                    code="real_parser_backed",
+                    message="Root entries were parsed from the supplied image stream with pytsk3.",
                 ),
             ),
         )
+
+
+class _Pytsk3ImageInfo:
+    def __new__(cls, image_stream: ImageByteStream, pytsk3_module: object):
+        base = getattr(pytsk3_module, "Img_Info")
+
+        class ImageInfo(base):
+            def __init__(self, stream: ImageByteStream, module: object) -> None:
+                self._image_stream = stream
+                self._native_handle = _open_native_handle(stream)
+                image_type = getattr(module, "TSK_IMG_TYPE_EXTERNAL", 0)
+                super().__init__(url="", type=image_type)
+
+            def close(self) -> None:
+                handle = getattr(self, "_native_handle", None)
+                if handle is not None:
+                    close = getattr(handle, "close", None)
+                    if callable(close):
+                        close()
+                    self._native_handle = None
+
+            def read(self, offset: int, size: int) -> bytes:
+                handle = getattr(self, "_native_handle", None)
+                if handle is not None:
+                    read_at = getattr(handle, "read_buffer_at_offset", None)
+                    if callable(read_at):
+                        return read_at(size, offset)
+
+                result = self._image_stream.read_at(offset, size)
+                if not result.status.ok:
+                    return b""
+                return result.data
+
+            def get_size(self) -> int:
+                info = self._image_stream.describe()
+                return int(info.size or 0)
+
+        return ImageInfo(image_stream, pytsk3_module)
+
+
+def _open_native_handle(image_stream: ImageByteStream) -> object | None:
+    open_handle = getattr(image_stream, "_open_native_handle", None)
+    if callable(open_handle):
+        return open_handle()
+    return None
+
+
+def _filesystem_entry(
+    pytsk3_module: object,
+    filesystem: object,
+    volume: VolumeInfo,
+    raw_entry: object,
+) -> FilesystemEntry | None:
+    info = getattr(raw_entry, "info", None)
+    name_info = getattr(info, "name", None)
+    raw_name = getattr(name_info, "name", None)
+    name = _decode_name(raw_name)
+    if name in {"", ".", ".."}:
+        return None
+
+    meta = getattr(info, "meta", None)
+    entry_type = _entry_type(pytsk3_module, meta)
+    size = getattr(meta, "size", None) if meta is not None else None
+    name_flags = int(getattr(name_info, "flags", 0) or 0)
+    unallocated_flag = int(getattr(pytsk3_module, "TSK_FS_NAME_FLAG_UNALLOC", 0) or 0)
+    allocated_flag = int(getattr(pytsk3_module, "TSK_FS_NAME_FLAG_ALLOC", 0) or 0)
+    deleted = bool(name_flags & unallocated_flag) if unallocated_flag else None
+    allocated = bool(name_flags & allocated_flag) if allocated_flag else None
+    if deleted is not None and allocated is None:
+        allocated = not deleted
+
+    path = f"/{name}".replace("//", "/")
+    file_id = _file_id(volume, meta, name_info, path)
+    status = FilesystemStatus(
+        code="ok",
+        message="Parser-backed root entry.",
+    )
+    return FilesystemEntry(
+        file_id=file_id,
+        path=path,
+        name=name,
+        entry_type=entry_type,
+        size=int(size) if size is not None else None,
+        allocated=allocated,
+        deleted=deleted,
+        source_path=volume.source_path,
+        volume_id=volume.volume_id,
+        volume_offset=volume.offset,
+        volume_length=volume.length,
+        filesystem_type=_filesystem_type(pytsk3_module, filesystem),
+        adapter_name=Pytsk3FilesystemAdapter.name,
+        read_only=volume.read_only,
+        status=status,
+        timestamps=_timestamps(meta),
+    )
+
+
+def _decode_name(value: object) -> str:
+    if isinstance(value, bytes):
+        return value.decode("utf-8", "replace")
+    if value is None:
+        return ""
+    return str(value)
+
+
+def _entry_type(pytsk3_module: object, meta: object | None) -> str:
+    meta_type = getattr(meta, "type", None) if meta is not None else None
+    if meta_type == getattr(pytsk3_module, "TSK_FS_META_TYPE_DIR", object()):
+        return "directory"
+    if meta_type == getattr(pytsk3_module, "TSK_FS_META_TYPE_REG", object()):
+        return "file"
+    if meta_type == getattr(pytsk3_module, "TSK_FS_META_TYPE_LNK", object()):
+        return "symlink"
+    if meta_type is None:
+        return "unknown"
+    return "special"
+
+
+def _file_id(
+    volume: VolumeInfo,
+    meta: object | None,
+    name_info: object | None,
+    path: str,
+) -> str:
+    meta_addr = getattr(meta, "addr", None) if meta is not None else None
+    name_meta_addr = getattr(name_info, "meta_addr", None) if name_info is not None else None
+    identifier = meta_addr if meta_addr is not None else name_meta_addr
+    if identifier is None:
+        identifier = path
+    return f"{volume.volume_id}:{identifier}"
+
+
+def _filesystem_type(pytsk3_module: object, filesystem: object) -> str:
+    info = getattr(filesystem, "info", None)
+    ftype = getattr(info, "ftype", None)
+    if ftype is None:
+        return "unknown"
+    for name in dir(pytsk3_module):
+        if name.startswith("TSK_FS_TYPE_") and getattr(pytsk3_module, name) == ftype:
+            return name.removeprefix("TSK_FS_TYPE_").lower()
+    return f"pytsk3_type_{ftype}"
+
+
+def _timestamps(meta: object | None) -> dict[str, str | None]:
+    return {
+        "created": _timestamp(getattr(meta, "crtime", None) if meta is not None else None),
+        "modified": _timestamp(getattr(meta, "mtime", None) if meta is not None else None),
+        "accessed": _timestamp(getattr(meta, "atime", None) if meta is not None else None),
+        "metadata_changed": _timestamp(getattr(meta, "ctime", None) if meta is not None else None),
+    }
+
+
+def _timestamp(value: object) -> str | None:
+    if value in {None, 0}:
+        return None
+    try:
+        return datetime.fromtimestamp(int(value), timezone.utc).isoformat().replace("+00:00", "Z")
+    except (OSError, OverflowError, ValueError, TypeError):
+        return None

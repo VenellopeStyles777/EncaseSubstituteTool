@@ -19,7 +19,7 @@ The backend package can be imported cleanly:
 - `app.backend.analysis_workers`
 - `app.backend.api`
 
-Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 added hash/signature analysis result contracts, provider-backed hash calculation, bounded provider-backed file signature detection over explicit analysis content providers, extension mismatch evaluation over reviewed signature results plus file metadata, fixture-sized known-file matching, a documentation-only analysis-result persistence plan, and the S4-T07 documentation handoff. Stage 4.5 planning is in review for user-provided E01 first testing; S4.5-IMP01 is done with the first-testing command shell plus case-workspace artifact bundle, and S4.5-IMP02 is in review with best-effort `pyewf` metadata plus separate verification status. The project remains backend-first and has no EWF-backed partition/filesystem parsing, E01-backed file-content extraction, search/timeline/reporting/UI, or executable packaging yet.
+Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 added hash/signature analysis result contracts, provider-backed hash calculation, bounded provider-backed file signature detection over explicit analysis content providers, extension mismatch evaluation over reviewed signature results plus file metadata, fixture-sized known-file matching, a documentation-only analysis-result persistence plan, and the S4-T07 documentation handoff. Stage 4.5 planning is in review for user-provided E01 first testing; S4.5-IMP01 is done with the first-testing command shell plus case-workspace artifact bundle, S4.5-IMP02 and S4.5-IMP02A are done with best-effort `pyewf` metadata plus separate verification status and warning cleanup, S4.5-IMP03 is done with EWF-backed stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts, and S4.5-IMP04 is done with explicit selected-file E01 preview/export/hash/signature providers. The project remains backend-first and has no file-list/static HTML, search/timeline/reporting/UI, or executable packaging yet.
 
 ## Tests
 
@@ -39,7 +39,7 @@ python -m pip install pytest
 
 Current verification snapshot:
 
-- `python -m pytest`: 167 passed in 17.24s after the S4.5-IMP02 metadata/verification implementation.
+- `.\.python312-embed\python.exe -m pytest`: 183 passed in 10.11s after S4.5-IMP04 implementation.
 - The project config routes pytest temporary files to `.test-artifacts/pytest-temp` and disables pytest's optional cache provider.
 
 ## Stage 1 Intake Command
@@ -72,9 +72,9 @@ For dependency-free smoke checks:
 python -m app.backend.api.first_testing path\to\sample.E01 --case .test-artifacts\first-testing\case-a --adapter stub
 ```
 
-S4.5-IMP01 creates a case workspace with `case.db`, `run-manifest.json`, `command-summary.txt`, and JSON artifacts under `<case>\outputs` by default. S4.5-IMP02 adds `metadata.json`, `verification.json`, and `segment-discovery.json`, using the existing intake result and optional `pyewf` adapter.
+S4.5-IMP01 creates a case workspace with `case.db`, `run-manifest.json`, `command-summary.txt`, and JSON artifacts under `<case>\outputs` by default. S4.5-IMP02 adds `metadata.json`, `verification.json`, and `segment-discovery.json`, using the existing intake result and optional `pyewf` adapter. S4.5-IMP03 adds `ewf-stream.json`, `volumes.json`, `filesystems.json`, `root-listing.json`, and `demo-readiness.json` when the portable runtime can use `pyewf` and `pytsk3`. S4.5-IMP04 adds `selected-file-readiness.json`, `selected-file-preview.json`, `selected-file-analysis.json`, and `selected-file-export.json`; these stay `not_run` unless `--selected-file-id` or `--selected-file-path` explicitly selects a parser-backed root entry.
 
-Limits: S4.5-IMP02 does not install native dependencies and does not implement EWF byte streams, partition/filesystem parsing, E01-backed preview/export/hash/signature, file-list output, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, or required native dependencies. Verification remains `not_run` or `not_supported` unless a safe `pyewf` verification API is available.
+Limits: S4.5-IMP04 does not install native dependencies, does not auto-select or crawl evidence files, and does not implement file-list output, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, or required native dependencies. Verification remains `not_run` or `not_supported` unless a safe `pyewf` verification API is available. Hash/export over selected files use the documented in-memory limit unless future reviewed streaming support is added.
 
 ## Stage 2 Capabilities And Limits
 

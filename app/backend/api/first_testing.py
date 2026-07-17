@@ -11,6 +11,9 @@ from typing import Any, Mapping, Sequence
 from uuid import uuid4
 
 from app.backend.api.intake import INTAKE_SCHEMA_VERSION, run_e01_intake
+from app.backend.api.directory_listing import list_directory
+from app.backend.api.file_export import export_file
+from app.backend.api.file_preview import DEFAULT_PREVIEW_MAX_LENGTH, preview_file
 from app.backend.case_store import (
     SCHEMA_VERSION as CASE_STORE_SCHEMA_VERSION,
     connect,
@@ -21,9 +24,23 @@ from app.backend.case_store import (
     list_audit_events,
 )
 from app.backend.forensic_core import (
+    DEFAULT_SELECTED_FILE_IN_MEMORY_LIMIT,
+    DEFAULT_SIGNATURE_MAX_BYTES,
+    E01AnalysisContentProvider,
+    E01ExportContentProvider,
+    E01PreviewContentProvider,
+    E01SelectedFileContentReader,
     EwfReaderAdapter,
+    EwfImageByteStream,
     PyewfEwfReaderAdapter,
+    Pytsk3FilesystemAdapter,
     StubEwfReaderAdapter,
+    VolumeDiscoveryStatus,
+    VolumeInfo,
+    detect_file_signature,
+    discover_volumes,
+    evaluate_extension_mismatch,
+    hash_file_content,
 )
 
 
@@ -46,13 +63,19 @@ def run_first_testing(
     adapter_name: str = "pyewf",
     redact_paths: bool = False,
     adapter: EwfReaderAdapter | None = None,
+    selected_file_id: str | None = None,
+    selected_file_path: str | None = None,
+    selected_file_export_dir: str | Path | None = None,
+    selected_file_export_name: str | None = None,
+    selected_file_preview_mode: str = "hex",
+    selected_file_max_bytes: int = DEFAULT_SELECTED_FILE_IN_MEMORY_LIMIT,
 ) -> dict[str, object]:
     """Create the first Stage 4.5 case workspace and artifact bundle.
 
-    This function intentionally orchestrates only the command shell, case store,
-    existing Stage 1 intake, and unsupported-section output. It does not add real
-    EWF metadata, verification, filesystem parsing, file content, file-list,
-    report, search, or timeline behavior.
+    This function orchestrates the command shell, case store, existing intake,
+    metadata/verification artifacts, and the S4.5 real-E01 filesystem demo.
+    Selected-file content is run only when a file is explicitly requested. This
+    function does not add file-list, report, search, or timeline behavior.
     """
 
     validation = _validate_request(
@@ -61,6 +84,9 @@ def run_first_testing(
         first_segment=first_segment,
         case_path=case_path,
         output_path=output_path,
+        selected_file_id=selected_file_id,
+        selected_file_path=selected_file_path,
+        selected_file_max_bytes=selected_file_max_bytes,
     )
     if validation["status"] != "ok":
         return _failure_result(
@@ -75,6 +101,14 @@ def run_first_testing(
     case_dir = validation["case_dir"]
     output_dir = validation["output_dir"]
     input_form = validation["input_form"]
+    selection = _selection_request(
+        selected_file_id=selected_file_id,
+        selected_file_path=selected_file_path,
+        export_dir=selected_file_export_dir,
+        export_name=selected_file_export_name,
+        preview_mode=selected_file_preview_mode,
+        max_bytes=selected_file_max_bytes,
+    )
 
     adapter_instance = adapter or _build_adapter(adapter_name)
     run_id = f"first_testing_{uuid4().hex}"
@@ -155,12 +189,35 @@ def run_first_testing(
             evidence_id=evidence_id,
             intake_result=intake_result,
         )
+        demo_artifacts = _filesystem_demo_artifacts(
+            selected_path=selected_path,
+            intake_result=intake_result,
+            adapter_name=adapter_name,
+        )
+        selected_file_artifacts = _selected_file_artifacts(
+            selected_path=selected_path,
+            intake_result=intake_result,
+            adapter_name=adapter_name,
+            demo_artifacts=demo_artifacts,
+            selection=selection,
+            case_id=case_id,
+            evidence_id=evidence_id,
+        )
 
         _write_json(artifact_paths["intake"], intake_result)
         _write_json(artifact_paths["case"], case_artifact)
         _write_json(artifact_paths["metadata"], metadata_artifact)
         _write_json(artifact_paths["verification"], verification_artifact)
         _write_json(artifact_paths["segment_discovery"], segment_discovery_artifact)
+        _write_json(artifact_paths["ewf_stream"], demo_artifacts["ewf_stream"])
+        _write_json(artifact_paths["volumes"], demo_artifacts["volumes"])
+        _write_json(artifact_paths["filesystems"], demo_artifacts["filesystems"])
+        _write_json(artifact_paths["root_listing"], demo_artifacts["root_listing"])
+        _write_json(artifact_paths["demo_readiness"], demo_artifacts["demo_readiness"])
+        _write_json(artifact_paths["selected_file_readiness"], selected_file_artifacts["readiness"])
+        _write_json(artifact_paths["selected_file_preview"], selected_file_artifacts["preview"])
+        _write_json(artifact_paths["selected_file_analysis"], selected_file_artifacts["analysis"])
+        _write_json(artifact_paths["selected_file_export"], selected_file_artifacts["export"])
         _write_json(artifact_paths["unsupported_sections"], unsupported_sections)
 
         insert_audit_event(
@@ -212,6 +269,8 @@ def run_first_testing(
             intake_result=intake_result,
             unsupported_sections=unsupported_sections,
             metadata_artifact=metadata_artifact,
+            demo_artifacts=demo_artifacts,
+            selected_file_artifacts=selected_file_artifacts,
             audit_artifact=audit_artifact,
             artifact_paths=artifact_paths,
             adapter_name=adapter_name,
@@ -241,6 +300,12 @@ def first_testing_to_json(
     adapter_name: str = "pyewf",
     redact_paths: bool = False,
     adapter: EwfReaderAdapter | None = None,
+    selected_file_id: str | None = None,
+    selected_file_path: str | None = None,
+    selected_file_export_dir: str | Path | None = None,
+    selected_file_export_name: str | None = None,
+    selected_file_preview_mode: str = "hex",
+    selected_file_max_bytes: int = DEFAULT_SELECTED_FILE_IN_MEMORY_LIMIT,
     indent: int | None = 2,
 ) -> str:
     """Run the first-testing command shell and serialize the manifest."""
@@ -257,6 +322,12 @@ def first_testing_to_json(
         adapter_name=adapter_name,
         redact_paths=redact_paths,
         adapter=adapter,
+        selected_file_id=selected_file_id,
+        selected_file_path=selected_file_path,
+        selected_file_export_dir=selected_file_export_dir,
+        selected_file_export_name=selected_file_export_name,
+        selected_file_preview_mode=selected_file_preview_mode,
+        selected_file_max_bytes=selected_file_max_bytes,
     )
     return json.dumps(result, indent=indent, sort_keys=True)
 
@@ -286,6 +357,14 @@ def format_first_testing_summary(
     evidence = _as_mapping(result.get("evidence"))
     adapter = _as_mapping(result.get("adapter"))
     dependency = _as_mapping(adapter.get("dependency"))
+    ewf_stream = _as_mapping(result.get("ewf_stream"))
+    volumes = _as_mapping(result.get("volumes"))
+    filesystem = _as_mapping(result.get("filesystem"))
+    root_listing = _as_mapping(result.get("root_listing"))
+    selected_file = _as_mapping(result.get("selected_file"))
+    selected_preview = _as_mapping(selected_file.get("preview"))
+    selected_analysis = _as_mapping(selected_file.get("analysis"))
+    selected_export = _as_mapping(selected_file.get("export"))
     artifacts = _as_mapping(result.get("artifact_paths"))
     unsupported = result.get("unsupported_sections", [])
     warning_count = len(result.get("warnings", [])) if isinstance(result.get("warnings"), list) else 0
@@ -304,6 +383,16 @@ def format_first_testing_summary(
         f"Dependency: {dependency.get('name')} (available={dependency.get('available')})",
         f"Metadata status: {_as_mapping(result.get('metadata')).get('status')}",
         f"Verification status: {_as_mapping(result.get('verification')).get('status')}",
+        f"EWF stream status: {ewf_stream.get('status')}",
+        f"Logical media size: {ewf_stream.get('logical_media_size')}",
+        f"Volume strategy/status/count: {volumes.get('strategy')} / {volumes.get('status')} / {volumes.get('volume_count')}",
+        f"Filesystem status: {filesystem.get('status')}",
+        f"Root listing: {root_listing.get('parser_backing')} entries={root_listing.get('entry_count')}",
+        f"Selected file request: {selected_file.get('requested')} ({selected_file.get('selection_status')})",
+        f"Selected file preview status: {selected_preview.get('status')}",
+        f"Selected file hash status: {selected_analysis.get('hash_status')}",
+        f"Selected file signature status: {selected_analysis.get('signature_status')}",
+        f"Selected file export status: {selected_export.get('status')}",
         f"Warnings: {warning_count}",
         f"Unsupported sections: {len(unsupported) if isinstance(unsupported, list) else 0}",
         "Artifacts:",
@@ -314,7 +403,7 @@ def format_first_testing_summary(
         [
             "Source modified: false",
             "Read-only asserted: true",
-            "Deferred: EWF stream, partition/filesystem parsing, E01-backed file content, file-list output, static HTML, search, and timeline.",
+            "Deferred: file-list output, static HTML, search, and timeline.",
         ]
     )
 
@@ -359,6 +448,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help="Redact the evidence root in console and command-summary text.",
     )
+    parser.add_argument("--selected-file-id", help="Explicit root-entry file id to preview/analyze/export.")
+    parser.add_argument("--selected-file-path", help="Explicit root-entry path to preview/analyze/export.")
+    parser.add_argument("--selected-file-export-dir", help="Explicit export directory for the selected file.")
+    parser.add_argument("--selected-file-export-name", help="Safe output filename for selected-file export.")
+    parser.add_argument(
+        "--selected-file-preview-mode",
+        choices=("raw", "text", "hex"),
+        default="hex",
+        help="Preview mode for an explicitly selected file. Defaults to hex.",
+    )
+    parser.add_argument(
+        "--selected-file-max-bytes",
+        type=int,
+        default=DEFAULT_SELECTED_FILE_IN_MEMORY_LIMIT,
+        help="Maximum selected-file bytes for in-memory hash/export operations.",
+    )
     args = parser.parse_args(argv)
 
     result = run_first_testing(
@@ -372,6 +477,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         actor=args.actor,
         adapter_name=args.adapter,
         redact_paths=args.redact_paths,
+        selected_file_id=args.selected_file_id,
+        selected_file_path=args.selected_file_path,
+        selected_file_export_dir=args.selected_file_export_dir,
+        selected_file_export_name=args.selected_file_export_name,
+        selected_file_preview_mode=args.selected_file_preview_mode,
+        selected_file_max_bytes=args.selected_file_max_bytes,
     )
 
     if args.json_only:
@@ -389,9 +500,26 @@ def _validate_request(
     first_segment: str | Path | None,
     case_path: str | Path | None,
     output_path: str | Path | None,
+    selected_file_id: str | None = None,
+    selected_file_path: str | None = None,
+    selected_file_max_bytes: int = DEFAULT_SELECTED_FILE_IN_MEMORY_LIMIT,
 ) -> dict[str, object]:
     if case_path is None:
         return _validation_error("invalid_input", "missing_case", "--case is required.")
+
+    if selected_file_id and selected_file_path:
+        return _validation_error(
+            "invalid_input",
+            "conflicting_selected_file_forms",
+            "Use either --selected-file-id or --selected-file-path, not both.",
+        )
+
+    if selected_file_max_bytes < 0:
+        return _validation_error(
+            "invalid_input",
+            "invalid_selected_file_max_bytes",
+            "--selected-file-max-bytes must be greater than or equal to zero.",
+        )
 
     has_direct_path = evidence_path is not None
     has_evidence_dir = evidence_dir is not None
@@ -607,6 +735,15 @@ def _artifact_paths(case_dir: Path, output_dir: Path) -> dict[str, Path]:
         "metadata": output_dir / "metadata.json",
         "verification": output_dir / "verification.json",
         "segment_discovery": output_dir / "segment-discovery.json",
+        "ewf_stream": output_dir / "ewf-stream.json",
+        "volumes": output_dir / "volumes.json",
+        "filesystems": output_dir / "filesystems.json",
+        "root_listing": output_dir / "root-listing.json",
+        "demo_readiness": output_dir / "demo-readiness.json",
+        "selected_file_readiness": output_dir / "selected-file-readiness.json",
+        "selected_file_preview": output_dir / "selected-file-preview.json",
+        "selected_file_analysis": output_dir / "selected-file-analysis.json",
+        "selected_file_export": output_dir / "selected-file-export.json",
         "audit": output_dir / "audit.json",
         "unsupported_sections": output_dir / "unsupported-sections.json",
     }
@@ -615,29 +752,14 @@ def _artifact_paths(case_dir: Path, output_dir: Path) -> dict[str, Path]:
 def _unsupported_sections() -> dict[str, object]:
     rows = [
         (
-            "ewf_backed_byte_stream",
-            "S4.5-IMP03",
-            "EWF-backed byte streaming is not implemented in S4.5-IMP02.",
-        ),
-        (
-            "partition_filesystem_parsing",
-            "S4.5-IMP03",
-            "Partition and filesystem parsing from E01 evidence is not implemented in S4.5-IMP02.",
-        ),
-        (
-            "e01_backed_preview_export_hash_signature",
-            "S4.5-IMP04",
-            "E01-backed preview, export, hashing, and signature providers are not implemented in S4.5-IMP02.",
-        ),
-        (
             "file_list_json_csv_output",
             "S4.5-IMP05",
-            "File-list JSON/CSV output is not implemented in S4.5-IMP02.",
+            "File-list JSON/CSV output is not implemented in S4.5-IMP04.",
         ),
         (
             "static_html_summary",
             "S4.5-IMP05",
-            "Static HTML summary output is not implemented in S4.5-IMP02.",
+            "Static HTML summary output is not implemented in S4.5-IMP04.",
         ),
         (
             "implementation_handoff_manual_test_reconciliation",
@@ -791,6 +913,708 @@ def _segment_discovery_artifact(
     }
 
 
+def _filesystem_demo_artifacts(
+    *,
+    selected_path: Path,
+    intake_result: Mapping[str, object],
+    adapter_name: str,
+) -> dict[str, dict[str, object]]:
+    if adapter_name == "stub":
+        return _demo_not_run_artifacts(
+            selected_path=selected_path,
+            status="not_run",
+            message="Real EWF stream/filesystem demo is not run when --adapter stub is selected.",
+            parser_backing="stub_adapter",
+        )
+
+    stream_kwargs: dict[str, object] = {}
+    adapter = _as_mapping(intake_result.get("adapter"))
+    dependency = _as_mapping(adapter.get("dependency"))
+    if dependency.get("name") == "pyewf" and dependency.get("available") is False:
+        stream_kwargs["pyewf_module"] = None
+        stream_kwargs["import_error"] = ImportError(str(dependency.get("message") or "pyewf unavailable"))
+
+    segment_paths = _segment_paths_from_intake(intake_result)
+    stream = EwfImageByteStream(
+        selected_path,
+        segment_paths=segment_paths,
+        **stream_kwargs,
+    )
+    stream_info = stream.describe()
+    ewf_stream = {
+        "schema_version": "stage4_5.first_testing_ewf_stream.v1",
+        "status": stream_info.status.code,
+        "logical_media_size": stream_info.size,
+        "source_path": stream_info.source_path,
+        "segment_count": len(segment_paths),
+        "stream": stream_info.to_dict(),
+    }
+
+    volumes_result = discover_volumes(stream, strategy="partition_table")
+    volumes = {
+        "schema_version": "stage4_5.first_testing_volumes.v1",
+        "status": volumes_result.status.code,
+        "strategy": volumes_result.strategy,
+        "volume_count": len(volumes_result.volumes),
+        "volume_discovery": volumes_result.to_dict(),
+    }
+
+    filesystem_results = []
+    root_listing: dict[str, object] | None = None
+    if volumes_result.status.ok:
+        filesystem_adapter = Pytsk3FilesystemAdapter(image_stream=stream)
+        for volume in volumes_result.volumes:
+            filesystem_result = filesystem_adapter.inspect_volume(volume)
+            filesystem_results.append(filesystem_result.to_dict())
+            if filesystem_result.status.ok and filesystem_result.entries:
+                root_listing = _root_listing_from_filesystem_result(volume, filesystem_result)
+                break
+
+    filesystems = {
+        "schema_version": "stage4_5.first_testing_filesystems.v1",
+        "status": _filesystem_summary_status(filesystem_results, volumes_result.status.code),
+        "filesystem_count": len(filesystem_results),
+        "filesystems": filesystem_results,
+    }
+
+    if root_listing is None:
+        root_listing = _empty_root_listing(
+            selected_path=selected_path,
+            stream_status=stream_info.status.code,
+            volume_status=volumes_result.status.code,
+            filesystem_status=filesystems["status"],
+        )
+
+    demo_readiness = _demo_readiness(
+        ewf_stream=ewf_stream,
+        volumes=volumes,
+        filesystems=filesystems,
+        root_listing=root_listing,
+    )
+    return {
+        "ewf_stream": ewf_stream,
+        "volumes": volumes,
+        "filesystems": filesystems,
+        "root_listing": root_listing,
+        "demo_readiness": demo_readiness,
+    }
+
+
+def _demo_not_run_artifacts(
+    *,
+    selected_path: Path,
+    status: str,
+    message: str,
+    parser_backing: str,
+) -> dict[str, dict[str, object]]:
+    ewf_stream = {
+        "schema_version": "stage4_5.first_testing_ewf_stream.v1",
+        "status": status,
+        "logical_media_size": None,
+        "source_path": str(selected_path),
+        "segment_count": 0,
+        "message": message,
+    }
+    volumes = {
+        "schema_version": "stage4_5.first_testing_volumes.v1",
+        "status": status,
+        "strategy": "not_run",
+        "volume_count": 0,
+        "message": message,
+    }
+    filesystems = {
+        "schema_version": "stage4_5.first_testing_filesystems.v1",
+        "status": status,
+        "filesystem_count": 0,
+        "filesystems": [],
+        "message": message,
+    }
+    root_listing = {
+        "schema_version": "stage4_5.first_testing_root_listing.v1",
+        "status": status,
+        "parser_backing": parser_backing,
+        "entry_count": 0,
+        "entries": [],
+        "message": message,
+    }
+    return {
+        "ewf_stream": ewf_stream,
+        "volumes": volumes,
+        "filesystems": filesystems,
+        "root_listing": root_listing,
+        "demo_readiness": _demo_readiness(
+            ewf_stream=ewf_stream,
+            volumes=volumes,
+            filesystems=filesystems,
+            root_listing=root_listing,
+        ),
+    }
+
+
+def _segment_paths_from_intake(intake_result: Mapping[str, object]) -> tuple[str, ...]:
+    discovery = _as_mapping(intake_result.get("segment_discovery"))
+    segments = discovery.get("segments", [])
+    if isinstance(segments, list):
+        paths = [
+            str(segment.get("path"))
+            for segment in segments
+            if isinstance(segment, Mapping) and segment.get("path")
+        ]
+        if paths:
+            return tuple(paths)
+    selected = intake_result.get("selected_path") or intake_result.get("source_path")
+    return (str(selected),) if selected else ()
+
+
+class _PrecomputedFilesystemAdapter:
+    def __init__(self, filesystem_result: object) -> None:
+        self._filesystem_result = filesystem_result
+        self.name = filesystem_result.adapter_name
+        self.read_only = filesystem_result.read_only
+
+    @property
+    def is_available(self) -> bool:
+        return self._filesystem_result.adapter_available
+
+    def dependency_status(self):
+        return self._filesystem_result.dependency
+
+    def inspect_volume(self, _volume):
+        return self._filesystem_result
+
+
+def _root_listing_from_filesystem_result(volume, filesystem_result) -> dict[str, object]:
+    listing = list_directory(
+        volume,
+        "/",
+        _PrecomputedFilesystemAdapter(filesystem_result),
+    )
+    return {
+        "schema_version": "stage4_5.first_testing_root_listing.v1",
+        "status": listing["status"]["code"],
+        "parser_backing": "real_parser_backed",
+        "entry_count": listing["entry_count"],
+        "directory_listing": listing,
+        "entries": listing["entries"],
+    }
+
+
+def _empty_root_listing(
+    *,
+    selected_path: Path,
+    stream_status: str,
+    volume_status: str,
+    filesystem_status: str,
+) -> dict[str, object]:
+    if stream_status == "dependency_unavailable":
+        parser_backing = "dependency_blocked"
+    elif filesystem_status == "dependency_unavailable":
+        parser_backing = "dependency_blocked"
+    else:
+        parser_backing = "unavailable"
+    return {
+        "schema_version": "stage4_5.first_testing_root_listing.v1",
+        "status": "not_available",
+        "parser_backing": parser_backing,
+        "entry_count": 0,
+        "entries": [],
+        "source_path": str(selected_path),
+        "stream_status": stream_status,
+        "volume_status": volume_status,
+        "filesystem_status": filesystem_status,
+    }
+
+
+def _filesystem_summary_status(
+    filesystem_results: list[dict[str, object]],
+    volume_status: str,
+) -> str:
+    if not filesystem_results:
+        return "not_run" if volume_status != "ok" else "not_available"
+    for result in filesystem_results:
+        status = _as_mapping(result.get("status")).get("code")
+        if status == "ok":
+            return "ok"
+    first_status = _as_mapping(filesystem_results[0].get("status")).get("code")
+    return str(first_status or "not_available")
+
+
+def _demo_readiness(
+    *,
+    ewf_stream: Mapping[str, object],
+    volumes: Mapping[str, object],
+    filesystems: Mapping[str, object],
+    root_listing: Mapping[str, object],
+) -> dict[str, object]:
+    parser_backing = root_listing.get("parser_backing")
+    entry_count = int(root_listing.get("entry_count") or 0)
+    if parser_backing == "real_parser_backed" and entry_count > 0:
+        status = "real_parser_backed_root_listing_available"
+        message = "S4.5-IMP03 demo gate produced real-parser-backed root entries."
+    elif parser_backing == "dependency_blocked":
+        status = "dependency_blocked"
+        message = "S4.5-IMP03 demo gate is blocked by dependency availability."
+    else:
+        status = "not_ready"
+        message = "S4.5-IMP03 demo gate did not produce real-parser-backed root entries."
+    return {
+        "schema_version": "stage4_5.first_testing_demo_readiness.v1",
+        "status": status,
+        "message": message,
+        "ewf_stream_status": ewf_stream.get("status"),
+        "logical_media_size": ewf_stream.get("logical_media_size"),
+        "volume_strategy": volumes.get("strategy"),
+        "volume_status": volumes.get("status"),
+        "volume_count": volumes.get("volume_count"),
+        "filesystem_status": filesystems.get("status"),
+        "root_listing_status": root_listing.get("status"),
+        "root_listing_parser_backing": parser_backing,
+        "root_entry_count": entry_count,
+    }
+
+
+def _selection_request(
+    *,
+    selected_file_id: str | None,
+    selected_file_path: str | None,
+    export_dir: str | Path | None,
+    export_name: str | None,
+    preview_mode: str,
+    max_bytes: int,
+) -> dict[str, object]:
+    return {
+        "requested": bool(selected_file_id or selected_file_path),
+        "file_id": selected_file_id,
+        "file_path": _normalize_file_path(selected_file_path) if selected_file_path else None,
+        "export_dir": str(export_dir) if export_dir is not None else None,
+        "export_name": export_name,
+        "preview_mode": preview_mode,
+        "preview_max_bytes": DEFAULT_PREVIEW_MAX_LENGTH,
+        "signature_max_bytes": DEFAULT_SIGNATURE_MAX_BYTES,
+        "in_memory_max_bytes": max_bytes,
+    }
+
+
+def _selected_file_artifacts(
+    *,
+    selected_path: Path,
+    intake_result: Mapping[str, object],
+    adapter_name: str,
+    demo_artifacts: Mapping[str, Mapping[str, object]],
+    selection: Mapping[str, object],
+    case_id: str,
+    evidence_id: str,
+) -> dict[str, dict[str, object]]:
+    if not selection.get("requested"):
+        return _selected_file_not_run_artifacts(
+            selection=selection,
+            status="not_run",
+            message="No selected file was requested; selected-file content operations were not run.",
+        )
+
+    root_listing = _as_mapping(demo_artifacts.get("root_listing"))
+    if root_listing.get("parser_backing") != "real_parser_backed":
+        return _selected_file_not_run_artifacts(
+            selection=selection,
+            status="content_source_unavailable",
+            message="Root listing is not real-parser-backed; selected-file content was not run.",
+        )
+
+    entry = _find_selected_entry(
+        root_listing.get("entries"),
+        file_id=_optional_str(selection.get("file_id")),
+        file_path=_optional_str(selection.get("file_path")),
+    )
+    if entry is None:
+        return _selected_file_not_run_artifacts(
+            selection=selection,
+            status="path_not_found",
+            message="Explicitly selected file was not found in the root listing.",
+        )
+
+    volume = _volume_for_entry(demo_artifacts, entry)
+    if volume is None:
+        return _selected_file_not_run_artifacts(
+            selection=selection,
+            status="content_source_unavailable",
+            message="Could not recover the selected file volume context.",
+            entry=entry,
+        )
+
+    stream_kwargs: dict[str, object] = {}
+    adapter = _as_mapping(intake_result.get("adapter"))
+    dependency = _as_mapping(adapter.get("dependency"))
+    if dependency.get("name") == "pyewf" and dependency.get("available") is False:
+        stream_kwargs["pyewf_module"] = None
+        stream_kwargs["import_error"] = ImportError(str(dependency.get("message") or "pyewf unavailable"))
+
+    stream = EwfImageByteStream(
+        selected_path,
+        segment_paths=_segment_paths_from_intake(intake_result),
+        **stream_kwargs,
+    )
+    reader = E01SelectedFileContentReader(stream, volume, entry)
+    readiness = reader.check().to_dict()
+    readiness.update(
+        {
+            "selection": dict(selection),
+            "case_id": case_id,
+            "evidence_id": evidence_id,
+            "policy": _selected_file_policy(selection),
+        }
+    )
+
+    preview = _selected_file_preview_artifact(
+        entry=entry,
+        reader=reader,
+        selection=selection,
+    )
+    analysis = _selected_file_analysis_artifact(
+        entry=entry,
+        reader=reader,
+        selection=selection,
+        case_id=case_id,
+        evidence_id=evidence_id,
+    )
+    export = _selected_file_export_artifact(
+        entry=entry,
+        reader=reader,
+        selection=selection,
+    )
+    return {
+        "readiness": readiness,
+        "preview": preview,
+        "analysis": analysis,
+        "export": export,
+    }
+
+
+def _selected_file_not_run_artifacts(
+    *,
+    selection: Mapping[str, object],
+    status: str,
+    message: str,
+    entry: Mapping[str, object] | None = None,
+) -> dict[str, dict[str, object]]:
+    readiness = {
+        "schema_version": "stage4_5.selected_file_readiness.v1",
+        "status": {
+            "code": status,
+            "ok": False,
+            "message": message,
+        },
+        "selection": dict(selection),
+        "entry": dict(entry or {}),
+        "policy": _selected_file_policy(selection),
+        "source_kind": "metadata_only",
+    }
+    return {
+        "readiness": readiness,
+        "preview": _operation_not_run_artifact(
+            schema_version="stage4_5.selected_file_preview.v1",
+            operation="preview",
+            status=status,
+            message=message,
+            selection=selection,
+            entry=entry,
+        ),
+        "analysis": {
+            "schema_version": "stage4_5.selected_file_analysis.v1",
+            "status": status,
+            "message": message,
+            "selection": dict(selection),
+            "entry": dict(entry or {}),
+            "hash": _analysis_not_run_result(status, message, "hash"),
+            "signature": _analysis_not_run_result(status, message, "signature"),
+            "extension_mismatch": _analysis_not_run_result(status, message, "extension_mismatch"),
+        },
+        "export": _operation_not_run_artifact(
+            schema_version="stage4_5.selected_file_export.v1",
+            operation="export",
+            status=status,
+            message=message,
+            selection=selection,
+            entry=entry,
+        ),
+    }
+
+
+def _selected_file_preview_artifact(
+    *,
+    entry: Mapping[str, object],
+    reader: E01SelectedFileContentReader,
+    selection: Mapping[str, object],
+) -> dict[str, object]:
+    provider = E01PreviewContentProvider(
+        reader,
+        max_preview_bytes=int(selection.get("preview_max_bytes") or DEFAULT_PREVIEW_MAX_LENGTH),
+    )
+    result = preview_file(
+        entry,
+        mode=str(selection.get("preview_mode") or "hex"),
+        provider=provider,
+        max_length=int(selection.get("preview_max_bytes") or DEFAULT_PREVIEW_MAX_LENGTH),
+    )
+    return {
+        "schema_version": "stage4_5.selected_file_preview.v1",
+        "status": _as_mapping(result.get("status")).get("code"),
+        "selection": dict(selection),
+        "content_read": provider.last_result.to_dict() if provider.last_result else None,
+        "preview": result,
+    }
+
+
+def _selected_file_analysis_artifact(
+    *,
+    entry: Mapping[str, object],
+    reader: E01SelectedFileContentReader,
+    selection: Mapping[str, object],
+    case_id: str,
+    evidence_id: str,
+) -> dict[str, object]:
+    signature_provider = E01AnalysisContentProvider(
+        reader,
+        read_mode="bounded",
+        max_bytes=int(selection.get("signature_max_bytes") or DEFAULT_SIGNATURE_MAX_BYTES),
+    )
+    signature = detect_file_signature(
+        entry,
+        provider=signature_provider,
+        max_bytes=int(selection.get("signature_max_bytes") or DEFAULT_SIGNATURE_MAX_BYTES),
+        case_id=case_id,
+        evidence_id=evidence_id,
+    )
+    extension = evaluate_extension_mismatch(signature)
+
+    max_bytes = int(selection.get("in_memory_max_bytes") or DEFAULT_SELECTED_FILE_IN_MEMORY_LIMIT)
+    if _entry_size(entry) is not None and int(_entry_size(entry) or 0) > max_bytes:
+        hash_result: object = _analysis_not_run_result(
+            "file_too_large_for_in_memory_provider",
+            "Selected file exceeds the in-memory first-testing limit; hash was not run.",
+            "hash",
+        )
+        hash_status = "file_too_large_for_in_memory_provider"
+        hash_content_read = None
+    else:
+        hash_provider = E01AnalysisContentProvider(
+            reader,
+            read_mode="full",
+            max_bytes=max_bytes,
+        )
+        hash_object = hash_file_content(
+            entry,
+            provider=hash_provider,
+            case_id=case_id,
+            evidence_id=evidence_id,
+        )
+        hash_result = hash_object.to_dict()
+        hash_status = hash_object.status.code
+        hash_content_read = hash_provider.last_result.to_dict() if hash_provider.last_result else None
+
+    return {
+        "schema_version": "stage4_5.selected_file_analysis.v1",
+        "status": _selected_analysis_status(hash_status, signature.status.code),
+        "selection": dict(selection),
+        "hash": hash_result,
+        "hash_content_read": hash_content_read,
+        "signature": signature.to_dict(),
+        "signature_content_read": (
+            signature_provider.last_result.to_dict() if signature_provider.last_result else None
+        ),
+        "extension_mismatch": extension.to_dict(),
+    }
+
+
+def _selected_file_export_artifact(
+    *,
+    entry: Mapping[str, object],
+    reader: E01SelectedFileContentReader,
+    selection: Mapping[str, object],
+) -> dict[str, object]:
+    export_dir = _optional_str(selection.get("export_dir"))
+    if not export_dir:
+        return _operation_not_run_artifact(
+            schema_version="stage4_5.selected_file_export.v1",
+            operation="export",
+            status="not_run",
+            message="No explicit selected-file export directory was supplied.",
+            selection=selection,
+            entry=entry,
+        )
+
+    max_bytes = int(selection.get("in_memory_max_bytes") or DEFAULT_SELECTED_FILE_IN_MEMORY_LIMIT)
+    if _entry_size(entry) is not None and int(_entry_size(entry) or 0) > max_bytes:
+        return _operation_not_run_artifact(
+            schema_version="stage4_5.selected_file_export.v1",
+            operation="export",
+            status="file_too_large_for_in_memory_provider",
+            message="Selected file exceeds the in-memory first-testing limit; export was refused.",
+            selection=selection,
+            entry=entry,
+        )
+
+    provider = E01ExportContentProvider(reader, max_bytes=max_bytes)
+    result = export_file(
+        entry,
+        export_dir,
+        provider=provider,
+        output_name=_optional_str(selection.get("export_name")),
+    )
+    return {
+        "schema_version": "stage4_5.selected_file_export.v1",
+        "status": result.status.code,
+        "selection": dict(selection),
+        "content_read": provider.last_result.to_dict() if provider.last_result else None,
+        "export": result.to_dict(),
+    }
+
+
+def _operation_not_run_artifact(
+    *,
+    schema_version: str,
+    operation: str,
+    status: str,
+    message: str,
+    selection: Mapping[str, object],
+    entry: Mapping[str, object] | None,
+) -> dict[str, object]:
+    return {
+        "schema_version": schema_version,
+        "operation": operation,
+        "status": status,
+        "message": message,
+        "selection": dict(selection),
+        "entry": dict(entry or {}),
+    }
+
+
+def _analysis_not_run_result(status: str, message: str, operation: str) -> dict[str, object]:
+    return {
+        "analysis_type": operation,
+        "status": {
+            "code": status,
+            "ok": False,
+            "message": message,
+        },
+    }
+
+
+def _selected_file_policy(selection: Mapping[str, object]) -> dict[str, object]:
+    return {
+        "preview_max_bytes": selection.get("preview_max_bytes"),
+        "signature_max_bytes": selection.get("signature_max_bytes"),
+        "in_memory_max_bytes": selection.get("in_memory_max_bytes"),
+        "hash_export_policy": "full-file only at or below in-memory max bytes",
+        "preview_signature_policy": "bounded-prefix only",
+    }
+
+
+def _find_selected_entry(
+    entries: object,
+    *,
+    file_id: str | None,
+    file_path: str | None,
+) -> Mapping[str, object] | None:
+    if not isinstance(entries, list):
+        return None
+    for entry in entries:
+        if not isinstance(entry, Mapping):
+            continue
+        if file_id and str(entry.get("file_id") or "") == file_id:
+            return entry
+        if file_path and _normalize_file_path(str(entry.get("path") or "")) == file_path:
+            return entry
+    return None
+
+
+def _volume_for_entry(
+    demo_artifacts: Mapping[str, Mapping[str, object]],
+    entry: Mapping[str, object],
+) -> VolumeInfo | None:
+    volumes_artifact = _as_mapping(demo_artifacts.get("volumes"))
+    discovery = _as_mapping(volumes_artifact.get("volume_discovery"))
+    raw_volumes = discovery.get("volumes")
+    if not isinstance(raw_volumes, list):
+        return None
+    entry_volume_id = str(entry.get("volume_id") or "")
+    for raw_volume in raw_volumes:
+        if not isinstance(raw_volume, Mapping):
+            continue
+        if str(raw_volume.get("volume_id") or "") != entry_volume_id:
+            continue
+        return VolumeInfo(
+            volume_id=str(raw_volume.get("volume_id") or ""),
+            volume_index=int(raw_volume.get("volume_index") or 0),
+            source_path=str(raw_volume.get("source_path") or entry.get("source_path") or ""),
+            stream_type=str(raw_volume.get("stream_type") or "ewf"),
+            source_size=int(raw_volume.get("source_size") or 0),
+            offset=int(raw_volume.get("offset") or 0),
+            length=int(raw_volume.get("length") or 0),
+            volume_type=str(raw_volume.get("volume_type") or "partition"),
+            description=str(raw_volume.get("description") or "Partition volume."),
+            read_only=bool(raw_volume.get("read_only", True)),
+            status=VolumeDiscoveryStatus(
+                code=_as_mapping(raw_volume.get("status")).get("code", "ok"),
+                message=_as_mapping(raw_volume.get("status")).get("message", "Volume context restored."),
+            ),
+        )
+    return None
+
+
+def _selected_analysis_status(hash_status: str, signature_status: str) -> str:
+    if hash_status == "ok" and signature_status in {"ok", "unknown_signature", "insufficient_signature_bytes"}:
+        return "ok"
+    if hash_status == "file_too_large_for_in_memory_provider" and signature_status in {
+        "ok",
+        "unknown_signature",
+        "insufficient_signature_bytes",
+    }:
+        return "partial"
+    if hash_status == "not_run" and signature_status == "not_run":
+        return "not_run"
+    return "partial"
+
+
+def _selected_hash_status(selected_analysis: Mapping[str, object]) -> str | None:
+    hash_result = _as_mapping(selected_analysis.get("hash"))
+    return _as_mapping(hash_result.get("status")).get("code")
+
+
+def _selected_signature_status(selected_analysis: Mapping[str, object]) -> str | None:
+    signature_result = _as_mapping(selected_analysis.get("signature"))
+    return _as_mapping(signature_result.get("status")).get("code")
+
+
+def _entry_size(entry: Mapping[str, object]) -> int | None:
+    value = entry.get("size")
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _normalize_file_path(value: str | None) -> str | None:
+    if value is None:
+        return None
+    text = value.strip().replace("\\", "/")
+    if not text:
+        return None
+    if not text.startswith("/"):
+        text = f"/{text}"
+    while "//" in text:
+        text = text.replace("//", "/")
+    return text.rstrip("/") if len(text) > 1 else text
+
+
+def _optional_str(value: object) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
 def _run_manifest(
     *,
     run_id: str,
@@ -810,6 +1634,8 @@ def _run_manifest(
     intake_result: Mapping[str, object],
     unsupported_sections: Mapping[str, object],
     metadata_artifact: Mapping[str, object],
+    demo_artifacts: Mapping[str, Mapping[str, object]],
+    selected_file_artifacts: Mapping[str, Mapping[str, object]],
     audit_artifact: Mapping[str, object],
     artifact_paths: Mapping[str, Path],
     adapter_name: str,
@@ -818,6 +1644,11 @@ def _run_manifest(
 ) -> dict[str, object]:
     adapter = _as_mapping(intake_result.get("adapter"))
     verification = _as_mapping(intake_result.get("verification"))
+    demo_readiness = _as_mapping(demo_artifacts.get("demo_readiness"))
+    selected_readiness = _as_mapping(selected_file_artifacts.get("readiness"))
+    selected_preview = _as_mapping(selected_file_artifacts.get("preview"))
+    selected_analysis = _as_mapping(selected_file_artifacts.get("analysis"))
+    selected_export = _as_mapping(selected_file_artifacts.get("export"))
     sections = unsupported_sections.get("sections", [])
     warnings = intake_result.get("warnings", [])
 
@@ -868,6 +1699,58 @@ def _run_manifest(
             "artifact_path": str(artifact_paths["metadata"]),
         },
         "verification": verification,
+        "ewf_stream": {
+            "status": _as_mapping(demo_artifacts.get("ewf_stream")).get("status"),
+            "logical_media_size": _as_mapping(demo_artifacts.get("ewf_stream")).get("logical_media_size"),
+            "artifact_path": str(artifact_paths["ewf_stream"]),
+        },
+        "volumes": {
+            "status": _as_mapping(demo_artifacts.get("volumes")).get("status"),
+            "strategy": _as_mapping(demo_artifacts.get("volumes")).get("strategy"),
+            "volume_count": _as_mapping(demo_artifacts.get("volumes")).get("volume_count"),
+            "artifact_path": str(artifact_paths["volumes"]),
+        },
+        "filesystem": {
+            "status": _as_mapping(demo_artifacts.get("filesystems")).get("status"),
+            "filesystem_count": _as_mapping(demo_artifacts.get("filesystems")).get("filesystem_count"),
+            "artifact_path": str(artifact_paths["filesystems"]),
+        },
+        "root_listing": {
+            "status": _as_mapping(demo_artifacts.get("root_listing")).get("status"),
+            "parser_backing": _as_mapping(demo_artifacts.get("root_listing")).get("parser_backing"),
+            "entry_count": _as_mapping(demo_artifacts.get("root_listing")).get("entry_count"),
+            "artifact_path": str(artifact_paths["root_listing"]),
+        },
+        "demo_readiness": {
+            **dict(demo_readiness),
+            "artifact_path": str(artifact_paths["demo_readiness"]),
+        },
+        "selected_file": {
+            "requested": bool(_as_mapping(selected_readiness.get("selection")).get("requested")),
+            "selection_status": _as_mapping(selected_readiness.get("status")).get("code")
+            or selected_readiness.get("status"),
+            "policy": _as_mapping(selected_readiness.get("policy")),
+            "readiness": {
+                "status": _as_mapping(selected_readiness.get("status")).get("code")
+                or selected_readiness.get("status"),
+                "source_kind": selected_readiness.get("source_kind"),
+                "artifact_path": str(artifact_paths["selected_file_readiness"]),
+            },
+            "preview": {
+                "status": selected_preview.get("status"),
+                "artifact_path": str(artifact_paths["selected_file_preview"]),
+            },
+            "analysis": {
+                "status": selected_analysis.get("status"),
+                "hash_status": _selected_hash_status(selected_analysis),
+                "signature_status": _selected_signature_status(selected_analysis),
+                "artifact_path": str(artifact_paths["selected_file_analysis"]),
+            },
+            "export": {
+                "status": selected_export.get("status"),
+                "artifact_path": str(artifact_paths["selected_file_export"]),
+            },
+        },
         "warnings": warnings if isinstance(warnings, list) else [],
         "unsupported_sections": sections if isinstance(sections, list) else [],
         "artifact_paths": {key: str(value) for key, value in artifact_paths.items()},

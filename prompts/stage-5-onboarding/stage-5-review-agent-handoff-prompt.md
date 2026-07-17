@@ -61,9 +61,8 @@ Stages 1 through 4 are reviewed backend foundations:
 The current real-E01 truth is still limited:
 
 - The project can discover `.E01/.E02/...` segment filenames.
-- The project does not yet read real EWF metadata.
-- The project does not yet verify real EWF images.
-- The project does not yet parse real partitions or filesystems from E01 files.
+- The project can attempt real EWF metadata through optional `pyewf` and can report explicit verification status; stored hash metadata is not treated as verification success.
+- S4.5-IMP03 is reviewed and done with EWF-backed stream reads, partition-table volume discovery, and a real-parser-backed root listing from the local E01 set.
 - The project does not yet extract real file content from E01 files.
 - Preview, export, hash, signature, and known-file behavior remain provider-backed, fixture/stub/synthetic, or planned unless a later reviewed implementation proves otherwise.
 
@@ -71,23 +70,24 @@ The current real-E01 truth is still limited:
 
 Stage 4.5 was added before Stage 5 because the user wants something testable and demonstrable with actual E01 files.
 
-Stage 4.5 is no longer planning-only. S4.5-T00 through S4.5-T08 are planning/review records, S4.5-IMP01 is reviewed and done as the first command-shell implementation slice, S4.5-IMP02 is ready, and S4.5-IMP03 through S4.5-IMP07 are drafted.
+Stage 4.5 is no longer planning-only. S4.5-T00 through S4.5-T08 are planning/review records, S4.5-IMP01 is reviewed and done as the first command-shell implementation slice, S4.5-IMP02 and S4.5-IMP02A are reviewed and done, S4.5-IMP03 is reviewed and done after producing a real-parser-backed root listing from the local E01 set, S4.5-IMP04 is reviewed and done after adding selected-file E01-backed content providers, and S4.5-IMP05 through S4.5-IMP07 are drafted.
 
 Before starting Stage 5, confirm the current Stage 4.5 runway state:
 
 - S4.5-IMP01 is done;
-- S4.5-IMP02 is ready and S4.5-IMP03 through S4.5-IMP07 are drafted but incomplete unless newer reviewed work exists;
-- no dependencies were installed;
+- S4.5-IMP02 and S4.5-IMP02A are done;
+- S4.5-IMP03 and S4.5-IMP04 are reviewed and done, and S4.5-IMP05 through S4.5-IMP07 are drafted but incomplete unless newer reviewed work exists;
+- the portable runtime/dependency setup is project-local and ignored by git;
 - no committed E01 files or private outputs were added;
-- manual E01 testing is only partial for the S4.5-IMP01 command shell;
-- the next practical implementation slice is S4.5-IMP02, and Stage 5 search/timeline implementation should not push the Stage 4.5 substantial-test runway back.
+- manual E01 testing is partial for intake, metadata, stream, partition-table discovery, and root listing only;
+- the next practical implementation slice is S4.5-IMP05, and Stage 5 search/timeline implementation should not push the Stage 4.5 substantial-test runway back.
 
 The Stage 4.5 implementation runway is:
 
 - S4.5-IMP01: first-testing command shell, safe case workspace, intake persistence, manifest, unsupported-section output.
-- S4.5-IMP02: real `pyewf` metadata and verification status. Status: Ready.
-- S4.5-IMP03: EWF-backed stream, partition boundary, root filesystem metadata/listing. Status: Draft.
-- S4.5-IMP04: E01-backed selected-file content providers for preview/export/hash/signature. Status: Draft.
+- S4.5-IMP02: real `pyewf` metadata and verification status. Status: Done.
+- S4.5-IMP03: real-E01 filesystem demo gate for EWF-backed stream, partition/volume boundary, and root filesystem metadata/listing. Status: Done.
+- S4.5-IMP04: E01-backed selected-file content providers for preview/export/hash/signature. Status: Done.
 - S4.5-IMP05: file-list JSON/CSV, command summary, artifact inventory, optional static HTML. Status: Draft.
 - S4.5-IMP06: manual-test guardrails, documentation reconciliation, and review handoff. Status: Draft.
 - S4.5-IMP07: command-line testing guide and evidence workflow instructions. Status: Draft.
@@ -115,7 +115,7 @@ S5-T01 should block S5-T02 and later if the Stage 4.5 substantial-test runway is
 ## Detailed Stage 5 Ticket Queue
 
 - S5-T00: documentation organization, duplication cleanup, and unused/confusing structure review. Status: Done.
-- S5-T01: readiness and Stage 4.5 completion gate. Status: Done; failed gate/blocker because the S4.5-IMP01 through S4.5-IMP06 runway is incomplete.
+- S5-T01: readiness and Stage 4.5 completion gate. Status: Done; failed gate/blocker because the Stage 4.5 runway remains incomplete. As of S4.5-IMP04 review handoff, S4.5-IMP05 through S4.5-IMP07 are still required.
 - S5-T01A: Stage 4.5 gate language hardening. Status: Done.
 - S5-T02: input inventory and provenance audit. Status: Draft.
 - S5-T03: searchable record contracts. Status: Draft.
