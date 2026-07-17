@@ -12,6 +12,53 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-17 - S4.5-IMP05 Review Acceptance
+
+Result: accepted; S4.5-IMP05 is done.
+
+Findings:
+
+- No blocking issues found.
+- File-list JSON/CSV is correctly derived from the current root listing only, with honest zero-entry output when root listing is unavailable or not real-parser-backed.
+- Static HTML is local, escaped, non-interactive, and scoped to statuses/counts/artifact inventory instead of becoming a UI or report system.
+- Review correction: hardened HTML redaction for escaped evidence-root strings and expanded the redaction test with an evidence path containing `&`.
+
+Verification:
+
+- Focused portable-runtime run after review correction: `.\.python312-embed\python.exe -m pytest app\tests\test_first_testing_command.py`: 13 passed in 24.49s.
+- Full portable-runtime run after review correction: `.\.python312-embed\python.exe -m pytest`: 184 passed in 29.26s.
+- Reviewer real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, HTML summary created, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+- Artifact checks confirmed CSV header order, no S4.5-IMP05 output entries left in unsupported sections, no raw evidence root in shared summary/HTML, no script/network references in HTML, and no search/timeline/PDF artifacts.
+
+Remaining scope:
+
+- S4.5-IMP06 guardrail/review handoff, S4.5-IMP07 command-line testing guide, recursive traversal, broad crawl, auto-selection/export, selected-file real extraction without approved selection, search/timeline/indexing, UI, report system/PDF, deleted recovery, carving, packaging, commit, and push remain out of scope.
+- Stage 5 search/timeline remains blocked until S4.5-IMP06 through S4.5-IMP07 are completed and reviewed.
+
+## 2026-07-17 - S4.5-IMP05 Implementation Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- Added root-listing-derived `file-list.json` with schema/status/provenance fields, entry status/warnings, read-only/source-modified assertions, and honest zero-entry output when root listing is unavailable.
+- Added UTF-8 `file-list.csv` with stable headers, standard CSV writer output, warning-code joining, empty-cell preservation, and formula-looking cell protection.
+- Added static local `outputs/reports/summary.html` with escaped statuses/counts/artifact inventory, no network assets, no JavaScript app, and no evidence content.
+- Updated first-testing `run-manifest.json`, `command-summary.txt`, and unsupported sections so S4.5-IMP05 outputs are inventoried and no longer listed as not implemented.
+- Preserved selected-file opt-in behavior; no arbitrary evidence file is auto-selected, previewed, exported, hashed, or signature-checked.
+
+Verification:
+
+- Focused portable-runtime run: `.\.python312-embed\python.exe -m pytest app\tests\test_first_testing_command.py`: 13 passed in 22.53s.
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 184 passed in 27.70s.
+- Real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, EWF stream `ok`, partition-table status `ok` with 5 volumes, filesystem status `ok`, root listing `ok` / `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, HTML summary created, and selected-file operations `not_run`.
+- Smoke artifact check reported `source_modified: false` and `read_only_asserted: true`.
+
+Scope intentionally not implemented:
+
+- No recursive traversal, broad crawl, auto-selection/export, selected-file real extraction beyond existing explicit path, search/timeline/indexing, dynamic UI, report system, PDF, deleted recovery, carving, packaging, commit, or push.
+- No real evidence files were added to the repository, and sensitive real evidence filenames, root entry names, metadata values, and content are not quoted in shared summaries.
+
 ## 2026-07-17 - S4.5-IMP04 Review Acceptance
 
 Result: accepted; S4.5-IMP04 is done.

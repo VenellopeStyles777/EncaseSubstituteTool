@@ -13,7 +13,7 @@ These callables are backend-only and JSON-friendly. They do not provide UI, exec
 
 Stage 3 note: S3-T04 can optionally record export attempts in the case-store audit log when the caller supplies explicit audit context. It does not recover deleted files, parse real filesystems, run broader hash/signature analysis, or use preview-rendered text/hex as export bytes.
 
-Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. S4.5-IMP01 adds a first-testing command shell and case-workspace bundle. S4.5-IMP02 adds best-effort `pyewf` metadata and separate verification status when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 adds the first EWF stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts and is reviewed done. S4.5-IMP04 adds selected-file E01 content providers for preview/export/hash/signature only when an explicit parser-backed root entry is selected. Preview-rendered text/hex, written export artifacts, and external known-file lists remain disallowed as implicit source analysis content.
+Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. S4.5-IMP01 adds a first-testing command shell and case-workspace bundle. S4.5-IMP02 adds best-effort `pyewf` metadata and separate verification status when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 adds the first EWF stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts and is reviewed done. S4.5-IMP04 adds selected-file E01 content providers for preview/export/hash/signature only when an explicit parser-backed root entry is selected. S4.5-IMP05 adds root-listing-derived file-list JSON/CSV and static local HTML summary output without adding search/timeline, recursion, or UI/reporting system behavior. Preview-rendered text/hex, written export artifacts, and external known-file lists remain disallowed as implicit source analysis content.
 
 ## S1-T04 Intake Command
 
@@ -109,6 +109,9 @@ S4.5-IMP01 and S4.5-IMP02 create:
 <output>\selected-file-preview.json
 <output>\selected-file-analysis.json
 <output>\selected-file-export.json
+<output>\file-list.json
+<output>\file-list.csv
+<output>\reports\summary.html
 <output>\audit.json
 <output>\unsupported-sections.json
 ```
@@ -144,7 +147,15 @@ S4.5-IMP04 selected-file content behavior:
 - If no file is selected, selected-file artifacts are written with `not_run` statuses and no file is auto-selected.
 - Directories, deleted/unallocated entries, metadata-only entries, unavailable dependencies, unreadable files, and files above the in-memory hash/export limit return structured statuses.
 
-The command still does not create full file-list JSON/CSV, generate static HTML, start search/timeline, or add UI/reporting behavior.
+S4.5-IMP05 file-list and static summary behavior:
+
+- `file-list.json` is derived from the current `root-listing.json` only and uses schema `stage4_5.file_list.v1`.
+- If the root listing is unavailable, dependency-blocked, not-run, or not real-parser-backed, the command writes a zero-entry file-list artifact with status/warnings instead of fake entries.
+- `file-list.csv` is UTF-8, uses a standard CSV writer, preserves the documented header order, joins warning codes with `;`, and escapes spreadsheet-formula-looking cells.
+- `outputs/reports/summary.html` is a static local escaped status/artifact summary with no network assets, no JavaScript app, and no evidence content.
+- With `--redact-paths`, console output, `command-summary.txt`, and `summary.html` avoid exposing the raw evidence root; local JSON remains examiner-owned and can retain source paths.
+
+The command still does not create recursive file lists, broad crawls, search/timeline indexes, dynamic UI, report-system/PDF output, deleted recovery, or carving behavior.
 
 ## S2-T05 Directory Listing Callable
 

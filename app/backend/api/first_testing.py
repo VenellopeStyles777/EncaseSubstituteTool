@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import csv
 from datetime import datetime, timezone
+import html
 import json
 from pathlib import Path
 import re
@@ -46,6 +48,33 @@ from app.backend.forensic_core import (
 
 FIRST_TESTING_RUN_SCHEMA_VERSION = "stage4_5.first_testing_run.v1"
 UNSUPPORTED_SECTIONS_SCHEMA_VERSION = "stage4_5.unsupported_sections.v1"
+FILE_LIST_SCHEMA_VERSION = "stage4_5.file_list.v1"
+
+FILE_LIST_CSV_HEADERS = (
+    "case_id",
+    "evidence_id",
+    "source_path",
+    "volume_id",
+    "volume_offset",
+    "volume_length",
+    "filesystem_type",
+    "adapter_name",
+    "file_id",
+    "path",
+    "name",
+    "entry_type",
+    "size",
+    "allocated",
+    "deleted",
+    "created",
+    "modified",
+    "accessed",
+    "metadata_changed",
+    "status_code",
+    "status_ok",
+    "status_message",
+    "warning_codes",
+)
 
 _SEGMENT_SUFFIX_RE = re.compile(r"^\.E(?P<number>\d+)$", re.IGNORECASE)
 
@@ -73,9 +102,10 @@ def run_first_testing(
     """Create the first Stage 4.5 case workspace and artifact bundle.
 
     This function orchestrates the command shell, case store, existing intake,
-    metadata/verification artifacts, and the S4.5 real-E01 filesystem demo.
+    metadata/verification artifacts, the S4.5 real-E01 filesystem demo, and
+    file-list/static-summary outputs copied from the current root listing.
     Selected-file content is run only when a file is explicitly requested. This
-    function does not add file-list, report, search, or timeline behavior.
+    function does not add recursive crawl, search, or timeline behavior.
     """
 
     validation = _validate_request(
@@ -203,6 +233,14 @@ def run_first_testing(
             case_id=case_id,
             evidence_id=evidence_id,
         )
+        file_list_artifact = _file_list_artifact(
+            case_id=case_id,
+            evidence_id=evidence_id,
+            selected_path=selected_path,
+            evidence_root=evidence_root,
+            demo_artifacts=demo_artifacts,
+            redact_paths=redact_paths,
+        )
 
         _write_json(artifact_paths["intake"], intake_result)
         _write_json(artifact_paths["case"], case_artifact)
@@ -218,6 +256,8 @@ def run_first_testing(
         _write_json(artifact_paths["selected_file_preview"], selected_file_artifacts["preview"])
         _write_json(artifact_paths["selected_file_analysis"], selected_file_artifacts["analysis"])
         _write_json(artifact_paths["selected_file_export"], selected_file_artifacts["export"])
+        _write_json(artifact_paths["file_list_json"], file_list_artifact)
+        _write_file_list_csv(artifact_paths["file_list_csv"], file_list_artifact)
         _write_json(artifact_paths["unsupported_sections"], unsupported_sections)
 
         insert_audit_event(
@@ -270,6 +310,7 @@ def run_first_testing(
             unsupported_sections=unsupported_sections,
             metadata_artifact=metadata_artifact,
             demo_artifacts=demo_artifacts,
+            file_list_artifact=file_list_artifact,
             selected_file_artifacts=selected_file_artifacts,
             audit_artifact=audit_artifact,
             artifact_paths=artifact_paths,
@@ -281,6 +322,13 @@ def run_first_testing(
 
         summary = format_first_testing_summary(manifest, redact_paths=redact_paths)
         artifact_paths["command_summary"].write_text(summary + "\n", encoding="utf-8")
+        _write_html_summary(
+            artifact_paths["html_summary"],
+            manifest=manifest,
+            file_list_artifact=file_list_artifact,
+            unsupported_sections=unsupported_sections,
+            redact_paths=redact_paths,
+        )
     finally:
         connection.close()
 
@@ -361,6 +409,7 @@ def format_first_testing_summary(
     volumes = _as_mapping(result.get("volumes"))
     filesystem = _as_mapping(result.get("filesystem"))
     root_listing = _as_mapping(result.get("root_listing"))
+    file_list = _as_mapping(result.get("file_list"))
     selected_file = _as_mapping(result.get("selected_file"))
     selected_preview = _as_mapping(selected_file.get("preview"))
     selected_analysis = _as_mapping(selected_file.get("analysis"))
@@ -388,6 +437,10 @@ def format_first_testing_summary(
         f"Volume strategy/status/count: {volumes.get('strategy')} / {volumes.get('status')} / {volumes.get('volume_count')}",
         f"Filesystem status: {filesystem.get('status')}",
         f"Root listing: {root_listing.get('parser_backing')} entries={root_listing.get('entry_count')}",
+        f"File list status: {file_list.get('status')}",
+        f"File list entries: {file_list.get('entry_count')}",
+        f"File list parser backing: {file_list.get('parser_backing')}",
+        f"HTML summary: {_summary_artifact_path(file_list.get('html_summary_path'), case.get('workspace'))}",
         f"Selected file request: {selected_file.get('requested')} ({selected_file.get('selection_status')})",
         f"Selected file preview status: {selected_preview.get('status')}",
         f"Selected file hash status: {selected_analysis.get('hash_status')}",
@@ -398,12 +451,12 @@ def format_first_testing_summary(
         "Artifacts:",
     ]
     for name in sorted(artifacts):
-        lines.append(f"- {name}: {artifacts[name]}")
+        lines.append(f"- {name}: {_summary_artifact_path(artifacts[name], case.get('workspace'))}")
     lines.extend(
         [
             "Source modified: false",
             "Read-only asserted: true",
-            "Deferred: file-list output, static HTML, search, and timeline.",
+            "Deferred: recursive traversal, broad crawl, search, timeline, UI/reporting system, deleted recovery, carving, and packaging.",
         ]
     )
 
@@ -744,6 +797,9 @@ def _artifact_paths(case_dir: Path, output_dir: Path) -> dict[str, Path]:
         "selected_file_preview": output_dir / "selected-file-preview.json",
         "selected_file_analysis": output_dir / "selected-file-analysis.json",
         "selected_file_export": output_dir / "selected-file-export.json",
+        "file_list_json": output_dir / "file-list.json",
+        "file_list_csv": output_dir / "file-list.csv",
+        "html_summary": output_dir / "reports" / "summary.html",
         "audit": output_dir / "audit.json",
         "unsupported_sections": output_dir / "unsupported-sections.json",
     }
@@ -752,14 +808,29 @@ def _artifact_paths(case_dir: Path, output_dir: Path) -> dict[str, Path]:
 def _unsupported_sections() -> dict[str, object]:
     rows = [
         (
-            "file_list_json_csv_output",
-            "S4.5-IMP05",
-            "File-list JSON/CSV output is not implemented in S4.5-IMP04.",
+            "recursive_nested_traversal",
+            "S4.5-IMP06",
+            "Recursive nested traversal and full-volume enumeration remain deferred after S4.5-IMP05.",
         ),
         (
-            "static_html_summary",
-            "S4.5-IMP05",
-            "Static HTML summary output is not implemented in S4.5-IMP04.",
+            "stage5_search_timeline",
+            "Stage 5",
+            "Search, timeline, indexing, filters, sort/pagination, and full-text extraction remain blocked until the Stage 4.5 runway is complete and reviewed.",
+        ),
+        (
+            "ui_reporting_system",
+            "Future",
+            "A UI/reporting system is out of scope; S4.5-IMP05 only writes a static local summary.html artifact.",
+        ),
+        (
+            "deleted_recovery_carving",
+            "Future",
+            "Deleted recovery and carving remain out of scope for the Stage 4.5 first-testing runway.",
+        ),
+        (
+            "packaging_distribution",
+            "Future",
+            "Packaging and distribution work remain deferred.",
         ),
         (
             "implementation_handoff_manual_test_reconciliation",
@@ -1171,6 +1242,194 @@ def _demo_readiness(
         "root_listing_parser_backing": parser_backing,
         "root_entry_count": entry_count,
     }
+
+
+def _file_list_artifact(
+    *,
+    case_id: str,
+    evidence_id: str,
+    selected_path: Path,
+    evidence_root: Path,
+    demo_artifacts: Mapping[str, Mapping[str, object]],
+    redact_paths: bool,
+) -> dict[str, object]:
+    root_listing = _as_mapping(demo_artifacts.get("root_listing"))
+    directory_listing = _as_mapping(root_listing.get("directory_listing"))
+    directory_status = _as_mapping(directory_listing.get("status"))
+    root_status = str(root_listing.get("status") or directory_status.get("code") or "not_available")
+    parser_backing = str(root_listing.get("parser_backing") or "unavailable")
+    raw_entries = root_listing.get("entries")
+    root_entries = raw_entries if isinstance(raw_entries, list) else []
+    available = root_status == "ok" and parser_backing == "real_parser_backed"
+    source_path = str(
+        directory_listing.get("source_path")
+        or root_listing.get("source_path")
+        or selected_path
+    )
+    normalized_entries = (
+        [
+            _normalize_file_list_entry(
+                entry,
+                case_id=case_id,
+                evidence_id=evidence_id,
+                default_source_path=source_path,
+                directory_listing=directory_listing,
+            )
+            for entry in root_entries
+            if isinstance(entry, Mapping)
+        ]
+        if available
+        else []
+    )
+    status_code = "ok" if available else root_status
+    message = (
+        f"File-list output contains {len(normalized_entries)} root entries copied from root-listing.json."
+        if available
+        else "Root listing was unavailable or not real-parser-backed; file-list output contains no entries."
+    )
+    warnings = _file_list_warnings(
+        root_listing=root_listing,
+        directory_listing=directory_listing,
+        status_code=status_code,
+        parser_backing=parser_backing,
+    )
+    adapter = _as_mapping(directory_listing.get("adapter"))
+    return {
+        "schema_version": FILE_LIST_SCHEMA_VERSION,
+        "status": {
+            "code": status_code,
+            "ok": available,
+            "message": message,
+        },
+        "case_id": case_id,
+        "evidence_id": evidence_id,
+        "source_path": source_path,
+        "redacted_source_path": (
+            _redact_evidence_root(source_path, str(evidence_root)) if redact_paths else source_path
+        ),
+        "redaction_applied_to_shared_outputs": redact_paths,
+        "directory_path": directory_listing.get("directory_path") or "/",
+        "volume_id": _first_present("volume_id", directory_listing, normalized_entries),
+        "volume_offset": _first_present("volume_offset", directory_listing, normalized_entries),
+        "volume_length": _first_present("volume_length", directory_listing, normalized_entries),
+        "filesystem_type": _first_present("filesystem_type", directory_listing, normalized_entries),
+        "adapter": {
+            "name": adapter.get("name") or _first_present("adapter_name", {}, normalized_entries),
+            "available": adapter.get("available"),
+            "dependency": _as_mapping(adapter.get("dependency")),
+        },
+        "root_listing_status": root_status,
+        "parser_backing": parser_backing,
+        "entry_count": len(normalized_entries),
+        "entries": normalized_entries,
+        "warnings": warnings,
+        "read_only_asserted": True,
+        "source_modified": False,
+    }
+
+
+def _normalize_file_list_entry(
+    entry: Mapping[str, object],
+    *,
+    case_id: str,
+    evidence_id: str,
+    default_source_path: str,
+    directory_listing: Mapping[str, object],
+) -> dict[str, object]:
+    timestamps = _as_mapping(entry.get("timestamps"))
+    status = _as_mapping(entry.get("status"))
+    warnings = [
+        dict(warning)
+        for warning in entry.get("warnings", [])
+        if isinstance(warning, Mapping)
+    ] if isinstance(entry.get("warnings"), list) else []
+    return {
+        "case_id": case_id,
+        "evidence_id": evidence_id,
+        "source_path": str(entry.get("source_path") or directory_listing.get("source_path") or default_source_path),
+        "volume_id": entry.get("volume_id") or directory_listing.get("volume_id"),
+        "volume_offset": entry.get("volume_offset") or directory_listing.get("volume_offset"),
+        "volume_length": entry.get("volume_length") or directory_listing.get("volume_length"),
+        "filesystem_type": entry.get("filesystem_type") or directory_listing.get("filesystem_type"),
+        "adapter_name": entry.get("adapter_name") or _as_mapping(directory_listing.get("adapter")).get("name"),
+        "file_id": entry.get("file_id"),
+        "path": entry.get("path"),
+        "name": entry.get("name"),
+        "entry_type": entry.get("entry_type"),
+        "size": entry.get("size"),
+        "allocated": entry.get("allocated"),
+        "deleted": entry.get("deleted"),
+        "read_only": entry.get("read_only"),
+        "timestamps": {
+            "created": timestamps.get("created"),
+            "modified": timestamps.get("modified"),
+            "accessed": timestamps.get("accessed"),
+            "metadata_changed": timestamps.get("metadata_changed"),
+        },
+        "status": dict(status) if status else _entry_default_status(entry),
+        "warning_codes": _warning_codes(warnings),
+        "warnings": warnings,
+    }
+
+
+def _entry_default_status(entry: Mapping[str, object]) -> dict[str, object]:
+    if entry.get("allocated") is False or entry.get("deleted") is True:
+        return {
+            "code": "metadata_only",
+            "ok": True,
+            "message": "Entry is represented as root-listing metadata only.",
+        }
+    return {
+        "code": "ok",
+        "ok": True,
+        "message": "Entry was copied from the current root listing.",
+    }
+
+
+def _file_list_warnings(
+    *,
+    root_listing: Mapping[str, object],
+    directory_listing: Mapping[str, object],
+    status_code: str,
+    parser_backing: str,
+) -> list[dict[str, object]]:
+    warnings = [
+        dict(warning)
+        for warning in directory_listing.get("warnings", [])
+        if isinstance(warning, Mapping)
+    ] if isinstance(directory_listing.get("warnings"), list) else []
+    if status_code != "ok":
+        warnings.append(
+            {
+                "source": "first_testing_file_list",
+                "code": "root_listing_unavailable",
+                "message": "File-list output contains zero entries because root-listing.json was not available as an ok result.",
+                "root_listing_status": root_listing.get("status"),
+            }
+        )
+    if parser_backing != "real_parser_backed":
+        warnings.append(
+            {
+                "source": "first_testing_file_list",
+                "code": "root_listing_not_real_parser_backed",
+                "message": "File-list output was not populated because the root listing was not real-parser-backed.",
+                "parser_backing": parser_backing,
+            }
+        )
+    return warnings
+
+
+def _first_present(
+    key: str,
+    source: Mapping[str, object],
+    entries: Sequence[Mapping[str, object]],
+) -> object:
+    if key in source and source.get(key) is not None:
+        return source.get(key)
+    for entry in entries:
+        if key in entry and entry.get(key) is not None:
+            return entry.get(key)
+    return None
 
 
 def _selection_request(
@@ -1635,6 +1894,7 @@ def _run_manifest(
     unsupported_sections: Mapping[str, object],
     metadata_artifact: Mapping[str, object],
     demo_artifacts: Mapping[str, Mapping[str, object]],
+    file_list_artifact: Mapping[str, object],
     selected_file_artifacts: Mapping[str, Mapping[str, object]],
     audit_artifact: Mapping[str, object],
     artifact_paths: Mapping[str, Path],
@@ -1649,6 +1909,8 @@ def _run_manifest(
     selected_preview = _as_mapping(selected_file_artifacts.get("preview"))
     selected_analysis = _as_mapping(selected_file_artifacts.get("analysis"))
     selected_export = _as_mapping(selected_file_artifacts.get("export"))
+    file_list_status = _as_mapping(file_list_artifact.get("status"))
+    file_list_warnings = file_list_artifact.get("warnings", [])
     sections = unsupported_sections.get("sections", [])
     warnings = intake_result.get("warnings", [])
 
@@ -1674,6 +1936,7 @@ def _run_manifest(
             "run_schema_version": FIRST_TESTING_RUN_SCHEMA_VERSION,
             "intake_schema_version": INTAKE_SCHEMA_VERSION,
             "case_store_schema_version": CASE_STORE_SCHEMA_VERSION,
+            "file_list_schema_version": FILE_LIST_SCHEMA_VERSION,
         },
         "case": {
             "case_id": case_id,
@@ -1724,6 +1987,20 @@ def _run_manifest(
         "demo_readiness": {
             **dict(demo_readiness),
             "artifact_path": str(artifact_paths["demo_readiness"]),
+        },
+        "file_list": {
+            "status": file_list_status.get("code") or file_list_artifact.get("status"),
+            "entry_count": file_list_artifact.get("entry_count"),
+            "root_listing_status": file_list_artifact.get("root_listing_status"),
+            "parser_backing": file_list_artifact.get("parser_backing"),
+            "warning_count": len(file_list_warnings) if isinstance(file_list_warnings, list) else 0,
+            "warning_codes": _warning_codes(file_list_warnings if isinstance(file_list_warnings, list) else []),
+            "json_path": str(artifact_paths["file_list_json"]),
+            "csv_path": str(artifact_paths["file_list_csv"]),
+            "html_summary_path": str(artifact_paths["html_summary"]),
+            "redaction_applied_to_shared_outputs": file_list_artifact.get(
+                "redaction_applied_to_shared_outputs"
+            ),
         },
         "selected_file": {
             "requested": bool(_as_mapping(selected_readiness.get("selection")).get("requested")),
@@ -1785,6 +2062,237 @@ def _write_json(path: Path, data: Mapping[str, object]) -> None:
     )
 
 
+def _write_file_list_csv(path: Path, file_list_artifact: Mapping[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    entries = file_list_artifact.get("entries")
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=FILE_LIST_CSV_HEADERS)
+        writer.writeheader()
+        for entry in entries if isinstance(entries, list) else []:
+            if isinstance(entry, Mapping):
+                writer.writerow(_file_list_csv_row(entry))
+
+
+def _file_list_csv_row(entry: Mapping[str, object]) -> dict[str, object]:
+    timestamps = _as_mapping(entry.get("timestamps"))
+    status = _as_mapping(entry.get("status"))
+    return {
+        "case_id": _csv_cell(entry.get("case_id")),
+        "evidence_id": _csv_cell(entry.get("evidence_id")),
+        "source_path": _csv_cell(entry.get("source_path")),
+        "volume_id": _csv_cell(entry.get("volume_id")),
+        "volume_offset": _csv_cell(entry.get("volume_offset")),
+        "volume_length": _csv_cell(entry.get("volume_length")),
+        "filesystem_type": _csv_cell(entry.get("filesystem_type")),
+        "adapter_name": _csv_cell(entry.get("adapter_name")),
+        "file_id": _csv_cell(entry.get("file_id")),
+        "path": _csv_cell(entry.get("path")),
+        "name": _csv_cell(entry.get("name")),
+        "entry_type": _csv_cell(entry.get("entry_type")),
+        "size": _csv_cell(entry.get("size")),
+        "allocated": _csv_cell(entry.get("allocated")),
+        "deleted": _csv_cell(entry.get("deleted")),
+        "created": _csv_cell(timestamps.get("created")),
+        "modified": _csv_cell(timestamps.get("modified")),
+        "accessed": _csv_cell(timestamps.get("accessed")),
+        "metadata_changed": _csv_cell(timestamps.get("metadata_changed")),
+        "status_code": _csv_cell(status.get("code")),
+        "status_ok": _csv_cell(status.get("ok")),
+        "status_message": _csv_cell(status.get("message")),
+        "warning_codes": _csv_cell(";".join(_warning_codes(entry.get("warnings", [])))),
+    }
+
+
+def _csv_cell(value: object) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        text = "true" if value else "false"
+    else:
+        text = str(value)
+    if text.startswith(("=", "+", "-", "@")):
+        return f"'{text}"
+    return text
+
+
+def _write_html_summary(
+    path: Path,
+    *,
+    manifest: Mapping[str, object],
+    file_list_artifact: Mapping[str, object],
+    unsupported_sections: Mapping[str, object],
+    redact_paths: bool,
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    command = _as_mapping(manifest.get("command"))
+    evidence_root = str(command.get("evidence_root") or "")
+    body = _html_summary_body(
+        manifest=manifest,
+        file_list_artifact=file_list_artifact,
+        unsupported_sections=unsupported_sections,
+        case_root=_optional_str(_as_mapping(manifest.get("case")).get("workspace")),
+    )
+    if redact_paths:
+        body = _redact_evidence_root(body, evidence_root)
+    path.write_text(body, encoding="utf-8")
+
+
+def _html_summary_body(
+    *,
+    manifest: Mapping[str, object],
+    file_list_artifact: Mapping[str, object],
+    unsupported_sections: Mapping[str, object],
+    case_root: str | None,
+) -> str:
+    case = _as_mapping(manifest.get("case"))
+    evidence = _as_mapping(manifest.get("evidence"))
+    adapter = _as_mapping(manifest.get("adapter"))
+    file_list = _as_mapping(manifest.get("file_list"))
+    selected_file = _as_mapping(manifest.get("selected_file"))
+    artifact_paths = _as_mapping(manifest.get("artifact_paths"))
+    unsupported = unsupported_sections.get("sections", [])
+    rows = [
+        ("Run status", manifest.get("status")),
+        ("Case", case.get("name")),
+        ("Intake status", evidence.get("intake_status")),
+        ("Segment count", evidence.get("segment_count")),
+        ("Adapter", adapter.get("name")),
+        ("EWF stream", _as_mapping(manifest.get("ewf_stream")).get("status")),
+        ("Volumes", _as_mapping(manifest.get("volumes")).get("volume_count")),
+        ("Filesystem", _as_mapping(manifest.get("filesystem")).get("status")),
+        ("Root listing", _root_listing_html_value(manifest)),
+        ("File-list status", file_list.get("status")),
+        ("File-list entries", file_list.get("entry_count")),
+        ("File-list parser backing", file_list.get("parser_backing")),
+        ("Selected-file operations", selected_file.get("selection_status")),
+        ("Source modified", manifest.get("source_modified")),
+        ("Read-only asserted", manifest.get("read_only_asserted")),
+    ]
+    artifact_rows = [
+        (name, _summary_artifact_path(value, case_root))
+        for name, value in sorted(artifact_paths.items())
+    ]
+    warning_rows = [
+        (_as_mapping(warning).get("code"), _as_mapping(warning).get("message"))
+        for warning in file_list_artifact.get("warnings", [])
+        if isinstance(warning, Mapping)
+    ]
+    unsupported_rows = [
+        (_as_mapping(section).get("section"), _as_mapping(section).get("owner"))
+        for section in unsupported
+        if isinstance(section, Mapping)
+    ] if isinstance(unsupported, list) else []
+    return "\n".join(
+        [
+            "<!doctype html>",
+            '<html lang="en">',
+            "<head>",
+            '<meta charset="utf-8">',
+            "<title>Stage 4.5 First-Testing Summary</title>",
+            "<style>",
+            "body{font-family:Arial,sans-serif;margin:2rem;line-height:1.4;color:#202124;background:#fff}",
+            "h1,h2{margin:0 0 .75rem}",
+            "section{margin:1.5rem 0}",
+            "table{border-collapse:collapse;width:100%;max-width:1100px}",
+            "th,td{border:1px solid #d7dce2;padding:.45rem;text-align:left;vertical-align:top}",
+            "th{background:#eef2f6}",
+            ".note{color:#4d5662}",
+            "</style>",
+            "</head>",
+            "<body>",
+            "<h1>Stage 4.5 First-Testing Summary</h1>",
+            '<p class="note">Static local artifact. It contains statuses, counts, and artifact paths only; no evidence file content is embedded.</p>',
+            "<section><h2>Run</h2>",
+            _html_table(("Field", "Value"), rows),
+            "</section>",
+            "<section><h2>Root File List</h2>",
+            _html_table(
+                ("Field", "Value"),
+                [
+                    ("Schema", file_list_artifact.get("schema_version")),
+                    ("Status", _as_mapping(file_list_artifact.get("status")).get("code")),
+                    ("Entries", file_list_artifact.get("entry_count")),
+                    ("Entry types", _entry_type_counts(file_list_artifact)),
+                    ("Warning codes", ", ".join(_warning_codes(file_list_artifact.get("warnings", [])))),
+                    ("JSON", _summary_artifact_path(file_list.get("json_path"), case_root)),
+                    ("CSV", _summary_artifact_path(file_list.get("csv_path"), case_root)),
+                ],
+            ),
+            "</section>",
+            "<section><h2>Artifact Inventory</h2>",
+            _html_table(("Artifact", "Path"), artifact_rows),
+            "</section>",
+            "<section><h2>Warnings</h2>",
+            _html_table(("Code", "Message"), warning_rows or [("none", "")]),
+            "</section>",
+            "<section><h2>Unsupported And Deferred</h2>",
+            _html_table(("Section", "Owner"), unsupported_rows or [("none", "")]),
+            "</section>",
+            "</body>",
+            "</html>",
+            "",
+        ]
+    )
+
+
+def _html_table(headers: Sequence[str], rows: Sequence[tuple[object, object]]) -> str:
+    header_html = "".join(f"<th>{html.escape(str(header), quote=True)}</th>" for header in headers)
+    row_html = []
+    for first, second in rows:
+        row_html.append(
+            "<tr>"
+            f"<td>{html.escape(_html_value(first), quote=True)}</td>"
+            f"<td>{html.escape(_html_value(second), quote=True)}</td>"
+            "</tr>"
+        )
+    return f"<table><thead><tr>{header_html}</tr></thead><tbody>{''.join(row_html)}</tbody></table>"
+
+
+def _html_value(value: object) -> str:
+    return "" if value is None else str(value)
+
+
+def _root_listing_html_value(manifest: Mapping[str, object]) -> str:
+    root_listing = _as_mapping(manifest.get("root_listing"))
+    return f"{root_listing.get('parser_backing')} entries={root_listing.get('entry_count')}"
+
+
+def _entry_type_counts(file_list_artifact: Mapping[str, object]) -> str:
+    counts: dict[str, int] = {}
+    entries = file_list_artifact.get("entries")
+    for entry in entries if isinstance(entries, list) else []:
+        if isinstance(entry, Mapping):
+            entry_type = str(entry.get("entry_type") or "unknown")
+            counts[entry_type] = counts.get(entry_type, 0) + 1
+    if not counts:
+        return "none"
+    return ", ".join(f"{key}: {counts[key]}" for key in sorted(counts))
+
+
+def _warning_codes(warnings: object) -> list[str]:
+    if not isinstance(warnings, list):
+        return []
+    codes = []
+    for warning in warnings:
+        if isinstance(warning, Mapping) and warning.get("code") is not None:
+            codes.append(str(warning.get("code")))
+    return codes
+
+
+def _summary_artifact_path(value: object, case_root: object) -> str:
+    if value is None:
+        return ""
+    path_text = str(value)
+    if not case_root:
+        return path_text
+    try:
+        path = Path(path_text).resolve(strict=False)
+        root = Path(str(case_root)).resolve(strict=False)
+        return str(path.relative_to(root))
+    except (OSError, ValueError):
+        return path_text
+
+
 def _path_contains(parent: Path, child: Path) -> bool:
     try:
         child.relative_to(parent)
@@ -1806,8 +2314,17 @@ def _as_mapping(value: object) -> Mapping[str, Any]:
 def _redact_evidence_root(text: str, evidence_root: str) -> str:
     if not evidence_root:
         return text
-    redacted = text.replace(evidence_root, "<EVIDENCE_ROOT>")
-    return redacted.replace(evidence_root.replace("/", "\\"), "<EVIDENCE_ROOT>")
+    variants = {
+        evidence_root,
+        evidence_root.replace("/", "\\"),
+        html.escape(evidence_root, quote=True),
+        html.escape(evidence_root.replace("/", "\\"), quote=True),
+    }
+    redacted = text
+    for variant in sorted(variants, key=len, reverse=True):
+        if variant:
+            redacted = redacted.replace(variant, "<EVIDENCE_ROOT>")
+    return redacted
 
 
 def _utc_now() -> str:

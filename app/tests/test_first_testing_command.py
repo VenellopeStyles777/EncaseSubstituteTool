@@ -1,12 +1,14 @@
 """Tests for the Stage 4.5 first-testing command shell."""
 
 from contextlib import contextmanager
+import csv
 import json
 from pathlib import Path
 import shutil
 
 from app.backend.api import first_testing as first_testing_api
 from app.backend.api.first_testing import (
+    FILE_LIST_CSV_HEADERS,
     FIRST_TESTING_RUN_SCHEMA_VERSION,
     main,
     run_first_testing,
@@ -187,6 +189,9 @@ def _required_artifacts(case_dir: Path, output_dir: Path) -> list[Path]:
         output_dir / "selected-file-preview.json",
         output_dir / "selected-file-analysis.json",
         output_dir / "selected-file-export.json",
+        output_dir / "file-list.json",
+        output_dir / "file-list.csv",
+        output_dir / "reports" / "summary.html",
         output_dir / "audit.json",
         output_dir / "unsupported-sections.json",
     ]
@@ -274,9 +279,121 @@ def _fake_selected_file_demo_artifacts(*, selected_path, intake_result, adapter_
     }
 
 
+def _fake_file_list_demo_artifacts(*, selected_path, intake_result, adapter_name):
+    entries = [
+        {
+            "file_id": "volume-0:99",
+            "path": "/=SUM(A1:A2).txt",
+            "name": '=SUM(A1:A2), "quoted"\nline.txt',
+            "entry_type": "file",
+            "size": 123,
+            "allocated": True,
+            "deleted": False,
+            "source_path": str(selected_path),
+            "volume_id": "volume-0",
+            "volume_offset": 512,
+            "volume_length": 4096,
+            "filesystem_type": "ntfs",
+            "adapter_name": "pytsk3-filesystem-adapter",
+            "read_only": True,
+            "status": {"code": "ok", "ok": True, "message": "entry ok"},
+            "warnings": [
+                {
+                    "source": "filesystem_adapter",
+                    "code": "entry_warning",
+                    "message": "fake warning",
+                    "path": "/=SUM(A1:A2).txt",
+                }
+            ],
+            "timestamps": {
+                "created": "2026-01-01T00:00:00Z",
+                "modified": "2026-01-02T00:00:00Z",
+                "accessed": None,
+                "metadata_changed": "2026-01-03T00:00:00Z",
+            },
+        },
+        {
+            "file_id": "volume-0:100",
+            "path": "/Documents",
+            "name": "Documents",
+            "entry_type": "directory",
+            "size": None,
+            "allocated": True,
+            "deleted": False,
+            "source_path": str(selected_path),
+            "volume_id": "volume-0",
+            "volume_offset": 512,
+            "volume_length": 4096,
+            "filesystem_type": "ntfs",
+            "adapter_name": "pytsk3-filesystem-adapter",
+            "read_only": True,
+            "status": {"code": "ok", "ok": True, "message": "entry ok"},
+            "warnings": [],
+            "timestamps": {
+                "created": None,
+                "modified": None,
+                "accessed": None,
+                "metadata_changed": None,
+            },
+        },
+    ]
+    directory_listing = {
+        "schema_version": "stage2.directory_listing.v1",
+        "status": {"code": "ok", "ok": True, "message": "Directory listing completed."},
+        "directory_path": "/",
+        "source_path": str(selected_path),
+        "volume_id": "volume-0",
+        "volume_offset": 512,
+        "volume_length": 4096,
+        "filesystem_type": "ntfs",
+        "adapter": {
+            "name": "pytsk3-filesystem-adapter",
+            "available": True,
+            "dependency": {"name": "pytsk3", "available": True},
+        },
+        "read_only": True,
+        "entry_count": 2,
+        "entries": entries,
+        "warnings": [],
+    }
+    return {
+        "ewf_stream": {
+            "schema_version": "stage4_5.first_testing_ewf_stream.v1",
+            "status": "ok",
+            "logical_media_size": 8192,
+        },
+        "volumes": {
+            "schema_version": "stage4_5.first_testing_volumes.v1",
+            "status": "ok",
+            "strategy": "partition_table",
+            "volume_count": 1,
+        },
+        "filesystems": {
+            "schema_version": "stage4_5.first_testing_filesystems.v1",
+            "status": "ok",
+            "filesystem_count": 1,
+            "filesystems": [],
+        },
+        "root_listing": {
+            "schema_version": "stage4_5.first_testing_root_listing.v1",
+            "status": "ok",
+            "parser_backing": "real_parser_backed",
+            "entry_count": 2,
+            "directory_listing": directory_listing,
+            "entries": entries,
+        },
+        "demo_readiness": {
+            "schema_version": "stage4_5.first_testing_demo_readiness.v1",
+            "status": "real_parser_backed_root_listing_available",
+            "root_entry_count": 2,
+            "root_listing_parser_backing": "real_parser_backed",
+        },
+    }
+
+
 def test_direct_e01_with_stub_creates_case_artifacts_and_persistence():
     with _dummy_first_testing_directory("direct-stub") as directory:
-        evidence_dir = directory / "evidence"
+        evidence_dir = directory / "evidence & root"
         _touch_files(evidence_dir, "sample.E01", "sample.E02")
         case_dir = directory / "case"
         output_dir = directory / "output"
@@ -304,6 +421,9 @@ def test_direct_e01_with_stub_creates_case_artifacts_and_persistence():
         selected_preview = json.loads(
             (output_dir / "selected-file-preview.json").read_text(encoding="utf-8")
         )
+        file_list = json.loads((output_dir / "file-list.json").read_text(encoding="utf-8"))
+        csv_header = (output_dir / "file-list.csv").read_text(encoding="utf-8").splitlines()[0]
+        html_summary = (output_dir / "reports" / "summary.html").read_text(encoding="utf-8")
         artifact_exists = all(path.exists() for path in _required_artifacts(case_dir, output_dir))
         actions = _audit_actions(case_dir / "case.db")
         audit_actions = {event["action"] for event in audit["events"]}
@@ -318,6 +438,12 @@ def test_direct_e01_with_stub_creates_case_artifacts_and_persistence():
     assert result["selected_file"]["selection_status"] == "not_run"
     assert selected_readiness["status"]["code"] == "not_run"
     assert selected_preview["status"] == "not_run"
+    assert result["file_list"]["status"] == "not_run"
+    assert file_list["status"]["code"] == "not_run"
+    assert file_list["entry_count"] == 0
+    assert csv_header.split(",") == list(FILE_LIST_CSV_HEADERS)
+    assert "Stage 4.5 First-Testing Summary" in html_summary
+    assert "File-list status" in html_summary
     assert artifact_exists
     assert len(evidence_rows) == 1
     assert evidence_rows[0]["source_path"] == str((evidence_dir / "sample.E01").resolve())
@@ -384,6 +510,9 @@ def test_default_pyewf_dependency_unavailable_path_writes_honest_unsupported_out
         root_listing = json.loads(
             (case_dir / "outputs" / "root-listing.json").read_text(encoding="utf-8")
         )
+        file_list = json.loads(
+            (case_dir / "outputs" / "file-list.json").read_text(encoding="utf-8")
+        )
 
     assert result["status"] == "ok_with_unsupported_sections"
     assert intake["status"] == "metadata_unavailable"
@@ -395,6 +524,11 @@ def test_default_pyewf_dependency_unavailable_path_writes_honest_unsupported_out
     assert verification["status"] == "not_run"
     assert ewf_stream["status"] == "dependency_unavailable"
     assert root_listing["parser_backing"] == "dependency_blocked"
+    assert file_list["status"]["code"] == "not_available"
+    assert file_list["entry_count"] == 0
+    assert "root_listing_not_real_parser_backed" in [
+        warning["code"] for warning in file_list["warnings"]
+    ]
     assert not any(section["section"] == "real_ewf_metadata" for section in unsupported["sections"])
     assert not any(section["section"] == "real_ewf_verification" for section in unsupported["sections"])
     assert not any(section["owner"] == "S4.5-IMP03" for section in unsupported["sections"])
@@ -454,7 +588,8 @@ def test_first_testing_writes_metadata_and_verification_artifacts_with_fake_pyew
     assert not any(section["section"] == "real_ewf_metadata" for section in unsupported["sections"])
     assert not any(section["section"] == "real_ewf_verification" for section in unsupported["sections"])
     assert not any(section["owner"] == "S4.5-IMP03" for section in unsupported["sections"])
-    assert later_artifacts_exist == [False, False, False, False, False]
+    assert not any(section["owner"] == "S4.5-IMP05" for section in unsupported["sections"])
+    assert later_artifacts_exist == [True, True, False, True, True]
 
 
 def test_first_testing_manifest_can_record_real_parser_backed_root_listing(monkeypatch):
@@ -526,6 +661,73 @@ def test_first_testing_manifest_can_record_real_parser_backed_root_listing(monke
     assert demo_readiness["status"] == "real_parser_backed_root_listing_available"
 
 
+def test_first_testing_writes_file_list_csv_manifest_and_static_html(monkeypatch):
+    monkeypatch.setattr(
+        first_testing_api,
+        "_filesystem_demo_artifacts",
+        _fake_file_list_demo_artifacts,
+    )
+
+    with _dummy_first_testing_directory("file-list-output") as directory:
+        evidence_dir = directory / "evidence"
+        _touch_files(evidence_dir, "sample.E01")
+        selected_path = evidence_dir / "sample.E01"
+        case_dir = directory / "case"
+        output_dir = directory / "output"
+
+        result = run_first_testing(
+            selected_path,
+            case_path=case_dir,
+            output_path=output_dir,
+            case_name="<Case & Review>",
+            adapter_name="stub",
+            redact_paths=True,
+        )
+        file_list = json.loads((output_dir / "file-list.json").read_text(encoding="utf-8"))
+        manifest = json.loads((case_dir / "run-manifest.json").read_text(encoding="utf-8"))
+        summary = (case_dir / "command-summary.txt").read_text(encoding="utf-8")
+        html_summary = (output_dir / "reports" / "summary.html").read_text(encoding="utf-8")
+        with (output_dir / "file-list.csv").open("r", encoding="utf-8", newline="") as handle:
+            csv_rows = list(csv.reader(handle))
+        unsupported = json.loads(
+            (output_dir / "unsupported-sections.json").read_text(encoding="utf-8")
+        )
+
+    assert result["file_list"]["status"] == "ok"
+    assert result["file_list"]["entry_count"] == 2
+    assert file_list["schema_version"] == "stage4_5.file_list.v1"
+    assert file_list["status"]["code"] == "ok"
+    assert file_list["parser_backing"] == "real_parser_backed"
+    assert file_list["entry_count"] == 2
+    assert file_list["source_path"] == str(selected_path.resolve())
+    assert file_list["redacted_source_path"].startswith("<EVIDENCE_ROOT>")
+    assert file_list["entries"][0]["case_id"] == result["case"]["case_id"]
+    assert file_list["entries"][0]["evidence_id"] == result["evidence"]["evidence_id"]
+    assert file_list["entries"][0]["warning_codes"] == ["entry_warning"]
+    assert csv_rows[0] == list(FILE_LIST_CSV_HEADERS)
+    assert csv_rows[1][csv_rows[0].index("name")].startswith("'=SUM")
+    assert '"quoted"' in csv_rows[1][csv_rows[0].index("name")]
+    assert manifest["file_list"]["status"] == "ok"
+    assert manifest["file_list"]["entry_count"] == 2
+    assert manifest["file_list"]["json_path"].endswith("file-list.json")
+    assert manifest["file_list"]["csv_path"].endswith("file-list.csv")
+    assert manifest["file_list"]["html_summary_path"].endswith("summary.html")
+    assert "File list status: ok" in summary
+    assert "File list entries: 2" in summary
+    assert "summary.html" in summary
+    assert str(evidence_dir.resolve()) not in summary
+    assert "&lt;Case &amp; Review&gt;" in html_summary
+    assert "File-list status" in html_summary
+    assert "directory: 1, file: 1" in html_summary
+    assert str(evidence_dir.resolve()) not in html_summary
+    assert "<script" not in html_summary.lower()
+    assert "http://" not in html_summary.lower()
+    assert "https://" not in html_summary.lower()
+    assert not any(section["owner"] == "S4.5-IMP05" for section in unsupported["sections"])
+    assert not (output_dir / "search-index.json").exists()
+    assert not (output_dir / "timeline.json").exists()
+
+
 def test_first_testing_selected_file_artifacts_use_explicit_selection(monkeypatch):
     monkeypatch.setattr(
         first_testing_api,
@@ -590,7 +792,8 @@ def test_first_testing_selected_file_artifacts_use_explicit_selection(monkeypatc
     assert export["status"] == "ok"
     assert export["export"]["content_source"]["source_kind"] == "real_parser"
     assert exported_bytes == SELECTED_BYTES
-    assert later_artifacts_exist == [False, False, False]
+    assert result["file_list"]["entry_count"] == 1
+    assert later_artifacts_exist == [True, True, True]
 
 
 def test_e02_primary_input_is_rejected_before_artifact_writes():
@@ -697,7 +900,7 @@ def test_default_pyewf_cli_dependency_unavailable_still_writes_artifacts(monkeyp
 
 def test_redact_paths_redacts_console_and_summary_but_not_local_json(capsys):
     with _dummy_first_testing_directory("redact-paths") as directory:
-        evidence_dir = directory / "evidence"
+        evidence_dir = directory / "evidence & root"
         _touch_files(evidence_dir, "sample.E01")
         selected_path = evidence_dir / "sample.E01"
         case_dir = directory / "case"
@@ -715,19 +918,28 @@ def test_redact_paths_redacts_console_and_summary_but_not_local_json(capsys):
 
         console = capsys.readouterr().out
         summary = (case_dir / "command-summary.txt").read_text(encoding="utf-8")
+        html_summary = (case_dir / "outputs" / "reports" / "summary.html").read_text(
+            encoding="utf-8"
+        )
         intake = json.loads((case_dir / "outputs" / "intake.json").read_text(encoding="utf-8"))
+        file_list = json.loads(
+            (case_dir / "outputs" / "file-list.json").read_text(encoding="utf-8")
+        )
 
     assert exit_code == 0
     assert "<EVIDENCE_ROOT>" in console
     assert "<EVIDENCE_ROOT>" in summary
     assert str(evidence_dir.resolve()) not in console
     assert str(evidence_dir.resolve()) not in summary
+    assert str(evidence_dir.resolve()) not in html_summary
     assert intake["source_path"] == str(selected_path.resolve())
     assert intake["selected_path"] == str(selected_path.resolve())
+    assert file_list["source_path"] == str(selected_path.resolve())
+    assert file_list["redacted_source_path"].startswith("<EVIDENCE_ROOT>")
 
 
-def test_s4_5_imp01_does_not_create_later_slice_artifacts():
-    with _dummy_first_testing_directory("no-later-artifacts") as directory:
+def test_first_testing_does_not_create_search_timeline_or_report_system_artifacts():
+    with _dummy_first_testing_directory("no-search-timeline-artifacts") as directory:
         evidence_dir = directory / "evidence"
         _touch_files(evidence_dir, "sample.E01")
         case_dir = directory / "case"
@@ -739,13 +951,21 @@ def test_s4_5_imp01_does_not_create_later_slice_artifacts():
             output_path=output_dir,
             adapter_name="stub",
         )
-        later_artifacts_exist = [
-            (output_dir / "file-list.json").exists(),
-            (output_dir / "file-list.csv").exists(),
+        file_list_json_exists = (output_dir / "file-list.json").exists()
+        file_list_csv_exists = (output_dir / "file-list.csv").exists()
+        html_artifacts = [path.name for path in output_dir.rglob("*.html")]
+        forbidden_artifacts_exist = [
             (output_dir / "exports").exists(),
-            (output_dir / "reports").exists(),
             (case_dir / "reports").exists(),
-            any(output_dir.rglob("*.html")),
+            (output_dir / "search-index.json").exists(),
+            (output_dir / "search-results.json").exists(),
+            (output_dir / "timeline.json").exists(),
+            (output_dir / "timeline-events.json").exists(),
+            (output_dir / "reports" / "search.html").exists(),
+            (output_dir / "reports" / "timeline.html").exists(),
         ]
 
-    assert later_artifacts_exist == [False, False, False, False, False, False]
+    assert file_list_json_exists
+    assert file_list_csv_exists
+    assert html_artifacts == ["summary.html"]
+    assert forbidden_artifacts_exist == [False, False, False, False, False, False, False, False]

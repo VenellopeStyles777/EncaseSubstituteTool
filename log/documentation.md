@@ -2,6 +2,35 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-17 - S4.5-IMP05 Review Acceptance
+
+- Marked `tickets/stage-4.5/S4.5-IMP05-file-list-output-visual-summary.md` as `Done` after reviewer acceptance.
+- Recorded reviewer verification: focused portable-runtime tests reported 13 passed in 24.49s, and the full portable-runtime test suite reported 184 passed in 29.26s.
+- Recorded reviewer real-image no-selection smoke: exit 0, `ok_with_unsupported_sections`, 53 segments, root listing and file-list output both at 11 entries, static HTML created, selected-file operations `not_run`, and read-only/source-modified assertions intact.
+- Confirmed CSV header order, no S4.5-IMP05 output entries left in unsupported sections, no raw evidence root in shared summary/HTML, no script/network references in HTML, and no search/timeline/PDF artifacts.
+- Hardened HTML redaction for escaped evidence-root strings and expanded the redaction test with an evidence path containing `&`.
+- Updated active Stage 4.5, Stage 5, README, goal, plan, functionality, prompt, progression, review, backend/core, and manual-testing docs so S4.5-IMP05 is reviewed and done while S4.5-IMP06 and S4.5-IMP07 remain incomplete.
+
+## 2026-07-17 - S4.5-IMP05 File List Output Implementation
+
+- Marked `tickets/stage-4.5/S4.5-IMP05-file-list-output-visual-summary.md` as `Review`.
+- Added first-testing file-list behavior documentation for `file-list.json`, `file-list.csv`, stronger manifest/command-summary artifact inventory, and static local `outputs/reports/summary.html`.
+- Updated Stage 4.5, Stage 5, README, goal, plan, functionality, backend/API/core, manual-testing, prompt, progression, review, and ticket indexes so S4.5-IMP05 is in review while S4.5-IMP06 and S4.5-IMP07 remain incomplete and Stage 5 stays blocked.
+- Recorded that S4.5-IMP05 copies/normalizes only the current root listing; recursive traversal, broad crawl, search/timeline indexing, dynamic UI, report system, deleted recovery, carving, packaging, and arbitrary auto-selection/export remain out of scope.
+- Recorded that shared `command-summary.txt` and `summary.html` honor `--redact-paths`; local JSON remains examiner-owned and can preserve source paths.
+- Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_first_testing_command.py` reported 13 passed in 22.53s.
+- Full-suite verification: `.\.python312-embed\python.exe -m pytest` reported 184 passed in 27.70s.
+- Optional real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, EWF stream `ok`, partition-table status `ok` with 5 volumes, filesystem status `ok`, root listing `ok` / `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, HTML summary created, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+
+## 2026-07-17 - S4.5-IMP05 Ready Ticket
+
+- Expanded `tickets/stage-4.5/S4.5-IMP05-file-list-output-visual-summary.md` from a draft into a ready implementation ticket.
+- Rewrote `prompts/vscode-agent/2026-07-16-s4.5-imp05-file-list-output-visual-summary.md` to match the ready scope.
+- Defined the file-list boundary: use the currently available root listing for JSON/CSV output and do not add recursive traversal, broad crawl, search/timeline indexing, UI, report system, deleted recovery, carving, or packaging.
+- Required `file-list.json`, `file-list.csv`, manifest/summary updates, artifact inventory, and static escaped `outputs/reports/summary.html`.
+- Required dependency-free tests for file-list JSON provenance, CSV header/escaping, unavailable-parser honesty, manifest/summary inventory, HTML escaping, redaction, and no search/timeline/index artifacts.
+- Updated Stage 4.5, Stage 5, README, goal, plan, functionality, prompt, progression, and ticket indexes so S4.5-IMP05 is ready while S4.5-IMP06 and S4.5-IMP07 remain drafted and Stage 5 stays blocked.
+
 ## 2026-07-17 - S4.5-IMP04 Review Acceptance
 
 - Marked `tickets/stage-4.5/S4.5-IMP04-e01-file-content-providers.md` as `Done` after reviewer acceptance.

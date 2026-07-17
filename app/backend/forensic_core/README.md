@@ -43,7 +43,7 @@ Stage 4 contract start:
 - S4-T06 documents future case-store persistence requirements and keeps current analysis helpers non-persistent.
 - S4-T07 reconciles documentation/status only and adds no core behavior.
 - Per-file analysis content remains separate from Stage 2 preview rendering, Stage 3 export-output verification, and future whole-image verification.
-- Stage 4.5 is the first-testing stage for user-provided E01 files before search/timeline. S4.5-IMP01 is done with a command shell and case-workspace artifact bundle. S4.5-IMP02 upgrades the `pyewf` adapter to attempt best-effort metadata and explicit verification when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 is done with an EWF-backed stream, partition-table volume discovery, and real-parser-backed root listing path. S4.5-IMP04 is done with selected-file E01 content providers for explicit root-entry preview/export/hash/signature.
+- Stage 4.5 is the first-testing stage for user-provided E01 files before search/timeline. S4.5-IMP01 is done with a command shell and case-workspace artifact bundle. S4.5-IMP02 upgrades the `pyewf` adapter to attempt best-effort metadata and explicit verification when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 is done with an EWF-backed stream, partition-table volume discovery, and real-parser-backed root listing path. S4.5-IMP04 is done with selected-file E01 content providers for explicit root-entry preview/export/hash/signature. S4.5-IMP05 is done with first-testing output artifacts that normalize the current root listing into file-list JSON/CSV and a static local HTML summary; it does not change core parser behavior or add recursive traversal.
 
 ## S1-T02 Segment Discovery
 
@@ -90,7 +90,7 @@ Current behavior:
 - truncates reads that extend past EOF and emits a `read_truncated_at_eof` warning;
 - uses tiny generated files and fakes in default tests and does not require real evidence, `pyewf`, libewf, `pytsk3`, or The Sleuth Kit.
 
-S2-T02/S4.5-IMP03 stream code does not render previews, export files, or hash evidence by itself. S4.5-IMP04 adds selected-file provider wrappers for explicit parser-backed root entries only; broad crawls and file-list output remain later tickets.
+S2-T02/S4.5-IMP03 stream code does not render previews, export files, or hash evidence by itself. S4.5-IMP04 adds selected-file provider wrappers for explicit parser-backed root entries only. S4.5-IMP05 writes file-list output from the existing root-listing metadata, while broad crawls and recursive traversal remain later/out of scope.
 
 ## S4.5-IMP04 Selected-File Content Providers
 

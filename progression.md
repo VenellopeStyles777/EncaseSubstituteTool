@@ -13,6 +13,24 @@ YYYY-MM-DD
 ```
 
 2026-07-17
+- Completed: implemented S4.5-IMP05 file-list/output bundle work and marked it ready for review.
+- Learned: the current root listing is enough to generate inspectable JSON/CSV and a static local HTML summary without adding recursive traversal, broad crawl, search/timeline indexing, UI, or a report system; unavailable parser states still get honest zero-entry file-list artifacts.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP05 still needs research/review acceptance, and S4.5-IMP06 through S4.5-IMP07 still need implementation/review before the Stage 5 gate can pass.
+- Next: review S4.5-IMP05, then proceed to S4.5-IMP06 for final guardrail review, documentation reconciliation, and Stage 5 handoff preparation. Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_first_testing_command.py` reported 13 passed in 22.53s. Full-suite verification: `.\.python312-embed\python.exe -m pytest` reported 184 passed in 27.70s. Real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, EWF stream `ok`, partition-table status `ok` with 5 volumes, filesystem status `ok`, root listing `ok` / `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, HTML summary created, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+
+2026-07-17
+- Completed: reviewed and accepted S4.5-IMP05 as done after independent focused tests, full-suite tests, artifact consistency checks, and a fresh real-E01 no-selection smoke.
+- Learned: the first-testing workflow now has visible, inspectable root file-list output through JSON, CSV, and a static local HTML summary while still avoiding recursive traversal, broad crawl, auto-selection, search/timeline, and report-system scope.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP06 and S4.5-IMP07 still need implementation/review before the Stage 5 gate can pass.
+- Next: prepare S4.5-IMP06 for final guardrail review, documentation reconciliation, and Stage 5 handoff. Reviewer verification: focused portable-runtime tests reported 13 passed in 24.49s; full portable-runtime tests reported 184 passed in 29.26s; reviewer real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, root listing and file-list output both at 11 entries, static HTML created, selected-file operations `not_run`, and no search/timeline/PDF artifacts.
+
+2026-07-17
+- Completed: expanded S4.5-IMP05 into a ready implementation ticket and refreshed its VS Code coding-agent prompt for file-list JSON/CSV, artifact inventory, command summary, and static HTML summary output.
+- Learned: IMP05 should use the current root-listing result as the file-list source, not introduce recursive traversal or a Stage 5-style index; unavailable parser states still need honest zero-entry artifacts.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP05 must be implemented/reviewed, and S4.5-IMP06 through S4.5-IMP07 still need implementation/review before the Stage 5 gate can pass.
+- Next: feed S4.5-IMP05 to the existing Stage 4.5 coding-agent task and review its handoff when complete.
+
+2026-07-17
 - Completed: reviewed and accepted S4.5-IMP04 as done after independent focused tests, full-suite tests, a real-E01 no-selection smoke, and artifact checks.
 - Learned: the selected-file bridge can now prove the app can reach parser-backed bytes only when a root entry is explicitly selected; the default no-selection path is correctly non-invasive and does not export or expose evidence content.
 - Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP05 through S4.5-IMP07 still need implementation/review before the Stage 5 gate can pass.
