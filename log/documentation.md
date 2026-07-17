@@ -2,6 +2,43 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-17 - S4.5-IMP02 And S4.5-IMP02A Review Acceptance
+
+- Marked `tickets/stage-4.5/S4.5-IMP02-real-ewf-metadata-verification.md` and `tickets/stage-4.5/S4.5-IMP02A-metadata-warning-semantics.md` as `Done`.
+- Updated active Stage 4.5, Stage 5, goal, README, plan, functionality, prompt, progression, and review status docs so S4.5-IMP03 is the next practical implementation ticket.
+- Confirmed S4.5-IMP03 through S4.5-IMP07 remain drafted/incomplete and Stage 5 search/timeline remains blocked.
+- Review verification: focused Stage 4.5 tests reported 25 passed in 7.35s; full suite reported 167 passed in 9.77s; `git diff --check` passed with only line-ending notices.
+
+## 2026-07-17 - S4.5-IMP02A Metadata Warning Semantics Implementation
+
+- Marked `tickets/stage-4.5/S4.5-IMP02A-metadata-warning-semantics.md` as `Review`.
+- Updated `PyewfEwfReaderAdapter` metadata warning construction so `metadata_partial` is emitted only when actual metadata fields are unavailable or fail to read.
+- Preserved `stored_hash_not_verified` as a separate stored-hash metadata warning and kept verification warnings separate from metadata-partial semantics.
+- Added dependency-free fake-`pyewf` regression assertions for complete metadata plus stored hashes and for stored-hash metadata without verification success.
+- Updated Stage 4.5, Stage 5, ticket, prompt, plan, functionality, README, progression, and review status docs so S4.5-IMP02A is in review and S4.5-IMP03 through S4.5-IMP07 remain drafted/incomplete.
+- Confirmed no real evidence fixture, native dependency installation, EWF stream, partition/filesystem parsing, E01-backed content provider, file-list/static HTML output, search/timeline, UI, report, deleted recovery, carving, packaging, commit, or push was part of this correction.
+- Focused verification: `python -m pytest app\tests\test_ewf_reader_adapter.py app\tests\test_intake_command.py app\tests\test_first_testing_command.py` reported 25 passed in 11.04s.
+- Full-suite verification: `python -m pytest` reported 167 passed in 14.52s.
+
+## 2026-07-17 - S4.5-IMP02A Review Correction Ticket
+
+- Added `tickets/stage-4.5/S4.5-IMP02A-metadata-warning-semantics.md` and `prompts/vscode-agent/2026-07-17-s4.5-imp02a-metadata-warning-semantics.md`.
+- Recorded the S4.5-IMP02 review finding that `metadata_partial` can be emitted solely because stored hash metadata is labeled `stored_hash_not_verified`.
+- Updated Stage 4.5 and prompt indexes so S4.5-IMP02A is the next practical ticket before S4.5-IMP03.
+- Local review verification: focused Stage 4.5 tests passed, full suite passed, and optional real-image smoke remained dependency-unavailable but honest with 53 discovered segments.
+
+## 2026-07-17 - S4.5-IMP02 Real EWF Metadata And Verification Implementation
+
+- Marked `tickets/stage-4.5/S4.5-IMP02-real-ewf-metadata-verification.md` as `Review`.
+- Updated `PyewfEwfReaderAdapter` to attempt best-effort `pyewf` metadata and explicit verification when the optional dependency is importable.
+- Preserved missing-dependency behavior and dependency-free default tests.
+- Added first-testing metadata, verification, and segment-discovery artifacts.
+- Updated Stage 4.5, Stage 5, backend/API, manual-testing, feature inventory, README, goal, prompt, progression, review, and documentation logs so S4.5-IMP02 is in review and S4.5-IMP03 through S4.5-IMP07 remain drafted/incomplete.
+- Preserved the real-E01 limitation: S4.5-IMP02 does not add EWF-backed streams, partition/filesystem parsing, E01-backed content extraction, file-list output, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, or required native dependencies.
+- Focused verification: `python -m pytest app\tests\test_ewf_reader_adapter.py app\tests\test_intake_command.py app\tests\test_first_testing_command.py` reported 25 passed in 14.62s.
+- Full-suite verification: `python -m pytest` reported 167 passed in 17.24s.
+- Optional real-image smoke used ` Test Image/C16242-1-RL1-E003.E01` and wrote output only under `.test-artifacts/first-testing/review-s4-5-imp02-real-image`; result was `ok_with_unsupported_sections`, 53 segments, `metadata_unavailable`, verification `not_run`, pyewf unavailable, 6 unsupported-section rows, `source_modified: false`, and `read_only_asserted: true`.
+
 ## 2026-07-16 - S4.5-IMP07 Testing Guide Ticket Addition
 
 - Added `tickets/stage-4.5/S4.5-IMP07-command-line-testing-guide.md` as the command-line testing guide and evidence workflow instruction ticket.

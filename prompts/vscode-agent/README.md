@@ -13,10 +13,10 @@ Current handoff:
 
 - S3-T01 through S3-T06 are reviewed and done.
 - S4-T01 through S4-T07 are reviewed and done.
-- Stage 4.5 planning prompts S4.5-T01 through S4.5-T08 are present; S4.5-IMP01 has been implemented, reviewed, and marked done. S4.5-IMP02 is ready, and S4.5-IMP03 through S4.5-IMP07 are drafted.
+- Stage 4.5 planning prompts S4.5-T01 through S4.5-T08 are present; S4.5-IMP01, S4.5-IMP02, and S4.5-IMP02A have been implemented, reviewed, and marked done. S4.5-IMP03 through S4.5-IMP07 remain drafted.
 - `2026-07-15-stage-4.5-first-testing-familiarization.md` is the added Stage 4.5 coding-agent onboarding prompt.
 - `2026-07-15-s5-t00-documentation-organization-cleanup.md` is the Stage 5 S5-T00 documentation cleanup prompt; S5-T00 is done.
-- S5-T01 is done with a failed-gate/blocker result because the Stage 4.5 runway is incomplete; S4.5-IMP01 is now done, while S4.5-IMP02 through S4.5-IMP07 remain incomplete.
+- S5-T01 is done with a failed-gate/blocker result because the Stage 4.5 runway is incomplete; S4.5-IMP01, S4.5-IMP02, and S4.5-IMP02A are done, and S4.5-IMP03 through S4.5-IMP07 remain incomplete.
 - S5-T01A is done after documentation hardening. Do not feed S5-T02 or later until the Stage 4.5 substantial-test runway is completed and reviewed.
 - Keep this coding-agent handoff separate from the Stage 4 research/review-agent packet in `prompts/stage-4-onboarding/`.
 - The coding-agent reflection may focus on implementation mechanics; the review-agent reflection focuses on review risk, forensic soundness, and future-stage guardrails.
@@ -38,6 +38,7 @@ Current major onboarding prompts:
 - `2026-07-15-s4.5-t08-documentation-review-handoff.md`: Stage 4.5 S4.5-T08 documentation-only handoff prompt.
 - `2026-07-16-s4.5-imp01-first-testing-command-shell.md`: Stage 4.5 S4.5-IMP01 first-testing command shell implementation prompt.
 - `2026-07-16-s4.5-imp02-real-ewf-metadata-verification.md`: Stage 4.5 S4.5-IMP02 real EWF metadata and verification implementation prompt.
+- `2026-07-17-s4.5-imp02a-metadata-warning-semantics.md`: Stage 4.5 S4.5-IMP02A metadata warning semantics correction prompt.
 - `2026-07-16-s4.5-imp03-ewf-stream-partition-filesystem.md`: Stage 4.5 S4.5-IMP03 EWF stream, partition, and filesystem implementation prompt.
 - `2026-07-16-s4.5-imp04-e01-file-content-providers.md`: Stage 4.5 S4.5-IMP04 E01-backed selected-file content providers prompt.
 - `2026-07-16-s4.5-imp05-file-list-output-visual-summary.md`: Stage 4.5 S4.5-IMP05 file-list, output bundle, and visual summary prompt.

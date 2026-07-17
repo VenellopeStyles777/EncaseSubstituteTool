@@ -11,7 +11,7 @@ Suggested first planning format:
 | 2 | Add volume/filesystem browsing MVP | Done | S2-T01 through S2-T07 complete. Stage 2 is a backend fixture/stub browsing foundation, not real EWF/partition/filesystem parsing. |
 | 3 | Add export/recovery foundation | Done | S3-T01 through S3-T06 complete. Stage 3 is a backend fixture/stub export foundation, not real extraction or recovery. |
 | 4 | Add hashing and signature checks | Done | S4-T01 through S4-T07 are reviewed/done. Stage 4 remains provider-backed and does not prove real filesystem extraction. |
-| 4.5 | First testing with user-provided E01 files | In Progress | Planning package S4.5-T00 through S4.5-T08 is in review. S4.5-IMP01 is done, S4.5-IMP02 is ready, and S4.5-IMP03 through S4.5-IMP07 are drafted to preserve the full real-evidence visual first-testing runway and testing guide before Stage 5 search/timeline implementation. |
+| 4.5 | First testing with user-provided E01 files | In Progress | Planning package S4.5-T00 through S4.5-T08 is in review. S4.5-IMP01, S4.5-IMP02, and S4.5-IMP02A are done, and S4.5-IMP03 through S4.5-IMP07 remain drafted to preserve the full real-evidence visual first-testing runway and testing guide before Stage 5 search/timeline implementation. |
 | 5 | Add search and timeline foundations | Deferred | Detailed tickets S5-T00 through S5-T16 exist under `tickets/stage-5/`; S5-T00 documentation cleanup is done, S5-T01 is done with a failed gate, and S5-T01A is done. |
 
 ## Completed Foundation Stages
@@ -29,8 +29,8 @@ Current real-E01 truth:
 
 - The project can discover `.E01/.E02/...` segment filenames.
 - The S4.5-IMP01 first-testing command shell can create a case workspace, persist the existing intake snapshot, and write manifest/audit/unsupported-section artifacts.
-- The project does not yet read real EWF metadata.
-- The project does not yet verify real EWF images.
+- The project can attempt best-effort real EWF metadata through `pyewf` when available, while preserving dependency-unavailable status when it is missing.
+- The project can run only explicit safe `pyewf` verification APIs when available; stored EWF hash metadata is not treated as verification success.
 - The project does not yet parse real partitions or filesystems from E01 files.
 - The project does not yet extract real file content from E01 files.
 
@@ -43,7 +43,7 @@ Current first-testing truth:
 - The current code can run E01 filename/segment discovery against actual user-provided `.E01` paths.
 - The S4.5-IMP01 command shell can run the existing intake path through a safe case workspace and output bundle.
 - The current code can return structured adapter dependency status.
-- The current `pyewf` adapter does not yet read real EWF metadata or verify real images.
+- The current `pyewf` adapter attempts best-effort metadata and explicit verification when importable, and otherwise reports dependency-unavailable or unsupported verification states.
 - The current backend does not parse real partitions, real filesystems, or real file content from E01 files.
 - Stage 4 hash/signature behavior is provider-backed and does not yet analyze E01-extracted files.
 
@@ -63,20 +63,21 @@ Updated Stage 4.5 ticket sequence:
 Stage 4.5 implementation runway:
 
 - S4.5-IMP01 implements the first-testing command shell, case workspace, intake persistence, manifest, and unsupported-section output from S4.5-T01/T02. Status: Done.
-- S4.5-IMP02 should implement or explicitly fail real `pyewf` metadata and verification status from S4.5-T03. Status: Ready.
+- S4.5-IMP02 implements the real `pyewf` metadata attempt and verification status from S4.5-T03. Status: Done.
+- S4.5-IMP02A corrects metadata warning semantics so stored hash metadata does not imply partial metadata by itself. Status: Done.
 - S4.5-IMP03 should implement the EWF-backed stream, partition boundary, and root filesystem metadata/listing from S4.5-T04. Status: Draft.
 - S4.5-IMP04 should implement E01-backed selected-file content providers for preview/export/hash/signature from S4.5-T05. Status: Draft.
 - S4.5-IMP05 should implement file-list JSON/CSV, command summary, artifact inventory, and optional static HTML from S4.5-T06. Status: Draft.
 - S4.5-IMP06 should reconcile manual-test guardrails and review handoff from S4.5-T07/T08. Status: Draft.
 - S4.5-IMP07 should create the command-line testing guide with exact PowerShell commands, artifact inspection steps, troubleshooting, and proof boundaries. Status: Draft.
 - Stage 5 search/timeline implementation should stay deferred until this first-testing implementation runway is reviewed complete. S5-T00 documentation cleanup is done, and S5-T01 has recorded the incomplete runway as a blocker.
-- The next practical implementation ticket is S4.5-IMP02.
+- The next practical implementation ticket is S4.5-IMP03.
 
 Current code utilization for Stage 4.5:
 
 - E01 command input now reuses `run_e01_intake()` and `discover_e01_segments()` through `run_first_testing()`.
 - Case creation now reuses `connect()`, `initialize_schema()`, `insert_case()`, `insert_evidence_source()`, and `insert_audit_event()` in S4.5-IMP01.
-- Real EWF metadata/verification should extend `EwfReaderAdapter`, `PyewfEwfReaderAdapter`, `EwfMetadataResult`, and `VerificationStatus`.
+- Real EWF metadata/verification now extends `EwfReaderAdapter`, `PyewfEwfReaderAdapter`, `EwfMetadataResult`, and `VerificationStatus`.
 - Volume/filesystem work should preserve `ImageByteStream`, `discover_volumes()`, `VolumeInfo`, `FilesystemAdapter`, `FilesystemEntry`, and `list_directory()` shapes.
 - Preview/export/analysis should reuse `preview_file()`, `export_file()`, `hash_file_content()`, `detect_file_signature()`, and `evaluate_extension_mismatch()` once an E01-backed file-content provider exists.
 - File-list export should start from `FilesystemEntry.to_dict()` / directory listing dictionaries and add JSON/CSV output.

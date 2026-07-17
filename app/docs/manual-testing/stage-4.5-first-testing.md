@@ -2,7 +2,7 @@
 
 Purpose: track how the project moves from automated tests only to direct manual testing with user-provided E01 files.
 
-Stage 4.5 is not Stage 5 search/timeline. S4.5-IMP01 is reviewed and done as the first command-shell slice; it has a reviewer-run smoke test against the local ` Test Image` E01 set, while the broader parser/content/output workflow remains incomplete.
+Stage 4.5 is not Stage 5 search/timeline. S4.5-IMP01 is reviewed and done as the first command-shell slice. S4.5-IMP02 is implemented and in review as the best-effort metadata/verification slice. The broader stream, parser, content, output, visual-summary, and testing-guide workflow remains incomplete.
 
 ## What Is Implemented Now
 
@@ -12,15 +12,16 @@ The current backend can:
 - report missing or unsupported segment patterns;
 - run a JSON intake callable/CLI;
 - run the S4.5-IMP01 first-testing command shell to create a case workspace, persist the existing intake snapshot, write a run manifest, write command summary text, write audit JSON, and write unsupported-section JSON;
-- report whether the EWF reader dependency is unavailable or not implemented;
+- attempt best-effort real EWF metadata through `pyewf` when it is importable, while preserving dependency-unavailable output when it is missing;
+- keep verification separate from metadata and report `verification_ok`, `verification_failed`, `verification_error`, `verification_partial`, `not_supported`, or `not_run`;
 - create a minimal SQLite case/evidence/audit schema when called explicitly;
 - run stubbed volume/filesystem/listing/preview/export workflows;
 - run provider-backed hash/signature/mismatch/known-file helpers over explicit provider bytes.
 
 The current backend cannot yet:
 
-- read real EWF metadata from user-provided E01 files;
-- verify real EWF images;
+- guarantee real EWF metadata when `pyewf` is missing or metadata fields are unavailable;
+- guarantee real EWF verification when no safe `pyewf` verification API is exposed;
 - parse real partition tables;
 - parse real filesystems;
 - extract real file content from E01 images;
@@ -44,11 +45,11 @@ Current S4.5-IMP01 sections:
 - discovered segment chain;
 - missing/unsupported segment warnings;
 - adapter and dependency status;
-- metadata and verification status from the existing intake adapter boundary;
+- metadata and verification status from the existing intake adapter boundary, including S4.5-IMP02 `metadata.json` and `verification.json`;
 - explicit current limitations;
 - output paths for JSON artifacts.
 
-Later sections for volume/filesystem parser status, file listing, selected file metadata, preview, hash, signature, export results, CSV, static HTML, final handoff, and command-line testing guidance remain future S4.5-IMP02 through S4.5-IMP07 work.
+Later sections for volume/filesystem parser status, file listing, selected file metadata, preview, hash, signature, export results, CSV, static HTML, final handoff, and command-line testing guidance remain future S4.5-IMP03 through S4.5-IMP07 work.
 
 ## Planned Case Workspace
 
@@ -62,17 +63,20 @@ The first command uses a case workspace rather than loose output files:
   outputs/
     intake.json
     case.json
+    metadata.json
+    verification.json
+    segment-discovery.json
     audit.json
     unsupported-sections.json
 ```
 
-The command creates the SQLite case database with existing case-store helpers, persists the intake result as an evidence source, and records audit rows for the run. Until later tickets add real parsers, the summary and unsupported-section JSON label real metadata, verification, filesystem navigation, preview, export, hash/signature, file-list export, and static HTML as unsupported or not yet implemented.
+The command creates the SQLite case database with existing case-store helpers, persists the intake result as an evidence source, and records audit rows for the run. S4.5-IMP02 writes metadata and verification artifacts. Until later tickets add real parsers, the summary and unsupported-section JSON keep filesystem navigation, preview, export, hash/signature, file-list export, and static HTML as unsupported or not yet implemented.
 
-## Planned EWF Metadata And Verification Check
+## Current EWF Metadata And Verification Check
 
-S4.5-T03 keeps real `pyewf` work as an investigation plan before implementation. The first metadata target should be best-effort and read-only: media size, bytes per sector, segment count, reader version, and clearly exposed acquisition metadata. Sensitive fields such as case number, examiner, evidence number, description, and acquisition notes must be redacted from shared summaries unless the user approves.
+S4.5-IMP02 implements the first `pyewf` metadata/verification attempt. The metadata target is best-effort and read-only: media size, bytes per sector, segment count, reader version, and clearly exposed acquisition metadata. Sensitive fields such as case number, examiner, evidence number, description, and acquisition notes must be redacted from shared summaries unless the user approves.
 
-Verification is separate from metadata. Reading stored EWF hash values is not the same as verifying the image. Until a real verification path is implemented and reviewed, the first-testing command should show verification as `not_run`, `not_supported`, or another explicit non-success status.
+Verification is separate from metadata. Reading stored EWF hash values is not the same as verifying the image. Verification runs only when the installed or injected `pyewf` API exposes an explicit safe method; otherwise the first-testing command shows `not_run` or `not_supported`.
 
 ## Planned Stream, Volume, And Filesystem Bridge
 
@@ -98,7 +102,7 @@ The file list should start from `FilesystemEntry` records and preserve source pa
 
 The implementation lineup is now: command shell and case workspace, real metadata/verification, EWF stream plus filesystem listing, selected-file content providers, output bundle, guardrail/review handoff, then command-line testing guide. Stage 5 search/timeline must wait until S4.5-IMP01 through S4.5-IMP07 are completed and reviewed.
 
-The next practical implementation ticket is S4.5-IMP02. The user may pause or choose when to start it, but S5-T02 or later search/timeline implementation cannot proceed until the full Stage 4.5 implementation runway through S4.5-IMP07 is complete and reviewed. S4.5-IMP01 creates only the first-testing command shell, safe case workspace, intake persistence, manifest, and unsupported-section output; real parser work and Stage 5 search/timeline remain later work.
+The next practical implementation ticket after S4.5-IMP02 review is S4.5-IMP03. The user may pause or choose when to start it, but S5-T02 or later search/timeline implementation cannot proceed until the full Stage 4.5 implementation runway through S4.5-IMP07 is complete and reviewed. S4.5-IMP01 creates the first-testing command shell and S4.5-IMP02 adds metadata/verification artifacts; real stream/filesystem/content parser work and Stage 5 search/timeline remain later work.
 
 ## Minimum Demonstration Goal
 
@@ -115,7 +119,7 @@ At the bare minimum, the first-testing workflow should eventually show:
 - selected file export;
 - file-list export.
 
-Current code has foundations for several of these, but the real E01-backed path is still missing. Segment discovery can run against an actual E01 path now. Real metadata, verification, volume parsing, filesystem parsing, file-content preview, file-content hash/signature analysis, and real file export require additional implementation.
+Current code has foundations for several of these, but the full real E01-backed path is still missing. Segment discovery can run against an actual E01 path now, and metadata/verification can be attempted through optional `pyewf`. Volume parsing, filesystem parsing, file-content preview, file-content hash/signature analysis, and real file export require additional implementation.
 
 ## Current Code To Reuse
 
@@ -123,7 +127,7 @@ Current code has foundations for several of these, but the real E01-backed path 
 | --- | --- | --- |
 | E01 intake and segments | `run_e01_intake()`, `discover_e01_segments()` | First command section and saved intake JSON |
 | Case workspace | `connect()`, `initialize_schema()`, `insert_case()`, `insert_evidence_source()`, `insert_audit_event()` | Create/open case database and record manual-test actions |
-| EWF metadata/verification | `EwfReaderAdapter`, `PyewfEwfReaderAdapter`, `EwfMetadataResult`, `VerificationStatus` | Extend adapter to read real metadata/verification when available |
+| EWF metadata/verification | `EwfReaderAdapter`, `PyewfEwfReaderAdapter`, `EwfMetadataResult`, `VerificationStatus` | S4.5-IMP02 attempts best-effort metadata/verification when available |
 | Volumes/filesystem entries | `ImageByteStream`, `discover_volumes()`, `VolumeInfo`, `FilesystemAdapter`, `FilesystemEntry`, `list_directory()` | Preserve shapes while adding EWF/TSK-backed implementations |
 | Preview | `preview_file()` | Reuse raw/text/hex rendering once real file bytes are provided |
 | Export | `export_file()`, `ExportAuditContext` | Reuse destination safety, manifest, SHA-256 verification, and audit hook |

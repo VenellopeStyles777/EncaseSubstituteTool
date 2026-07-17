@@ -12,6 +12,80 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-17 - S4.5-IMP02 And S4.5-IMP02A Acceptance
+
+Result: accepted; both tickets marked done.
+
+Findings:
+
+- No blocking issues found after S4.5-IMP02A.
+- The earlier `metadata_partial` concern is fixed: complete metadata plus stored hash metadata no longer emits `metadata_partial`, while true metadata-field unavailability still does.
+
+Verification:
+
+- Focused run: `python -m pytest app\tests\test_ewf_reader_adapter.py app\tests\test_intake_command.py app\tests\test_first_testing_command.py`: 25 passed in 7.35s.
+- Full run: `python -m pytest`: 167 passed in 9.77s.
+- `git diff --check` passed, with only normal Windows line-ending notices.
+
+Remaining risk:
+
+- `pyewf` is still unavailable locally, so real metadata extraction and verification are dependency-safe but not exercised against the local real E01. EWF-backed streams, partition/filesystem parsing, E01-backed file content, file-list output, static HTML, and full manual E01 workflow remain later Stage 4.5 slices.
+
+## 2026-07-17 - S4.5-IMP02A Metadata Warning Semantics Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- Corrected `app/backend/forensic_core/ewf_reader.py` so `metadata_partial` is emitted only when `metadata_field_unavailable` is present.
+- Preserved `stored_hash_not_verified` as separate stored-hash metadata context, not verification success and not a metadata-partial trigger by itself.
+- Preserved verification warning semantics separately from metadata warning semantics.
+- Added dependency-free fake-`pyewf` assertions covering complete metadata plus stored hashes, partial metadata, and stored hashes without verification success.
+
+Scope intentionally not implemented:
+
+- No S4.5-IMP03 work.
+- No EWF-backed streams, partition/filesystem parsing, E01-backed content providers, file-list output, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, native dependency installation, commit, or push.
+
+Verification:
+
+- Focused run: `python -m pytest app\tests\test_ewf_reader_adapter.py app\tests\test_intake_command.py app\tests\test_first_testing_command.py`: 25 passed in 11.04s.
+- Full run: `python -m pytest`: 167 passed in 14.52s.
+
+Review note:
+
+- Previous S4.5-IMP02 finding addressed: complete metadata reads with stored EWF hash metadata no longer emit `metadata_partial` solely because `stored_hash_not_verified` is present.
+
+## 2026-07-17 - S4.5-IMP02 Real EWF Metadata And Verification Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- Upgraded `PyewfEwfReaderAdapter` from importable-but-not-implemented skeleton to best-effort `pyewf` metadata and explicit verification handling.
+- Preserved missing-`pyewf` dependency-unavailable behavior.
+- Normalized metadata fields including format, segment count, reader/version, media size, bytes per sector, selected acquisition header fields, dates, and stored hashes when exposed.
+- Kept stored hash metadata separate from verification success with `stored_hash_not_verified`.
+- Added verification status handling for success, failure, exception/error, partial/unsupported shapes, unsupported API, and dependency-not-run states.
+- Converted expected open, metadata, and verification errors into structured warnings/statuses.
+- Added `metadata.json`, `verification.json`, and `segment-discovery.json` to the first-testing artifact bundle.
+- Updated run manifest and command summary to surface metadata and verification status.
+- Added dependency-free fake-`pyewf` tests.
+
+Scope intentionally not implemented:
+
+- No native dependency installation.
+- No EWF-backed byte streams, partition/filesystem parsing, E01-backed preview/export/hash/signature content providers, file-list JSON/CSV, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, commit, or push.
+- No real E01 fixture was added to the repository.
+
+Verification:
+
+- Focused run: `python -m pytest app\tests\test_ewf_reader_adapter.py app\tests\test_intake_command.py app\tests\test_first_testing_command.py`: 25 passed in 14.62s.
+- Full run: `python -m pytest`: 167 passed in 17.24s.
+- Optional real-image smoke command used ` Test Image/C16242-1-RL1-E003.E01` with output under `.test-artifacts/first-testing/review-s4-5-imp02-real-image`.
+- Smoke result: `ok_with_unsupported_sections`; 53 segments discovered; intake status `metadata_unavailable`; metadata status `metadata_unavailable`; verification status `not_run`; adapter `pyewf-reader`; dependency unavailable; `read_only_asserted: true`; `source_modified: false`; 6 unsupported rows.
+- Smoke artifact check found `metadata.json`, `verification.json`, and `segment-discovery.json`, and no file-list, CSV, export, report, or HTML artifacts.
+
 ## 2026-07-16 - S4.5-IMP07 Testing Guide Ticket Addition
 
 Result: added as draft; no coding-agent handoff yet.

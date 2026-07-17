@@ -13,7 +13,7 @@ These callables are backend-only and JSON-friendly. They do not provide UI, exec
 
 Stage 3 note: S3-T04 can optionally record export attempts in the case-store audit log when the caller supplies explicit audit context. It does not recover deleted files, parse real filesystems, run broader hash/signature analysis, or use preview-rendered text/hex as export bytes.
 
-Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. S4.5-IMP01 adds a first-testing command shell and case-workspace bundle, but there is still no real E01 metadata, verification, E01-backed hash, signature, mismatch, known-file, or analysis-result persistence. Preview-rendered text/hex, preview providers, export providers, written export artifacts, and external known-file lists remain disallowed as implicit source analysis content.
+Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. S4.5-IMP01 adds a first-testing command shell and case-workspace bundle. S4.5-IMP02 adds best-effort `pyewf` metadata and separate verification status when the optional dependency exposes safe APIs. There is still no E01-backed hash, signature, mismatch, known-file, or analysis-result persistence. Preview-rendered text/hex, preview providers, export providers, written export artifacts, and external known-file lists remain disallowed as implicit source analysis content.
 
 ## S1-T04 Intake Command
 
@@ -44,13 +44,13 @@ Current status values include:
 
 - `ok`: stub-backed intake completed with synthetic metadata.
 - `metadata_unavailable`: adapter dependency is unavailable, such as missing `pyewf`.
-- `reader_not_implemented`: adapter dependency is importable, but real metadata extraction is not implemented yet.
+- `reader_error`: the adapter dependency is importable, but opening or reading expected metadata failed.
 - `invalid_input`: selected path is missing or not a valid `.E01` first segment.
 - `reader_error`: unexpected adapter exception caught at the command boundary.
 
 S1-T04 does not persist results automatically. Use the case-store helpers explicitly when a case workflow is ready.
 
-## S4.5-IMP01 First-Testing Command Shell
+## S4.5 First-Testing Command Shell
 
 Callable usage from Python:
 
@@ -85,7 +85,7 @@ Useful options:
 - `--json-only`: prints the JSON run manifest instead of a text summary.
 - `--redact-paths`: redacts the evidence root as `<EVIDENCE_ROOT>` in console and `command-summary.txt`; local JSON artifacts keep original paths.
 
-S4.5-IMP01 creates:
+S4.5-IMP01 and S4.5-IMP02 create:
 
 ```text
 <case>\case.db
@@ -93,6 +93,9 @@ S4.5-IMP01 creates:
 <case>\command-summary.txt
 <output>\intake.json
 <output>\case.json
+<output>\metadata.json
+<output>\verification.json
+<output>\segment-discovery.json
 <output>\audit.json
 <output>\unsupported-sections.json
 ```
@@ -106,7 +109,15 @@ Current S4.5-IMP01 status values include:
 - `unsafe_output_path`: evidence/case/output path overlap was refused before artifact writes.
 - `intake_failed`: an unexpected intake status was persisted but the run should not be treated as a successful first-testing workflow.
 
-S4.5-IMP01 does not read real EWF metadata, verify real EWF images, parse partitions/filesystems, extract E01-backed file content, create file-list JSON/CSV, generate static HTML, start search/timeline, or add UI/reporting behavior.
+S4.5-IMP02 metadata/verification behavior:
+
+- Missing `pyewf` remains dependency-safe and returns `metadata_unavailable` plus verification `not_run`.
+- Importable fake/real `pyewf` attempts normalized best-effort metadata such as media size, sector size, segment count, reader version, selected acquisition headers, dates, and stored hash metadata when exposed.
+- Stored hash metadata is preserved in `metadata.json`, but it is not verification success.
+- Verification runs only when the reader exposes an explicit safe method such as `verify()`, `verify_media()`, `check_media()`, or `verify_hashes()`.
+- Verification statuses include `verification_ok`, `verification_failed`, `verification_error`, `verification_partial`, `not_supported`, and `not_run`.
+
+The command still does not parse partitions/filesystems, extract E01-backed file content, create file-list JSON/CSV, generate static HTML, start search/timeline, or add UI/reporting behavior.
 
 ## S2-T05 Directory Listing Callable
 

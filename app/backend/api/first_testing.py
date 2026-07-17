@@ -143,9 +143,24 @@ def run_first_testing(
             evidence_root=evidence_root,
             actor=actor,
         )
+        metadata_artifact = _metadata_artifact(
+            evidence_id=evidence_id,
+            intake_result=intake_result,
+        )
+        verification_artifact = _verification_artifact(
+            evidence_id=evidence_id,
+            intake_result=intake_result,
+        )
+        segment_discovery_artifact = _segment_discovery_artifact(
+            evidence_id=evidence_id,
+            intake_result=intake_result,
+        )
 
         _write_json(artifact_paths["intake"], intake_result)
         _write_json(artifact_paths["case"], case_artifact)
+        _write_json(artifact_paths["metadata"], metadata_artifact)
+        _write_json(artifact_paths["verification"], verification_artifact)
+        _write_json(artifact_paths["segment_discovery"], segment_discovery_artifact)
         _write_json(artifact_paths["unsupported_sections"], unsupported_sections)
 
         insert_audit_event(
@@ -196,6 +211,7 @@ def run_first_testing(
             evidence_id=evidence_id,
             intake_result=intake_result,
             unsupported_sections=unsupported_sections,
+            metadata_artifact=metadata_artifact,
             audit_artifact=audit_artifact,
             artifact_paths=artifact_paths,
             adapter_name=adapter_name,
@@ -286,6 +302,8 @@ def format_first_testing_summary(
         f"Segment count: {evidence.get('segment_count')}",
         f"Adapter: {adapter.get('name')} (available={adapter.get('available')})",
         f"Dependency: {dependency.get('name')} (available={dependency.get('available')})",
+        f"Metadata status: {_as_mapping(result.get('metadata')).get('status')}",
+        f"Verification status: {_as_mapping(result.get('verification')).get('status')}",
         f"Warnings: {warning_count}",
         f"Unsupported sections: {len(unsupported) if isinstance(unsupported, list) else 0}",
         "Artifacts:",
@@ -296,7 +314,7 @@ def format_first_testing_summary(
         [
             "Source modified: false",
             "Read-only asserted: true",
-            "Deferred: real EWF metadata, verification, EWF stream, partition/filesystem parsing, E01-backed file content, file-list output, static HTML, search, and timeline.",
+            "Deferred: EWF stream, partition/filesystem parsing, E01-backed file content, file-list output, static HTML, search, and timeline.",
         ]
     )
 
@@ -586,6 +604,9 @@ def _artifact_paths(case_dir: Path, output_dir: Path) -> dict[str, Path]:
         "command_summary": case_dir / "command-summary.txt",
         "intake": output_dir / "intake.json",
         "case": output_dir / "case.json",
+        "metadata": output_dir / "metadata.json",
+        "verification": output_dir / "verification.json",
+        "segment_discovery": output_dir / "segment-discovery.json",
         "audit": output_dir / "audit.json",
         "unsupported_sections": output_dir / "unsupported-sections.json",
     }
@@ -594,43 +615,33 @@ def _artifact_paths(case_dir: Path, output_dir: Path) -> dict[str, Path]:
 def _unsupported_sections() -> dict[str, object]:
     rows = [
         (
-            "real_ewf_metadata",
-            "S4.5-IMP02",
-            "Real EWF metadata reading is not implemented in S4.5-IMP01.",
-        ),
-        (
-            "real_ewf_verification",
-            "S4.5-IMP02",
-            "Real EWF image verification is not implemented in S4.5-IMP01.",
-        ),
-        (
             "ewf_backed_byte_stream",
             "S4.5-IMP03",
-            "EWF-backed byte streaming is not implemented in S4.5-IMP01.",
+            "EWF-backed byte streaming is not implemented in S4.5-IMP02.",
         ),
         (
             "partition_filesystem_parsing",
             "S4.5-IMP03",
-            "Partition and filesystem parsing from E01 evidence is not implemented in S4.5-IMP01.",
+            "Partition and filesystem parsing from E01 evidence is not implemented in S4.5-IMP02.",
         ),
         (
             "e01_backed_preview_export_hash_signature",
             "S4.5-IMP04",
-            "E01-backed preview, export, hashing, and signature providers are not implemented in S4.5-IMP01.",
+            "E01-backed preview, export, hashing, and signature providers are not implemented in S4.5-IMP02.",
         ),
         (
             "file_list_json_csv_output",
             "S4.5-IMP05",
-            "File-list JSON/CSV output is not implemented in S4.5-IMP01.",
+            "File-list JSON/CSV output is not implemented in S4.5-IMP02.",
         ),
         (
             "static_html_summary",
             "S4.5-IMP05",
-            "Static HTML summary output is not implemented in S4.5-IMP01.",
+            "Static HTML summary output is not implemented in S4.5-IMP02.",
         ),
         (
             "implementation_handoff_manual_test_reconciliation",
-            "S4.5-IMP06",
+            "S4.5-IMP07",
             "Final manual-test guardrail reconciliation is not complete until the later handoff slice.",
         ),
     ]
@@ -712,6 +723,74 @@ def _audit_artifact(rows: Sequence[Any]) -> dict[str, object]:
     }
 
 
+def _metadata_artifact(
+    *,
+    evidence_id: str,
+    intake_result: Mapping[str, object],
+) -> dict[str, object]:
+    metadata = _as_mapping(intake_result.get("metadata"))
+    warnings = intake_result.get("warnings", [])
+    reader_warnings = [
+        warning
+        for warning in warnings
+        if isinstance(warning, Mapping) and warning.get("source") == "reader"
+    ] if isinstance(warnings, list) else []
+    return {
+        "schema_version": "stage4_5.first_testing_metadata.v1",
+        "status": _metadata_status(intake_result),
+        "evidence_id": evidence_id,
+        "source_path": intake_result.get("source_path"),
+        "selected_path": intake_result.get("selected_path"),
+        "segment_count": intake_result.get("segment_count"),
+        "adapter": _as_mapping(intake_result.get("adapter")),
+        "metadata": dict(metadata),
+        "warnings": reader_warnings,
+    }
+
+
+def _verification_artifact(
+    *,
+    evidence_id: str,
+    intake_result: Mapping[str, object],
+) -> dict[str, object]:
+    warnings = intake_result.get("warnings", [])
+    verification_warnings = [
+        warning
+        for warning in warnings
+        if isinstance(warning, Mapping)
+        and str(warning.get("code", "")).startswith("verification")
+    ] if isinstance(warnings, list) else []
+    verification = _as_mapping(intake_result.get("verification"))
+    return {
+        "schema_version": "stage4_5.first_testing_verification.v1",
+        "status": verification.get("status") or "unknown",
+        "evidence_id": evidence_id,
+        "source_path": intake_result.get("source_path"),
+        "selected_path": intake_result.get("selected_path"),
+        "segment_count": intake_result.get("segment_count"),
+        "adapter": _as_mapping(intake_result.get("adapter")),
+        "verification": dict(verification),
+        "stored_hashes_are_verification": False,
+        "warnings": verification_warnings,
+    }
+
+
+def _segment_discovery_artifact(
+    *,
+    evidence_id: str,
+    intake_result: Mapping[str, object],
+) -> dict[str, object]:
+    return {
+        "schema_version": "stage4_5.first_testing_segment_discovery.v1",
+        "status": "ok" if intake_result.get("segment_count") else "not_available",
+        "evidence_id": evidence_id,
+        "source_path": intake_result.get("source_path"),
+        "selected_path": intake_result.get("selected_path"),
+        "segment_count": intake_result.get("segment_count"),
+        "segment_discovery": _as_mapping(intake_result.get("segment_discovery")),
+    }
+
+
 def _run_manifest(
     *,
     run_id: str,
@@ -730,6 +809,7 @@ def _run_manifest(
     evidence_id: str,
     intake_result: Mapping[str, object],
     unsupported_sections: Mapping[str, object],
+    metadata_artifact: Mapping[str, object],
     audit_artifact: Mapping[str, object],
     artifact_paths: Mapping[str, Path],
     adapter_name: str,
@@ -782,6 +862,11 @@ def _run_manifest(
             "source_modified": False,
         },
         "adapter": adapter,
+        "metadata": {
+            "status": metadata_artifact.get("status"),
+            "field_count": len(_as_mapping(metadata_artifact.get("metadata"))),
+            "artifact_path": str(artifact_paths["metadata"]),
+        },
         "verification": verification,
         "warnings": warnings if isinstance(warnings, list) else [],
         "unsupported_sections": sections if isinstance(sections, list) else [],
@@ -796,6 +881,17 @@ def _overall_status(intake_result: Mapping[str, object]) -> str:
     if intake_result.get("status") in {"ok", "metadata_unavailable", "reader_not_implemented"}:
         return "ok_with_unsupported_sections"
     return "intake_failed"
+
+
+def _metadata_status(intake_result: Mapping[str, object]) -> str:
+    if _as_mapping(intake_result.get("metadata")):
+        return "metadata_available"
+    status = intake_result.get("status")
+    if status == "metadata_unavailable":
+        return "metadata_unavailable"
+    if status in {"reader_error", "reader_not_implemented"}:
+        return "metadata_error"
+    return "metadata_empty"
 
 
 def _write_json(path: Path, data: Mapping[str, object]) -> None:

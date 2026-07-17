@@ -12,6 +12,30 @@ YYYY-MM-DD
 - Next:
 ```
 
+2026-07-17
+- Completed: reviewed and accepted S4.5-IMP02 and S4.5-IMP02A as done after the warning-semantics correction passed local focused and full-suite verification.
+- Learned: metadata warning labels now distinguish incomplete metadata from conservative stored-hash handling, which keeps the first-testing evidence output cleaner for later manual review.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP03 through S4.5-IMP07 still need implementation/review before the gate can pass.
+- Next: prepare and feed S4.5-IMP03 for EWF-backed stream, partition boundary, and root filesystem listing. Focused verification: `python -m pytest app\tests\test_ewf_reader_adapter.py app\tests\test_intake_command.py app\tests\test_first_testing_command.py` reported 25 passed in 7.35s. Full-suite verification: `python -m pytest` reported 167 passed in 9.77s.
+
+2026-07-17
+- Completed: implemented S4.5-IMP02A metadata warning semantics cleanup.
+- Learned: `metadata_partial` now tracks actual metadata-field unavailability/failure, while `stored_hash_not_verified` and verification warnings remain separate signals.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP03 through S4.5-IMP07 still need implementation/review before the Stage 5 gate can pass.
+- Next: hand S4.5-IMP02A to review, then resume the runway with S4.5-IMP03 after acceptance. Focused verification: `python -m pytest app\tests\test_ewf_reader_adapter.py app\tests\test_intake_command.py app\tests\test_first_testing_command.py` reported 25 passed in 11.04s. Full-suite verification: `python -m pytest` reported 167 passed in 14.52s.
+
+2026-07-17
+- Completed: reviewed S4.5-IMP02 automated coverage and optional real-image smoke locally; focused tests reported 25 passed, full suite reported 167 passed, and the real-image smoke produced `ok_with_unsupported_sections` with 53 segments, `metadata_unavailable`, and verification `not_run` because `pyewf` is unavailable locally.
+- Learned: the S4.5-IMP02 behavior is broadly on target, but warning labels need to be exact because later manual testing will rely on them as evidence.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP02A must be corrected before S4.5-IMP03 resumes.
+- Next: feed S4.5-IMP02A to the coding agent before S4.5-IMP03.
+
+2026-07-17
+- Completed: implemented S4.5-IMP02 real EWF metadata and verification attempt with dependency-safe `pyewf` behavior, normalized metadata fields, separate verification statuses, and new first-testing metadata/verification/segment-discovery artifacts.
+- Learned: stored EWF hash values can be useful metadata, but they must stay separate from verification success; the command can now expose metadata and verification status without starting streams, filesystems, content providers, file-list output, static HTML, or Stage 5.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP03 through S4.5-IMP07 still need implementation/review before the Stage 5 gate can pass.
+- Next: hand S4.5-IMP02 to review, then prepare S4.5-IMP03 after acceptance. Focused verification: `python -m pytest app\tests\test_ewf_reader_adapter.py app\tests\test_intake_command.py app\tests\test_first_testing_command.py` reported 25 passed in 14.62s. Full-suite verification: `python -m pytest` reported 167 passed in 17.24s. Optional real-image smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, `metadata_unavailable`, and verification `not_run`.
+
 2026-07-16
 - Completed: added S4.5-IMP07 as a drafted command-line testing guide and evidence workflow instruction ticket with a matching coding-agent prompt.
 - Learned: the first-testing runway should end with exact user/reviewer instructions for what commands to run, where outputs go, how to inspect artifacts, and what each command proves or does not prove.

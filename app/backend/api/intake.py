@@ -82,7 +82,9 @@ def run_e01_intake(
             reader_warnings = metadata_result.warnings
             intake_warnings = ()
             reader_warning_codes = {warning.code for warning in reader_warnings}
-            if "real_reader_not_implemented" in reader_warning_codes:
+            if "reader_open_failed" in reader_warning_codes:
+                status = "reader_error"
+            elif "real_reader_not_implemented" in reader_warning_codes:
                 status = "reader_not_implemented"
             elif adapter_available:
                 status = "ok"

@@ -107,21 +107,47 @@ def test_dependency_unavailable_adapter_output_is_structured():
     assert "dependency_unavailable" in _warning_codes(result)
 
 
-def test_importable_but_unimplemented_pyewf_adapter_is_not_ok():
+def test_importable_pyewf_adapter_can_return_best_effort_metadata():
+    class FakeHandle:
+        def open(self, paths):
+            self.paths = list(paths)
+
+        def close(self):
+            self.closed = True
+
+        def get_media_size(self):
+            return 1024
+
+        def get_bytes_per_sector(self):
+            return 512
+
+        def get_header_values(self):
+            return {"case_number": "CASE-INTAKE"}
+
     class FakePyewf:
         __version__ = "test-version"
 
+        def __init__(self):
+            self.handle_instance = FakeHandle()
+
+        def handle(self):
+            return self.handle_instance
+
+    fake_pyewf = FakePyewf()
     with _dummy_intake_directory("intake-pyewf-not-implemented") as directory:
         _touch_files(directory, "sample.E01")
-        adapter = PyewfEwfReaderAdapter(pyewf_module=FakePyewf())
+        adapter = PyewfEwfReaderAdapter(pyewf_module=fake_pyewf)
 
         result = run_e01_intake(directory / "sample.E01", adapter)
 
-    assert result["status"] == "reader_not_implemented"
-    assert result["status"] != "ok"
+    assert result["status"] == "ok"
     assert result["adapter"]["available"] is True
-    assert result["metadata"] == {}
-    assert "real_reader_not_implemented" in _warning_codes(result)
+    assert result["metadata"]["media_size"] == 1024
+    assert result["metadata"]["bytes_per_sector"] == 512
+    assert result["metadata"]["case_number"] == "CASE-INTAKE"
+    assert result["verification"]["status"] == "not_supported"
+    assert "verification_not_supported" in _warning_codes(result)
+    assert fake_pyewf.handle_instance.closed is True
 
 
 def test_cli_invalid_input_returns_nonzero_and_prints_json(capsys):

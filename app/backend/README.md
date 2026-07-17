@@ -19,7 +19,7 @@ The backend package can be imported cleanly:
 - `app.backend.analysis_workers`
 - `app.backend.api`
 
-Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 added hash/signature analysis result contracts, provider-backed hash calculation, bounded provider-backed file signature detection over explicit analysis content providers, extension mismatch evaluation over reviewed signature results plus file metadata, fixture-sized known-file matching, a documentation-only analysis-result persistence plan, and the S4-T07 documentation handoff. Stage 4.5 planning is in review for user-provided E01 first testing, and S4.5-IMP01 is done with the first-testing command shell plus case-workspace artifact bundle. The project remains backend-first and has no real EWF metadata/verification, EWF-backed partition/filesystem parsing, E01-backed file-content extraction, search/timeline/reporting/UI, or executable packaging yet.
+Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 added hash/signature analysis result contracts, provider-backed hash calculation, bounded provider-backed file signature detection over explicit analysis content providers, extension mismatch evaluation over reviewed signature results plus file metadata, fixture-sized known-file matching, a documentation-only analysis-result persistence plan, and the S4-T07 documentation handoff. Stage 4.5 planning is in review for user-provided E01 first testing; S4.5-IMP01 is done with the first-testing command shell plus case-workspace artifact bundle, and S4.5-IMP02 is in review with best-effort `pyewf` metadata plus separate verification status. The project remains backend-first and has no EWF-backed partition/filesystem parsing, E01-backed file-content extraction, search/timeline/reporting/UI, or executable packaging yet.
 
 ## Tests
 
@@ -39,7 +39,7 @@ python -m pip install pytest
 
 Current verification snapshot:
 
-- `python -m pytest`: 160 passed in 9.12s after the S4.5-IMP01 first-testing command shell implementation.
+- `python -m pytest`: 167 passed in 17.24s after the S4.5-IMP02 metadata/verification implementation.
 - The project config routes pytest temporary files to `.test-artifacts/pytest-temp` and disables pytest's optional cache provider.
 
 ## Stage 1 Intake Command
@@ -72,9 +72,9 @@ For dependency-free smoke checks:
 python -m app.backend.api.first_testing path\to\sample.E01 --case .test-artifacts\first-testing\case-a --adapter stub
 ```
 
-S4.5-IMP01 creates a case workspace with `case.db`, `run-manifest.json`, `command-summary.txt`, and JSON artifacts under `<case>\outputs` by default. It persists the existing intake result and writes unsupported-section rows for later real-E01 features instead of pretending those parser-backed features exist.
+S4.5-IMP01 creates a case workspace with `case.db`, `run-manifest.json`, `command-summary.txt`, and JSON artifacts under `<case>\outputs` by default. S4.5-IMP02 adds `metadata.json`, `verification.json`, and `segment-discovery.json`, using the existing intake result and optional `pyewf` adapter.
 
-Limits: S4.5-IMP01 does not implement real metadata, verification, EWF byte streams, partition/filesystem parsing, E01-backed preview/export/hash/signature, file-list output, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, or required native dependencies.
+Limits: S4.5-IMP02 does not install native dependencies and does not implement EWF byte streams, partition/filesystem parsing, E01-backed preview/export/hash/signature, file-list output, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, or required native dependencies. Verification remains `not_run` or `not_supported` unless a safe `pyewf` verification API is available.
 
 ## Stage 2 Capabilities And Limits
 

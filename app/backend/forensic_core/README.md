@@ -43,7 +43,7 @@ Stage 4 contract start:
 - S4-T06 documents future case-store persistence requirements and keeps current analysis helpers non-persistent.
 - S4-T07 reconciles documentation/status only and adds no core behavior.
 - Per-file analysis content remains separate from Stage 2 preview rendering, Stage 3 export-output verification, and future whole-image verification.
-- Stage 4.5 is the first-testing stage for user-provided E01 files before search/timeline. S4.5-IMP01 is done with a command shell and case-workspace artifact bundle, but real EWF metadata reading, verification, partition parsing, filesystem parsing, and E01-backed file-content providers are not implemented yet.
+- Stage 4.5 is the first-testing stage for user-provided E01 files before search/timeline. S4.5-IMP01 is done with a command shell and case-workspace artifact bundle. S4.5-IMP02 upgrades the `pyewf` adapter to attempt best-effort metadata and explicit verification when the optional dependency exposes safe APIs. Partition parsing, filesystem parsing, EWF-backed streams, and E01-backed file-content providers are not implemented yet.
 
 ## S1-T02 Segment Discovery
 
@@ -67,7 +67,7 @@ The result object includes `is_valid_input`, `is_complete`, `read_only`, ordered
 - `EwfMetadataResult`: stable metadata result shape with adapter availability, read-only assertion, source paths, metadata, dependency status, verification status, and warnings.
 - `VerificationStatus`: stable verification shape using statuses such as `not_supported` and `not_run`.
 - `StubEwfReaderAdapter`: dependency-free adapter that returns predictable synthetic metadata for tests.
-- `PyewfEwfReaderAdapter`: optional pyewf/libewf adapter skeleton that reports structured dependency-unavailable results when `pyewf` is not installed. If `pyewf` is importable, real metadata extraction is still intentionally unimplemented in Stage 1 and is reported as `real_reader_not_implemented`.
+- `PyewfEwfReaderAdapter`: optional pyewf/libewf adapter that reports structured dependency-unavailable results when `pyewf` is not installed. If `pyewf` is importable, S4.5-IMP02 attempts best-effort metadata and explicit verification while keeping stored hash metadata separate from verification success.
 
 The adapter layer is intentionally separate from segment discovery. Stage 1 does not parse real EWF bytes and does not require real evidence files or native forensic libraries for tests.
 
