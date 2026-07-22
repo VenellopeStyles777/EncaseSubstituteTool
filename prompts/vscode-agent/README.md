@@ -13,11 +13,11 @@ Current handoff:
 
 - S3-T01 through S3-T06 are reviewed and done.
 - S4-T01 through S4-T07 are reviewed and done.
-- Stage 4.5 planning prompts S4.5-T01 through S4.5-T08 are present; S4.5-IMP01, S4.5-IMP02, S4.5-IMP02A, S4.5-IMP03, S4.5-IMP04, S4.5-IMP05, and S4.5-IMP06 have been implemented, reviewed, and marked done. S4.5-IMP07 remains drafted.
+- Stage 4.5 planning prompts S4.5-T01 through S4.5-T08 are present; S4.5-IMP01 through S4.5-IMP07 have been implemented, reviewed, and marked done.
 - `2026-07-15-stage-4.5-first-testing-familiarization.md` is the added Stage 4.5 coding-agent onboarding prompt.
 - `2026-07-15-s5-t00-documentation-organization-cleanup.md` is the Stage 5 S5-T00 documentation cleanup prompt; S5-T00 is done.
-- S5-T01 is done with a failed-gate/blocker result because the Stage 4.5 runway is incomplete; S4.5-IMP01, S4.5-IMP02, S4.5-IMP02A, S4.5-IMP03, S4.5-IMP04, S4.5-IMP05, and S4.5-IMP06 are done, and S4.5-IMP07 remains incomplete.
-- S5-T01A is done after documentation hardening. Do not feed S5-T02 or later until the Stage 4.5 substantial-test runway is completed and reviewed.
+- S5-T01 is done with an older failed-gate/blocker result from before the Stage 4.5 runway was complete; S4.5-IMP01 through S4.5-IMP07 are now done, so S5-T01 is the next gate to rerun.
+- S5-T01A is done after documentation hardening. Do not feed S5-T02 or later until S5-T01 is rerun and accepted.
 - Keep this coding-agent handoff separate from the Stage 4 research/review-agent packet in `prompts/stage-4-onboarding/`.
 - The coding-agent reflection may focus on implementation mechanics; the review-agent reflection focuses on review risk, forensic soundness, and future-stage guardrails.
 

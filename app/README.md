@@ -18,4 +18,4 @@ Stage 4.5 first-testing support:
 - `scripts/first_testing/`: notes for future helper scripts; the active command currently lives in the backend API module.
 - `docs/manual-testing/`: human-run backend workflow checks before a UI exists.
 
-S4.5-IMP01 through S4.5-IMP06 are reviewed and done. S4.5-IMP07 remains drafted for the exact command-line testing guide before Stage 5 search/timeline can proceed.
+S4.5-IMP01 through S4.5-IMP07 are reviewed and done. Stage 5 search/timeline still must wait for S5-T01 to rerun and accept the completed Stage 4.5 runway.

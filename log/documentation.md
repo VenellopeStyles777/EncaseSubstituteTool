@@ -2,6 +2,32 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-22 - S4.5-IMP07 Review Acceptance
+
+- Marked `tickets/stage-4.5/S4.5-IMP07-command-line-testing-guide.md` as `Done` after reviewer acceptance.
+- Accepted the command-line testing guide after guide review, artifact inspection, full portable-runtime tests, and a fresh real-image no-selection smoke.
+- Reviewer correction: changed generic real-E01 examples to use the reviewed portable runtime path and clarified status-code inspection for file-list and selected-file readiness artifacts.
+- Reviewer verification: `.\.python312-embed\python.exe -m pytest` reported 184 passed in 28.38s.
+- Reviewer real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, metadata `metadata_available`, verification `not_supported`, EWF stream `ok`, partition-table status `ok` with 5 volumes, filesystem status `ok`, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, static HTML summary created, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+- Stage 4.5 implementation runway is now complete through S4.5-IMP07; S5-T02+ remains blocked until S5-T01 is rerun.
+
+## 2026-07-22 - S4.5-IMP07 Command-Line Testing Guide Implementation
+
+- Marked `tickets/stage-4.5/S4.5-IMP07-command-line-testing-guide.md` as `Review`.
+- Added `app/docs/manual-testing/stage-4.5-command-line-testing-guide.md` with prerequisites, evidence safety, exact PowerShell commands from the repository root, portable-runtime real-E01 commands, local ` Test Image/` no-selection smoke instructions, artifact inspection steps, expected statuses, troubleshooting, proof boundaries, and a reviewer transcript template.
+- Linked the guide from `app/docs/manual-testing/README.md` and updated active Stage 4.5, Stage 5, README, goal, plan, functionality, prompt, progression, and review docs so S4.5-IMP07 is in review.
+- Confirmed selected-file real extraction remains opt-in only and was not run against the real image for this ticket.
+- Verification: `.\.python312-embed\python.exe -m pytest` reported 184 passed in 41.91s.
+- Real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, metadata `metadata_available`, verification `not_supported`, EWF stream `ok`, partition-table status `ok` with 5 volumes, filesystem status `ok`, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, static HTML summary created, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+- Confirmed this pass did not change app source behavior, tests, parser behavior, dependency setup, evidence handling behavior, search/timeline, UI/reporting, deleted recovery, carving, packaging, commit, or push.
+
+## 2026-07-22 - S4.5-IMP07 Ready Ticket
+
+- Expanded `tickets/stage-4.5/S4.5-IMP07-command-line-testing-guide.md` from `Draft` to `Ready`.
+- Refreshed `prompts/vscode-agent/2026-07-16-s4.5-imp07-command-line-testing-guide.md` so the coding agent creates a user-facing PowerShell guide from reviewed S4.5-IMP01 through S4.5-IMP06 behavior.
+- Required the guide to cover the portable runtime, ignored local ` Test Image/` no-selection smoke, expected artifact inspection, redaction/privacy rules, troubleshooting, proof boundaries, and a reviewer transcript template.
+- Kept selected-file real extraction opt-in only and kept Stage 5 search/timeline blocked until S4.5-IMP07 is reviewed and S5-T01 is rerun.
+
 ## 2026-07-22 - S4.5-IMP06 Review Acceptance
 
 - Marked `tickets/stage-4.5/S4.5-IMP06-final-guardrail-review-handoff.md` as `Done` after reviewer acceptance.

@@ -12,11 +12,29 @@ YYYY-MM-DD
 - Next:
 ```
 
+2026-07-22
+- Completed: reviewed and accepted S4.5-IMP07 as done after guide review, artifact inspection, full portable-runtime tests, and a fresh real-image no-selection smoke.
+- Learned: Stage 4.5 now has the minimum repeatable command-line demo path: create a case workspace, ingest the E01 segment set, show parser-backed root filesystem status, produce file-list JSON/CSV, and open a static local summary while preserving proof boundaries.
+- Blocked by: Stage 5 S5-T02+ remains blocked until S5-T01 is rerun and passes with the completed Stage 4.5 runway.
+- Next: rerun S5-T01 as the Stage 4.5 completion gate before any search/timeline implementation. Reviewer verification: `.\.python312-embed\python.exe -m pytest` reported 184 passed in 28.38s; reviewer real-image no-selection smoke exited 0 with the reviewed non-sensitive status/count shape.
+
+2026-07-22
+- Completed: implemented S4.5-IMP07 command-line testing guide work and marked the ticket ready for review.
+- Learned: the reviewed no-selection first-testing workflow can now be repeated from one guide with exact PowerShell commands, artifact inspection steps, troubleshooting, proof boundaries, and a redacted transcript template.
+- Blocked by: Stage 5 search/timeline remains blocked until S4.5-IMP07 is reviewed/accepted and S5-T01 is rerun.
+- Next: review S4.5-IMP07, then rerun S5-T01 before any S5-T02 or later search/timeline work. Verification: `.\.python312-embed\python.exe -m pytest` reported 184 passed in 41.91s. Real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, metadata `metadata_available`, verification `not_supported`, EWF stream `ok`, 5 volumes, filesystem `ok`, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, static HTML summary created, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+
 2026-07-14 to 2026-07-17 summary
 - July 14: completed the Stage 3 export foundation handoff, expanded Stage 4, and implemented/reviewed the core provider-backed analysis pieces: hash/signature contracts, hashing, signature detection, extension mismatch checks, and fixture-sized known-file matching.
 - July 15: finished Stage 4 documentation/status reconciliation, closed Stage 4, and planned Stage 4.5 as a reality-anchor runway before Stage 5 search/timeline work.
 - July 16: started Stage 4.5 implementation with the first-testing command shell and populated the remaining runway tickets/prompts for real E01 metadata, filesystem access, selected-file content, output artifacts, guardrails, and user testing instructions.
 - July 17: advanced Stage 4.5 from metadata/verification into real parser-backed E01 stream, volume, filesystem, root listing, selected-file content providers, and JSON/CSV/HTML file-list artifacts while keeping Stage 5 search/timeline blocked until the runway is complete.
+
+2026-07-22
+- Completed: expanded S4.5-IMP07 from draft to ready for the command-line testing guide and refreshed its VS Code coding-agent prompt.
+- Learned: the final Stage 4.5 ticket should be a repeatable PowerShell demo guide over current reviewed artifacts, not new parser/search/UI work.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP07 still needs implementation/review, then S5-T01 must be rerun.
+- Next: feed S4.5-IMP07 to the existing Stage 4.5 coding-agent task and review its handoff when complete.
 
 2026-07-22
 - Completed: reviewed and accepted S4.5-IMP06 as done after independent full-suite verification.

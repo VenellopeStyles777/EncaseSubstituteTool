@@ -2,7 +2,7 @@
 
 Purpose: track how the project moves from automated tests only to direct manual testing with user-provided E01 files.
 
-Stage 4.5 is not Stage 5 search/timeline. S4.5-IMP01 is reviewed and done as the first command-shell slice. S4.5-IMP02 and S4.5-IMP02A are reviewed and done as the best-effort metadata/verification slice plus warning-semantics correction. S4.5-IMP03 is reviewed and done after the project-local portable Python 3.12 runtime produced EWF stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts from the local E01 set. S4.5-IMP04 is reviewed and done after adding explicit selected-file content providers and selected-file artifacts. S4.5-IMP05 is reviewed and done after adding root-listing-derived file-list JSON/CSV and a static local HTML summary. S4.5-IMP06 is reviewed and done for guardrail/review handoff reconciliation; the S4.5-IMP07 command-line testing guide remains incomplete.
+Stage 4.5 is not Stage 5 search/timeline. S4.5-IMP01 through S4.5-IMP07 are reviewed and done. The first-testing runway now includes the command shell, best-effort metadata/verification status, EWF stream, partition-table volume discovery, filesystem/root-listing artifacts, selected-file content providers, root-listing-derived file-list JSON/CSV, static local HTML summary, guardrail/review handoff reconciliation, and the command-line testing guide.
 
 ## What Is Implemented Now
 
@@ -64,7 +64,7 @@ Current first-testing sections:
 - explicit current limitations;
 - output paths for JSON artifacts.
 
-The guardrail/review handoff is reviewed and done in S4.5-IMP06. Exact user-facing command-line testing guidance remains future S4.5-IMP07 work.
+The guardrail/review handoff is reviewed and done in S4.5-IMP06. Exact user-facing command-line testing guidance now lives in the reviewed `stage-4.5-command-line-testing-guide.md`.
 
 ## Planned Case Workspace
 
@@ -133,9 +133,9 @@ S4.5-IMP05 adds the output bundle that makes first testing inspectable without r
 
 The file list starts from the current root listing only. It preserves source path, volume id, file id/path/name, entry type, size, timestamps, allocation/deleted state, parser status, read-only assertion, and warnings. JSON remains authoritative; CSV is for quick review. The HTML summary is a local static artifact, not a UI/search/timeline feature, and it contains statuses, counts, and artifact inventory rather than evidence content.
 
-The implementation lineup is now: command shell and case workspace, real metadata/verification, EWF stream plus filesystem listing, selected-file content providers, output bundle, guardrail/review handoff, then command-line testing guide. Stage 5 search/timeline must wait until S4.5-IMP01 through S4.5-IMP07 are completed and reviewed.
+The implementation lineup is now complete through: command shell and case workspace, real metadata/verification status, EWF stream plus filesystem listing, selected-file content providers, output bundle, guardrail/review handoff, and command-line testing guide. Stage 5 search/timeline must wait until S5-T01 is rerun and accepted.
 
-S4.5-IMP05 is reviewed and done. The real-E01 no-selection smoke discovered 53 segments, produced `metadata_available`, verification `not_supported`, EWF stream status `ok`, partition-table volume status `ok` with 5 volumes, filesystem status `ok`, a `real_parser_backed` root listing with 11 entries, file-list JSON/CSV `ok` with 11 entries, and a static HTML summary; selected-file readiness/preview/hash/signature/export were all `not_run` because no explicit safe file was selected. S4.5-IMP06 is reviewed and done for guardrail/review handoff work. The next practical implementation slice is S4.5-IMP07 for the command-line testing guide. S5-T02 or later search/timeline implementation cannot proceed until the full Stage 4.5 implementation runway through S4.5-IMP07 is complete and reviewed.
+S4.5-IMP05 is reviewed and done. The real-E01 no-selection smoke discovered 53 segments, produced `metadata_available`, verification `not_supported`, EWF stream status `ok`, partition-table volume status `ok` with 5 volumes, filesystem status `ok`, a `real_parser_backed` root listing with 11 entries, file-list JSON/CSV `ok` with 11 entries, and a static HTML summary; selected-file readiness/preview/hash/signature/export were all `not_run` because no explicit safe file was selected. S4.5-IMP06 and S4.5-IMP07 are reviewed and done. S5-T02 or later search/timeline implementation cannot proceed until S5-T01 is rerun and accepted.
 
 ## Minimum Demonstration Goal
 
@@ -152,7 +152,7 @@ At the bare minimum, the first-testing workflow should eventually show:
 - selected file export for an explicit, size-limited root file and explicit export destination;
 - root file-list export.
 
-Current code has foundations for several of these, S4.5-IMP04 adds the first explicit selected-file content path, and S4.5-IMP05 adds root file-list export plus static HTML summary output. Nested traversal, broad crawl, and a final command-line testing guide require additional implementation.
+Current code has foundations for several of these, S4.5-IMP04 adds the first explicit selected-file content path, S4.5-IMP05 adds root file-list export plus static HTML summary output, and S4.5-IMP07 documents the reviewed command-line testing workflow. Nested traversal and broad crawl require additional implementation.
 
 ## Current Code To Reuse
 
@@ -232,7 +232,7 @@ Shared transcripts, screenshots, HTML summaries, and file-list excerpts should r
 
 ## Stage 5 Gate Handoff
 
-S4.5-IMP06 prepares the later S5-T01 rerun but does not make Stage 5 pass yet. S4.5-IMP07 remains required for exact commands, artifact inspection steps, troubleshooting, and proof boundaries.
+S4.5-IMP06 prepared the later S5-T01 rerun, and S4.5-IMP07 added exact commands, artifact inspection steps, troubleshooting, and proof boundaries.
 
 Completion matrix:
 
@@ -245,7 +245,7 @@ Completion matrix:
 | S4.5-IMP04 | Done | Selected-file preview/export/hash/signature records are available only for explicit parser-backed root-entry selections. |
 | S4.5-IMP05 | Done | Root-listing-derived file-list JSON/CSV and static local HTML summary are available. |
 | S4.5-IMP06 | Done | Guardrail/status reconciliation and Stage 5 gate handoff are reviewed and done. |
-| S4.5-IMP07 | Draft | Command-line testing guide remains required before S5-T01 can rerun as a passing gate. |
+| S4.5-IMP07 | Done | Command-line testing guide is reviewed and done. |
 
 Allowed future Stage 5 inputs are reviewed records with provenance and status: intake/segment discovery, case/evidence/audit rows, metadata and verification status, EWF stream status, partition/volume records, filesystem/root-listing entries, root-listing-derived file-list JSON/CSV, and explicit selected-file records. Blocked inputs remain recursive crawl, broad full-volume enumeration, full-text E01 content, arbitrary auto-selected exports/analysis, deleted recovery/carving, UI/report-system outputs, and verification-success claims when verification is unsupported.
 

@@ -39,7 +39,7 @@ python -m pip install pytest
 
 Current verification snapshot:
 
-- `.\.python312-embed\python.exe -m pytest`: 184 passed in 32.93s after reviewer acceptance for S4.5-IMP06.
+- `.\.python312-embed\python.exe -m pytest`: 184 passed in 41.91s after S4.5-IMP07 command-line testing guide documentation.
 - The project config routes pytest temporary files to `.test-artifacts/pytest-temp` and disables pytest's optional cache provider.
 
 ## Stage 1 Intake Command
@@ -150,4 +150,4 @@ Implemented:
 - S4-T06 documents future case-store persistence requirements for analysis results, but does not add schema, helper functions, API wrappers, background jobs, or automatic writes.
 - S4-T07 reconciles documentation/status only and does not add behavior.
 
-Stage 4 must continue to analyze only explicit content providers for hashing/signature detection, avoid hashing or signature-checking preview text/hex or export artifacts as source analysis content, avoid whole-image verification claims without adapter support, and keep known-file matching fixture-sized/in-memory until a later reviewed ticket adds larger datasets. Analysis-result persistence, broad search/timeline, reporting, UI, deleted recovery, carving, external known-file datasets, and required native dependencies remain later reviewed implementation tickets. Stage 4.5 should finish the command-line testing guide before Stage 5 search/timeline. Stage 5 remains draft/deferred and must preserve source/provenance/status/warning/source-kind uncertainty and dependency/not-implemented states.
+Stage 4 must continue to analyze only explicit content providers for hashing/signature detection, avoid hashing or signature-checking preview text/hex or export artifacts as source analysis content, avoid whole-image verification claims without adapter support, and keep known-file matching fixture-sized/in-memory until a later reviewed ticket adds larger datasets. Analysis-result persistence, broad search/timeline, reporting, UI, deleted recovery, carving, external known-file datasets, and required native dependencies remain later reviewed implementation tickets. Stage 4.5 is complete through the command-line testing guide. Stage 5 remains draft/deferred and must preserve source/provenance/status/warning/source-kind uncertainty and dependency/not-implemented states after S5-T01 is rerun.

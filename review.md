@@ -12,6 +12,60 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-22 - S4.5-IMP07 Review Acceptance
+
+Result: accepted; S4.5-IMP07 is done.
+
+Findings:
+
+- No blocking issues found.
+- The command-line guide gives a repeatable PowerShell path for the current no-selection real-E01 demo, including case workspace creation, segment discovery, metadata/verification status, EWF stream, volume discovery, root filesystem listing, file-list JSON/CSV, static HTML summary, and artifact inspection.
+- Review correction: changed generic real-E01 examples to use the reviewed portable runtime and clarified file-list/selected-file status inspection commands so users see status codes instead of raw status objects.
+- Selected-file real extraction remains template-only and opt-in; no real selected-file extraction, recursive traversal, broad crawl, search/timeline, UI/reporting system, deleted recovery, carving, or packaging was added.
+
+Verification:
+
+- Reviewer final full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 184 passed in 28.38s.
+- Reviewer real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, metadata `metadata_available`, verification `not_supported`, EWF stream `ok`, partition-table status `ok` with 5 volumes, filesystem status `ok`, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, static HTML summary created, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+- Artifact inspection confirmed file-list CSV has 11 rows, unsupported sections remain explicit, and the static HTML summary exists.
+
+Remaining scope:
+
+- Stage 4.5 implementation runway is now complete through S4.5-IMP07.
+- Next required gate is rerunning S5-T01 before any S5-T02 or later search/timeline work.
+
+## 2026-07-22 - S4.5-IMP07 Implementation Handoff
+
+Result: ready for research/review agent review.
+
+Completed:
+
+- Created `app/docs/manual-testing/stage-4.5-command-line-testing-guide.md` with prerequisites, evidence safety, exact PowerShell commands, portable-runtime real-E01 commands, artifact inspection steps, expected statuses, troubleshooting, proof boundaries, and a reviewer transcript template.
+- Linked the guide from the manual-testing index and reconciled active Stage 4.5/Stage 5 status docs so S4.5-IMP07 is in review.
+- Kept selected-file real extraction as an opt-in template only; no selected-file extraction was run against the real image.
+- Kept Stage 5 search/timeline blocked until S4.5-IMP07 is accepted and S5-T01 is rerun.
+
+Verification:
+
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 184 passed in 41.91s.
+- Real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, metadata `metadata_available`, verification `not_supported`, EWF stream `ok`, partition-table status `ok` with 5 volumes, filesystem status `ok`, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, static HTML summary created, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+
+Scope intentionally not implemented:
+
+- No parser behavior, dependencies, real evidence fixtures, selected-file real extraction, recursive traversal, broad crawl, search/timeline, UI/report system, PDF, deleted recovery, carving, packaging, commit, or push.
+- Sensitive real evidence metadata values, evidence-internal names/paths, and file content are not quoted in shared docs or handoffs.
+
+## 2026-07-22 - S4.5-IMP07 Ready Ticket Preparation
+
+Result: ready to feed to the coding agent.
+
+Scope:
+
+- Documentation/instruction only: create the user-facing PowerShell testing guide and update related manual-testing/status docs.
+- The guide must be based on reviewed S4.5-IMP01 through S4.5-IMP06 behavior, including the portable-runtime real-image no-selection smoke shape.
+- It must keep selected-file real extraction opt-in only, avoid quoting sensitive metadata/root-entry names/content, and keep outputs under ignored `.test-artifacts/first-testing/`.
+- Stage 5 search/timeline remains blocked until S4.5-IMP07 is implemented/reviewed and S5-T01 is rerun.
+
 ## 2026-07-22 - S4.5-IMP06 Review Acceptance
 
 Result: accepted; S4.5-IMP06 is done.

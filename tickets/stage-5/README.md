@@ -6,9 +6,9 @@ After that cleanup gate, Stage 5 must not turn synthetic/provider-backed data in
 
 ## Stage 5 Status
 
-Status: Deferred. Stage 5 search/timeline implementation has not started. S5-T00 documentation cleanup is done; S5-T01 is done with a failed-gate/blocker result because the Stage 4.5 implementation runway is incomplete. S5-T01A is done after hardening older active Stage 4.5 bypass/priority wording. S5-T02 through S5-T16 remain detailed draft tickets with matching prompt files.
+Status: Deferred. Stage 5 search/timeline implementation has not started. S5-T00 documentation cleanup is done; S5-T01 is done with an older failed-gate/blocker result from before the Stage 4.5 runway was complete. S5-T01A is done after hardening older active Stage 4.5 bypass/priority wording. S5-T02 through S5-T16 remain detailed draft tickets with matching prompt files.
 
-Current override: Stage 4.5 first testing is the near-term goal and is a hard prerequisite for Stage 5 search/timeline implementation. Stage 4.5 was created to deliver the substantial manual-test runway with user-provided E01 files, so Stage 5 tickets must not push that work back. S5-T00 completed the documentation cleanup first. S5-T01 recorded that the S4.5-IMP01 through S4.5-IMP06 runway was incomplete, and the runway now includes S4.5-IMP07 for the command-line testing guide, so S5-T02 and later search/timeline implementation tickets stay blocked. S4.5-IMP01, S4.5-IMP02, S4.5-IMP02A, S4.5-IMP03, S4.5-IMP04, S4.5-IMP05, and S4.5-IMP06 are reviewed and done, and S4.5-IMP07 remains drafted before the gate can pass.
+Current override: Stage 4.5 first testing was the near-term prerequisite goal and is now complete through S4.5-IMP07. S5-T02 and later search/timeline implementation tickets stay blocked until S5-T01 is rerun and accepted against the completed Stage 4.5 runway.
 
 ## Hard Stage 4.5 Gate
 
@@ -31,7 +31,7 @@ If S5-T01 finds any of these incomplete, it should record Stage 5 as blocked and
 | Ticket | Status | Purpose |
 | --- | --- | --- |
 | S5-T00 | Done | Documentation organization, duplication cleanup, and unused/confusing structure review |
-| S5-T01 | Done | Readiness and Stage 4.5 completion gate; failed because the Stage 4.5 runway is incomplete |
+| S5-T01 | Done | Readiness and Stage 4.5 completion gate; older failed gate now ready to rerun |
 | S5-T01A | Done | Stage 4.5 gate language hardening for older active bypass/priority wording |
 | S5-T02 | Draft | Input inventory and provenance audit |
 | S5-T03 | Draft | Searchable record contracts |

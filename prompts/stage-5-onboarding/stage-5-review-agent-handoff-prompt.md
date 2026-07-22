@@ -70,17 +70,17 @@ The current real-E01 truth is still limited:
 
 Stage 4.5 was added before Stage 5 because the user wants something testable and demonstrable with actual E01 files.
 
-Stage 4.5 is no longer planning-only. S4.5-T00 through S4.5-T08 are planning/review records, S4.5-IMP01 is reviewed and done as the first command-shell implementation slice, S4.5-IMP02 and S4.5-IMP02A are reviewed and done, S4.5-IMP03 is reviewed and done after producing a real-parser-backed root listing from the local E01 set, S4.5-IMP04 is reviewed and done after adding selected-file E01-backed content providers, S4.5-IMP05 is reviewed and done after adding root-listing-derived file-list JSON/CSV and static local HTML output, S4.5-IMP06 is reviewed and done as the guardrail and Stage 5 gate handoff slice, and S4.5-IMP07 is drafted.
+Stage 4.5 is no longer planning-only. S4.5-T00 through S4.5-T08 are planning/review records, and S4.5-IMP01 through S4.5-IMP07 are reviewed and done. The completed runway includes the first command-shell implementation slice, real metadata/verification status path, EWF stream, partition-table volume discovery, real-parser-backed root listing, selected-file E01-backed content providers, root-listing-derived file-list JSON/CSV, static local HTML output, guardrail/Stage 5 gate handoff, and command-line testing guide.
 
 Before starting Stage 5, confirm the current Stage 4.5 runway state:
 
 - S4.5-IMP01 is done;
 - S4.5-IMP02 and S4.5-IMP02A are done;
-- S4.5-IMP03, S4.5-IMP04, S4.5-IMP05, and S4.5-IMP06 are reviewed and done, and S4.5-IMP07 is drafted but incomplete unless newer reviewed work exists;
+- S4.5-IMP03, S4.5-IMP04, S4.5-IMP05, S4.5-IMP06, and S4.5-IMP07 are reviewed and done;
 - the portable runtime/dependency setup is project-local and ignored by git;
 - no committed E01 files or private outputs were added;
 - manual E01 testing is partial for intake, metadata, stream, partition-table discovery, root listing, and root-listing-derived file-list/static summary output;
-- the next practical implementation slice is S4.5-IMP07, and Stage 5 search/timeline implementation should not push the Stage 4.5 substantial-test runway back.
+- S5-T01 should be rerun before any S5-T02 or later search/timeline implementation.
 
 The Stage 4.5 implementation runway is:
 
@@ -90,7 +90,7 @@ The Stage 4.5 implementation runway is:
 - S4.5-IMP04: E01-backed selected-file content providers for preview/export/hash/signature. Status: Done.
 - S4.5-IMP05: file-list JSON/CSV, command summary, artifact inventory, static local HTML. Status: Done.
 - S4.5-IMP06: manual-test guardrails, documentation reconciliation, and review handoff. Status: Done.
-- S4.5-IMP07: command-line testing guide and evidence workflow instructions. Status: Draft.
+- S4.5-IMP07: command-line testing guide and evidence workflow instructions. Status: Done.
 
 ## Stage 5 Entry Rule
 
@@ -115,7 +115,7 @@ S5-T01 should block S5-T02 and later if the Stage 4.5 substantial-test runway is
 ## Detailed Stage 5 Ticket Queue
 
 - S5-T00: documentation organization, duplication cleanup, and unused/confusing structure review. Status: Done.
-- S5-T01: readiness and Stage 4.5 completion gate. Status: Done; failed gate/blocker because the Stage 4.5 runway remains incomplete. As of the S4.5-IMP06 review acceptance, S4.5-IMP07 is still required.
+- S5-T01: readiness and Stage 4.5 completion gate. Status: Done; older failed gate/blocker from before Stage 4.5 was complete. Rerun is now the next required gate.
 - S5-T01A: Stage 4.5 gate language hardening. Status: Done.
 - S5-T02: input inventory and provenance audit. Status: Draft.
 - S5-T03: searchable record contracts. Status: Draft.
@@ -174,17 +174,16 @@ Default to a review stance:
 
 ## Latest Verification Known At Handoff
 
-The latest recorded reviewer verification in `review.md` for S4.5-IMP06:
+The latest recorded reviewer verification in `review.md` for S4.5-IMP07 acceptance:
 
 ```powershell
 .\.python312-embed\python.exe -m pytest
-# 184 passed in 32.93s
+# 184 passed in 28.38s
 ```
 
-Run the suite again after any new edits or before final review acceptance.
+Run the suite again after any new edits or before the S5-T01 rerun acceptance.
 
 ## Next Likely Moves
 
-1. Review the S5-T01 failed-gate record if needed.
-2. Prepare or review S4.5-IMP07 implementation planning when the user explicitly asks for the next Stage 4.5 slice.
-3. Do not proceed to S5-T02 or later search/timeline tickets until the Stage 4.5 substantial-test runway is completed and reviewed.
+1. Rerun S5-T01 as the hard Stage 4.5 completion gate.
+2. Do not proceed to S5-T02 or later search/timeline tickets until S5-T01 passes after S4.5-IMP07 acceptance.
