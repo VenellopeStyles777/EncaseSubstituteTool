@@ -62,6 +62,14 @@ Forensic Python libraries:
 - `python-magic`: not installed.
 - This is expected for now. Stage 1 and Stage 2 include stub/fallback adapters, and Stage 3 S3-T01 contract work should not block on these libraries.
 
+Stage 4.5 note:
+
+- Rechecked `pyewf` availability on 2026-07-15 with `importlib.util.find_spec("pyewf")`; result was `missing`.
+- Rechecked `pytsk3` availability on 2026-07-15 with `importlib.util.find_spec("pytsk3")`; result was `missing`.
+- S4.5-T03 keeps real `pyewf` metadata and verification as a planning/investigation item. No dependency installation has been performed.
+- S4.5-T04 keeps EWF-backed streams, partition parsing, and real filesystem parsing as planning/investigation items. No dependency installation has been performed.
+- Default tests must continue to pass without `pyewf`, libewf, `pytsk3`, The Sleuth Kit, native build tools, or real E01 files.
+
 ## Recommended Setup Before Stage 3 S3-T01
 
 Verify from the project root:

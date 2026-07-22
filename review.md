@@ -12,6 +12,874 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-22 - S4.5-IMP07 Review Acceptance
+
+Result: accepted; S4.5-IMP07 is done.
+
+Findings:
+
+- No blocking issues found.
+- The command-line guide gives a repeatable PowerShell path for the current no-selection real-E01 demo, including case workspace creation, segment discovery, metadata/verification status, EWF stream, volume discovery, root filesystem listing, file-list JSON/CSV, static HTML summary, and artifact inspection.
+- Review correction: changed generic real-E01 examples to use the reviewed portable runtime and clarified file-list/selected-file status inspection commands so users see status codes instead of raw status objects.
+- Selected-file real extraction remains template-only and opt-in; no real selected-file extraction, recursive traversal, broad crawl, search/timeline, UI/reporting system, deleted recovery, carving, or packaging was added.
+
+Verification:
+
+- Reviewer final full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 184 passed in 28.38s.
+- Reviewer real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, metadata `metadata_available`, verification `not_supported`, EWF stream `ok`, partition-table status `ok` with 5 volumes, filesystem status `ok`, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, static HTML summary created, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+- Artifact inspection confirmed file-list CSV has 11 rows, unsupported sections remain explicit, and the static HTML summary exists.
+
+Remaining scope:
+
+- Stage 4.5 implementation runway is now complete through S4.5-IMP07.
+- Next required gate is rerunning S5-T01 before any S5-T02 or later search/timeline work.
+
+## 2026-07-22 - S4.5-IMP07 Implementation Handoff
+
+Result: ready for research/review agent review.
+
+Completed:
+
+- Created `app/docs/manual-testing/stage-4.5-command-line-testing-guide.md` with prerequisites, evidence safety, exact PowerShell commands, portable-runtime real-E01 commands, artifact inspection steps, expected statuses, troubleshooting, proof boundaries, and a reviewer transcript template.
+- Linked the guide from the manual-testing index and reconciled active Stage 4.5/Stage 5 status docs so S4.5-IMP07 is in review.
+- Kept selected-file real extraction as an opt-in template only; no selected-file extraction was run against the real image.
+- Kept Stage 5 search/timeline blocked until S4.5-IMP07 is accepted and S5-T01 is rerun.
+
+Verification:
+
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 184 passed in 41.91s.
+- Real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, metadata `metadata_available`, verification `not_supported`, EWF stream `ok`, partition-table status `ok` with 5 volumes, filesystem status `ok`, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, static HTML summary created, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+
+Scope intentionally not implemented:
+
+- No parser behavior, dependencies, real evidence fixtures, selected-file real extraction, recursive traversal, broad crawl, search/timeline, UI/report system, PDF, deleted recovery, carving, packaging, commit, or push.
+- Sensitive real evidence metadata values, evidence-internal names/paths, and file content are not quoted in shared docs or handoffs.
+
+## 2026-07-22 - S4.5-IMP07 Ready Ticket Preparation
+
+Result: ready to feed to the coding agent.
+
+Scope:
+
+- Documentation/instruction only: create the user-facing PowerShell testing guide and update related manual-testing/status docs.
+- The guide must be based on reviewed S4.5-IMP01 through S4.5-IMP06 behavior, including the portable-runtime real-image no-selection smoke shape.
+- It must keep selected-file real extraction opt-in only, avoid quoting sensitive metadata/root-entry names/content, and keep outputs under ignored `.test-artifacts/first-testing/`.
+- Stage 5 search/timeline remains blocked until S4.5-IMP07 is implemented/reviewed and S5-T01 is rerun.
+
+## 2026-07-22 - S4.5-IMP06 Review Acceptance
+
+Result: accepted; S4.5-IMP06 is done.
+
+Findings:
+
+- No blocking issues found.
+- The Stage 4.5 and Stage 5 handoff docs now preserve the reviewed implementation truth through S4.5-IMP05, record S4.5-IMP06 as the documentation/status gate packet, and keep S4.5-IMP07 as the remaining Stage 4.5 blocker.
+- The allowed future Stage 5 inputs are provenance-rich reviewed artifacts only: intake/segments, case/evidence/audit rows, metadata and verification-status records, EWF stream status, volume/filesystem/root-listing records, root-listing-derived file-list outputs, and explicit selected-file records when selection provenance exists.
+- The blocked inputs remain clear: recursive crawl, broad enumeration, full-text E01 content, auto-selected analysis/export, deleted recovery/carving, UI/report records, and unsupported verification-success claims.
+
+Verification:
+
+- Reviewer full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 184 passed in 32.93s.
+- Real-image smoke was not rerun because S4.5-IMP06 is documentation/status-only; the reviewed S4.5-IMP05 no-selection smoke remains the current real-image evidence record.
+
+Remaining scope:
+
+- S4.5-IMP07 command-line testing guide remains required before S5-T01 can rerun as a passing gate.
+- Stage 5 search/timeline remains blocked until S4.5-IMP07 is completed/reviewed and S5-T01 is rerun.
+
+## 2026-07-22 - S4.5-IMP06 Implementation Handoff
+
+Result: ready for research/review agent review.
+
+Completed:
+
+- Reconciled active Stage 4.5 and Stage 5 docs so S4.5-IMP01 through S4.5-IMP05 are reviewed/done, S4.5-IMP06 is in review, S4.5-IMP07 remains drafted, and S5-T02 through S5-T16 remain blocked/draft.
+- Added the Stage 5 gate handoff packet in active docs: completion matrix, reviewed artifacts available, allowed future input records, blocked inputs, required provenance/status/warning labels, and the recommendation to rerun S5-T01 only after S4.5-IMP07 is completed/reviewed.
+- Updated optional stale scaffold docs so they no longer say no first-testing command or real-E01 parser path exists.
+- Preserved the reviewed real-image truth without quoting sensitive metadata, filenames, root entries, or content.
+
+Verification:
+
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 184 passed in 44.69s.
+- Real-image smoke was not rerun for S4.5-IMP06 because this ticket is documentation/status-only; the reviewed S4.5-IMP05 no-selection smoke remains the current real-image evidence record.
+
+Remaining scope:
+
+- S4.5-IMP07 command-line testing guide, recursive traversal, broad crawl, selected-file real-content run with approved selection, search/timeline/indexing, UI/report system, PDF, deleted recovery, carving, packaging, commit, and push remain out of scope.
+- Stage 5 search/timeline remains blocked until S4.5-IMP07 is completed/reviewed and S5-T01 is rerun.
+
+## 2026-07-17 - S4.5-IMP05 Review Acceptance
+
+Result: accepted; S4.5-IMP05 is done.
+
+Findings:
+
+- No blocking issues found.
+- File-list JSON/CSV is correctly derived from the current root listing only, with honest zero-entry output when root listing is unavailable or not real-parser-backed.
+- Static HTML is local, escaped, non-interactive, and scoped to statuses/counts/artifact inventory instead of becoming a UI or report system.
+- Review correction: hardened HTML redaction for escaped evidence-root strings and expanded the redaction test with an evidence path containing `&`.
+
+Verification:
+
+- Focused portable-runtime run after review correction: `.\.python312-embed\python.exe -m pytest app\tests\test_first_testing_command.py`: 13 passed in 24.49s.
+- Full portable-runtime run after review correction: `.\.python312-embed\python.exe -m pytest`: 184 passed in 29.26s.
+- Reviewer real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, HTML summary created, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+- Artifact checks confirmed CSV header order, no S4.5-IMP05 output entries left in unsupported sections, no raw evidence root in shared summary/HTML, no script/network references in HTML, and no search/timeline/PDF artifacts.
+
+Remaining scope:
+
+- S4.5-IMP06 guardrail/review handoff, S4.5-IMP07 command-line testing guide, recursive traversal, broad crawl, auto-selection/export, selected-file real extraction without approved selection, search/timeline/indexing, UI, report system/PDF, deleted recovery, carving, packaging, commit, and push remain out of scope.
+- Stage 5 search/timeline remains blocked until S4.5-IMP06 through S4.5-IMP07 are completed and reviewed.
+
+## 2026-07-17 - S4.5-IMP05 Implementation Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- Added root-listing-derived `file-list.json` with schema/status/provenance fields, entry status/warnings, read-only/source-modified assertions, and honest zero-entry output when root listing is unavailable.
+- Added UTF-8 `file-list.csv` with stable headers, standard CSV writer output, warning-code joining, empty-cell preservation, and formula-looking cell protection.
+- Added static local `outputs/reports/summary.html` with escaped statuses/counts/artifact inventory, no network assets, no JavaScript app, and no evidence content.
+- Updated first-testing `run-manifest.json`, `command-summary.txt`, and unsupported sections so S4.5-IMP05 outputs are inventoried and no longer listed as not implemented.
+- Preserved selected-file opt-in behavior; no arbitrary evidence file is auto-selected, previewed, exported, hashed, or signature-checked.
+
+Verification:
+
+- Focused portable-runtime run: `.\.python312-embed\python.exe -m pytest app\tests\test_first_testing_command.py`: 13 passed in 22.53s.
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 184 passed in 27.70s.
+- Real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, EWF stream `ok`, partition-table status `ok` with 5 volumes, filesystem status `ok`, root listing `ok` / `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, HTML summary created, and selected-file operations `not_run`.
+- Smoke artifact check reported `source_modified: false` and `read_only_asserted: true`.
+
+Scope intentionally not implemented:
+
+- No recursive traversal, broad crawl, auto-selection/export, selected-file real extraction beyond existing explicit path, search/timeline/indexing, dynamic UI, report system, PDF, deleted recovery, carving, packaging, commit, or push.
+- No real evidence files were added to the repository, and sensitive real evidence filenames, root entry names, metadata values, and content are not quoted in shared summaries.
+
+## 2026-07-17 - S4.5-IMP04 Review Acceptance
+
+Result: accepted; S4.5-IMP04 is done.
+
+Findings:
+
+- No blocking issues found.
+- Selected-file preview/export/hash/signature now run only through explicit parser-backed root-entry selection and reuse the existing provider surfaces instead of creating a separate behavior path.
+- The default real-E01 smoke stayed non-invasive: no file was auto-selected, selected-file operations stayed `not_run`, and no selected export artifacts were created.
+- Review caveat: I did not run a real selected-file extraction smoke because no explicit safe real file selection was approved. Dependency-free fake-parser tests cover the selected-byte provider path without exposing real evidence content.
+
+Verification:
+
+- Focused portable-runtime run: `.\.python312-embed\python.exe -m pytest app\tests\test_selected_file_content.py app\tests\test_file_preview.py app\tests\test_file_export.py app\tests\test_content_analysis_hashing.py app\tests\test_content_analysis_signatures.py app\tests\test_first_testing_command.py`: 80 passed in 20.75s.
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 183 passed in 20.82s.
+- Reviewer real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`; selected-file readiness, preview, analysis, hash, signature, and export statuses were all `not_run`.
+- Artifact check confirmed no `file-list.json`, `file-list.csv`, `report.html`, selected export output, or selected export manifest was created by the no-selection smoke.
+
+Remaining scope:
+
+- S4.5-IMP05 file-list JSON/CSV, command summary, artifact inventory, optional static HTML, S4.5-IMP06 handoff reconciliation, S4.5-IMP07 command-line guide, search/timeline, UI, reports, deleted recovery, carving, packaging, commit, and push remain out of scope.
+- Stage 5 search/timeline remains blocked until S4.5-IMP05 through S4.5-IMP07 are completed and reviewed.
+
+## 2026-07-17 - S4.5-IMP04 Implementation Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- Added a selected-file content reader and provider wrappers for preview, export, and analysis over explicit parser-backed E01 root entries.
+- Reused `preview_file()`, `export_file()`, `hash_file_content()`, `detect_file_signature()`, and `evaluate_extension_mismatch()` instead of replacing those surfaces.
+- Added first-testing selected-file flags and artifacts: `selected-file-readiness.json`, `selected-file-preview.json`, `selected-file-analysis.json`, and `selected-file-export.json`.
+- Kept selected-file operations `not_run` when no file is explicitly selected and refused unsupported/deleted/metadata-only/unreadable/large-file paths with structured statuses.
+
+Verification:
+
+- Focused portable-runtime run: `.\.python312-embed\python.exe -m pytest app\tests\test_selected_file_content.py app\tests\test_file_preview.py app\tests\test_file_export.py app\tests\test_content_analysis_hashing.py app\tests\test_content_analysis_signatures.py app\tests\test_first_testing_command.py`: 80 passed in 22.41s.
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 183 passed in 26.98s.
+- Real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, EWF stream `ok`, logical media size 1,024,209,543,168 bytes, partition-table status `ok` with 5 volumes, filesystem status `ok`, a `real_parser_backed` root listing with 11 entries, and selected-file readiness/preview/hash/signature/export all `not_run` because no explicit safe file was selected.
+- Artifact check found no `file-list.json`, `file-list.csv`, or HTML artifacts from S4.5-IMP04.
+
+Scope intentionally not implemented:
+
+- No S4.5-IMP05 file-list JSON/CSV, static HTML, broad filesystem crawl, arbitrary auto-selection/export, search/timeline, UI, reports, deleted recovery, carving, packaging, commit, or push.
+- No real evidence files were added to the repository, and sensitive real evidence filenames, paths, root entry names, metadata values, and content are not quoted in shared summaries.
+
+## 2026-07-17 - S4.5-IMP03 Review Acceptance
+
+Result: accepted; S4.5-IMP03 is done.
+
+Findings:
+
+- No blocking issues found.
+- The hard gate passed under reviewer rerun: the local real-E01 smoke produced a `real_parser_backed` root listing with 11 entries from the actual evidence.
+- Root-listing artifact consistency check confirmed entries came from `pytsk3-filesystem-adapter` and were marked read-only.
+- Later-slice artifacts checked during review: no `file-list.json`, `file-list.csv`, or `report.html` was created.
+- Review correction: updated a stale `run_first_testing()` docstring that still said filesystem parsing was not added. This was documentation-only inside code and did not change behavior.
+
+Verification:
+
+- Focused portable-runtime run: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_volume_discovery.py app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py`: 48 passed in 21.79s.
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 174 passed in 25.71s.
+- Reviewer real-image smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, `metadata_available`, verification `not_supported`, EWF stream `ok`, logical media size 1,024,209,543,168 bytes, partition-table status `ok` with 5 volumes, filesystem status `ok`, and `real_parser_backed` root listing with 11 entries.
+
+Remaining scope:
+
+- S4.5-IMP04 selected-file content providers, E01-backed preview/export/hash/signature, file-list JSON/CSV, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, commit, and push remain out of scope.
+- Stage 5 search/timeline remains blocked until S4.5-IMP04 through S4.5-IMP07 are completed and reviewed.
+
+## 2026-07-17 - S4.5-IMP03 Implementation Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- Added `EwfImageByteStream` for read-only EWF-backed logical-image metadata and bounded reads.
+- Added a `partition_table` volume discovery path over `pytsk3.Volume_Info` while preserving existing whole-image behavior.
+- Upgraded `Pytsk3FilesystemAdapter` so an image-stream-backed volume can return real parser-backed root entries in existing `FilesystemResult` and `FilesystemEntry` shapes.
+- Integrated first-testing artifacts for `ewf-stream.json`, `volumes.json`, `filesystems.json`, `root-listing.json`, and `demo-readiness.json`.
+- Updated the command summary and run manifest so EWF stream, volume, filesystem, root-listing, and demo-readiness states stay separate.
+
+Verification:
+
+- Focused run: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_volume_discovery.py app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py`: 48 passed in 41.99s.
+- Full run: `.\.python312-embed\python.exe -m pytest`: 174 passed in 51.01s.
+
+Real-image smoke:
+
+- Command: `.\.python312-embed\python.exe -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case ".test-artifacts\first-testing\s4-5-imp03-real-filesystem-demo" --redact-paths`
+- Exit code: 0.
+- Run status: `ok_with_unsupported_sections`.
+- Segment count: 53.
+- Metadata status: `metadata_available`.
+- Verification status: `not_supported`.
+- EWF stream status: `ok`.
+- Logical media size: 1,024,209,543,168 bytes.
+- Volume strategy/status/count: `partition_table` / `ok` / 5.
+- Filesystem status: `ok`.
+- Root listing: `real_parser_backed`, 11 entries.
+- Demo readiness: `real_parser_backed_root_listing_available`.
+- Source modified: `false`; read-only asserted: `true`.
+
+Scope intentionally not implemented:
+
+- No S4.5-IMP04 selected-file byte providers, preview/export/hash/signature over E01 content, file-list JSON/CSV, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, commit, or push.
+- No real evidence files or generated real-evidence outputs were added for commit.
+- Sensitive real-E01 metadata values and root entry names are not quoted in shared summaries.
+
+## 2026-07-17 - S4.5-IMP03 Dependency Setup Review
+
+Result: blocker cleared for retry, not yet a completed S4.5-IMP03 demo.
+
+Setup accepted for local development:
+
+- Project-local runtime: `.\.python312-embed\python.exe`, Python 3.12.10.
+- Runtime folders `.python312/` and `.python312-embed/` are ignored by git.
+- Installed packages: `libewf-python 20240506` as import module `pyewf`, `pytsk3 20260715`, and `pytest 9.1.1`.
+- Import preflight: `pyewf=available`; `pytsk3=available`.
+
+Verification:
+
+- Focused portable-runtime run: 56 passed in 8.40s.
+- Full portable-runtime run: 167 passed in 14.99s.
+
+Real-image setup smoke:
+
+- Command exited 0 against the local ` Test Image` E01 set.
+- Segment count: 53.
+- Adapter/dependency: `pyewf-reader` available; `pyewf` available.
+- Metadata status: `metadata_available`.
+- Verification status: `not_supported`.
+- No `ewf-stream.json`, `volumes.json`, `filesystems.json`, or `root-listing.json` was created yet because S4.5-IMP03 app behavior is still unimplemented.
+
+Review guardrails:
+
+- Do not quote sensitive real-E01 metadata values in shared summaries.
+- The S4.5-IMP03 success gate is unchanged: a `Review` handoff must include a real-parser-backed root listing from the actual evidence, or the ticket must return `Blocked` with the next precise API/implementation blocker.
+- Do not start S4.5-IMP04 or Stage 5 search/timeline.
+
+## 2026-07-17 - S4.5-IMP03 Real E01 Filesystem Demo Gate
+
+Result: blocked, not ready for review.
+
+Preflight:
+
+- `pyewf`: missing.
+- `pytsk3`: missing.
+- Local evidence exists: ` Test Image/C16242-1-RL1-E003.E01`.
+- First segment size observed locally: 2,147,479,074 bytes.
+
+Manual smoke attempted:
+
+- Command: `python -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case ".test-artifacts\first-testing\s4-5-imp03-real-filesystem-demo" --redact-paths`
+- Exit code: 0.
+- Status: `ok_with_unsupported_sections`.
+- Segment count: 53.
+- Adapter/dependency: `pyewf-reader`, available `False`; `pyewf`, available `False`.
+- Metadata status: `metadata_unavailable`.
+- Verification status: `not_run`.
+- Source modified: `false`.
+- Read-only asserted: `true`.
+- EWF stream status: unavailable; no `ewf-stream.json` artifact was created.
+- Partition/volume status/count: unavailable; no `volumes.json` artifact and no real volume count.
+- Filesystem status: unavailable; no `filesystems.json` artifact.
+- Root listing: no `root-listing.json`; root entry count unavailable/0; no real-parser-backed entries.
+
+Blocker:
+
+- S4.5-IMP03 cannot satisfy the non-negotiable demo gate until `pyewf`/libewf and `pytsk3`/The Sleuth Kit are installed and usable in the active environment.
+- Dependency-unavailable output remains honest, but it is not a successful real-E01 filesystem demo.
+
+Verification:
+
+- Focused run: `python -m pytest app\tests\test_image_stream.py app\tests\test_volume_discovery.py app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py`: 41 passed in 16.15s.
+- Full run: `python -m pytest`: 167 passed in 23.39s.
+
+Scope intentionally not implemented:
+
+- No EWF-backed stream, partition/filesystem parser, E01-backed content provider, file-list output, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, native dependency installation, commit, or push.
+
+## 2026-07-17 - S4.5-IMP03 Demo Gate Revision
+
+Result: S4.5-IMP03 revised and ready for coding-agent handoff.
+
+Review direction:
+
+- S4.5-IMP03 is now the first hard real-E01 filesystem demo gate.
+- A successful `Review` handoff must include a real-parser-backed root listing from ` Test Image/C16242-1-RL1-E003.E01`.
+- If `pyewf`, `pytsk3`, libewf, The Sleuth Kit, build tooling, or API mismatch blocks that demo, the coding agent must mark S4.5-IMP03 `Blocked`, not `Review`, and return exact blocker evidence plus recommended setup.
+
+Local preflight:
+
+- `pyewf=missing`
+- `pytsk3=missing`
+
+## 2026-07-17 - S4.5-IMP02 And S4.5-IMP02A Acceptance
+
+Result: accepted; both tickets marked done.
+
+Findings:
+
+- No blocking issues found after S4.5-IMP02A.
+- The earlier `metadata_partial` concern is fixed: complete metadata plus stored hash metadata no longer emits `metadata_partial`, while true metadata-field unavailability still does.
+
+Verification:
+
+- Focused run: `python -m pytest app\tests\test_ewf_reader_adapter.py app\tests\test_intake_command.py app\tests\test_first_testing_command.py`: 25 passed in 7.35s.
+- Full run: `python -m pytest`: 167 passed in 9.77s.
+- `git diff --check` passed, with only normal Windows line-ending notices.
+
+Remaining risk:
+
+- `pyewf` is still unavailable locally, so real metadata extraction and verification are dependency-safe but not exercised against the local real E01. EWF-backed streams, partition/filesystem parsing, E01-backed file content, file-list output, static HTML, and full manual E01 workflow remain later Stage 4.5 slices.
+
+## 2026-07-17 - S4.5-IMP02A Metadata Warning Semantics Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- Corrected `app/backend/forensic_core/ewf_reader.py` so `metadata_partial` is emitted only when `metadata_field_unavailable` is present.
+- Preserved `stored_hash_not_verified` as separate stored-hash metadata context, not verification success and not a metadata-partial trigger by itself.
+- Preserved verification warning semantics separately from metadata warning semantics.
+- Added dependency-free fake-`pyewf` assertions covering complete metadata plus stored hashes, partial metadata, and stored hashes without verification success.
+
+Scope intentionally not implemented:
+
+- No S4.5-IMP03 work.
+- No EWF-backed streams, partition/filesystem parsing, E01-backed content providers, file-list output, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, native dependency installation, commit, or push.
+
+Verification:
+
+- Focused run: `python -m pytest app\tests\test_ewf_reader_adapter.py app\tests\test_intake_command.py app\tests\test_first_testing_command.py`: 25 passed in 11.04s.
+- Full run: `python -m pytest`: 167 passed in 14.52s.
+
+Review note:
+
+- Previous S4.5-IMP02 finding addressed: complete metadata reads with stored EWF hash metadata no longer emit `metadata_partial` solely because `stored_hash_not_verified` is present.
+
+## 2026-07-17 - S4.5-IMP02 Real EWF Metadata And Verification Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- Upgraded `PyewfEwfReaderAdapter` from importable-but-not-implemented skeleton to best-effort `pyewf` metadata and explicit verification handling.
+- Preserved missing-`pyewf` dependency-unavailable behavior.
+- Normalized metadata fields including format, segment count, reader/version, media size, bytes per sector, selected acquisition header fields, dates, and stored hashes when exposed.
+- Kept stored hash metadata separate from verification success with `stored_hash_not_verified`.
+- Added verification status handling for success, failure, exception/error, partial/unsupported shapes, unsupported API, and dependency-not-run states.
+- Converted expected open, metadata, and verification errors into structured warnings/statuses.
+- Added `metadata.json`, `verification.json`, and `segment-discovery.json` to the first-testing artifact bundle.
+- Updated run manifest and command summary to surface metadata and verification status.
+- Added dependency-free fake-`pyewf` tests.
+
+Scope intentionally not implemented:
+
+- No native dependency installation.
+- No EWF-backed byte streams, partition/filesystem parsing, E01-backed preview/export/hash/signature content providers, file-list JSON/CSV, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, commit, or push.
+- No real E01 fixture was added to the repository.
+
+Verification:
+
+- Focused run: `python -m pytest app\tests\test_ewf_reader_adapter.py app\tests\test_intake_command.py app\tests\test_first_testing_command.py`: 25 passed in 14.62s.
+- Full run: `python -m pytest`: 167 passed in 17.24s.
+- Optional real-image smoke command used ` Test Image/C16242-1-RL1-E003.E01` with output under `.test-artifacts/first-testing/review-s4-5-imp02-real-image`.
+- Smoke result: `ok_with_unsupported_sections`; 53 segments discovered; intake status `metadata_unavailable`; metadata status `metadata_unavailable`; verification status `not_run`; adapter `pyewf-reader`; dependency unavailable; `read_only_asserted: true`; `source_modified: false`; 6 unsupported rows.
+- Smoke artifact check found `metadata.json`, `verification.json`, and `segment-discovery.json`, and no file-list, CSV, export, report, or HTML artifacts.
+
+## 2026-07-16 - S4.5-IMP07 Testing Guide Ticket Addition
+
+Result: added as draft; no coding-agent handoff yet.
+
+Prepared:
+
+- Added `tickets/stage-4.5/S4.5-IMP07-command-line-testing-guide.md`.
+- Added `prompts/vscode-agent/2026-07-16-s4.5-imp07-command-line-testing-guide.md`.
+- Updated Stage 4.5 and Stage 5 gate language so the pre-Stage-5 runway is S4.5-IMP01 through S4.5-IMP07.
+
+Purpose:
+
+- Ensure the real-evidence first-testing work produces a practical command-line guide, not just implementation artifacts.
+- Require exact PowerShell commands, expected artifacts, inspection steps, troubleshooting, proof boundaries, privacy/redaction rules, and reviewer transcript templates.
+
+Scope intentionally not implemented:
+
+- No app behavior, parser behavior, dependencies, evidence handling, real evidence artifacts, Stage 5 search/timeline, UI, reports, commit, or push.
+
+Verification:
+
+- `python -m pytest`: 160 passed in 15.73s.
+
+## 2026-07-16 - S4.5-IMP02 Through S4.5-IMP06 Ticket Population
+
+Result: implementation runway populated; no coding-agent handoff yet.
+
+Prepared:
+
+- Added `S4.5-IMP02-real-ewf-metadata-verification.md` as `Ready`.
+- Added `S4.5-IMP03-ewf-stream-partition-filesystem.md` as `Draft`.
+- Added `S4.5-IMP04-e01-file-content-providers.md` as `Draft`.
+- Added `S4.5-IMP05-file-list-output-visual-summary.md` as `Draft`.
+- Added `S4.5-IMP06-final-guardrail-review-handoff.md` as `Draft`.
+- Added matching VS Code coding-agent prompts for S4.5-IMP02 through S4.5-IMP06.
+
+Reviewer rationale:
+
+- Stage 4.5 planning was created to reach a substantial real-evidence first-testing display before Stage 5 search/timeline.
+- Generating the remaining IMP tickets now makes that runway explicit and prevents S5-T02 from absorbing unfinished first-testing work.
+- S4.5-IMP02 is next because S4.5-IMP01 produced the command shell and case workspace, but metadata/verification are still unavailable.
+
+Scope intentionally not implemented:
+
+- No app behavior, parser behavior, schema change, dependency installation, evidence handling, output artifact, visual summary, search/timeline, UI, report, commit, or push.
+
+Verification:
+
+- `python -m pytest`: 160 passed in 18.27s.
+
+## 2026-07-16 - S4.5-IMP01 Review Result
+
+Result: accepted; S4.5-IMP01 marked `Done`.
+
+Findings:
+
+- No blocking findings.
+- The command implements the requested S4.5-IMP01 shell without adding real parser behavior or Stage 5 search/timeline work.
+- Evidence/case/output overlap checks happen before workspace/artifact creation.
+- The artifact bundle contains the expected `case.db`, `run-manifest.json`, `command-summary.txt`, `intake.json`, `case.json`, `audit.json`, and `unsupported-sections.json`.
+- Unsupported sections clearly identify later owners S4.5-IMP02 through S4.5-IMP06.
+- Manual status is only partial: the command shell was smoke-tested against a real local E01 set, but real EWF metadata, verification, partition/filesystem parsing, E01-backed content extraction, file-list output, and static HTML remain unimplemented.
+
+Reviewer verification:
+
+- Focused automated test rerun: `python -m pytest app\tests\test_first_testing_command.py`: 8 passed in 11.82s.
+- Full-suite rerun: `python -m pytest`: 160 passed in 31.64s.
+- Real-image smoke command used ` Test Image/C16242-1-RL1-E003.E01` with output under `.test-artifacts/first-testing/review-s4-5-imp01-real-image`.
+- Smoke result: `ok_with_unsupported_sections`; 53 segments discovered; intake status `metadata_unavailable`; adapter `pyewf-reader`; dependency unavailable; `read_only_asserted: true`; `source_modified: false`; 4 audit events; 8 unsupported rows.
+- Artifact check found no file-list, CSV, static HTML, export, or report artifacts from S4.5-IMP01.
+
+Next:
+
+- Prepare S4.5-IMP02 for real EWF metadata and verification work.
+- Keep S5-T02 through S5-T16 `Draft` until S4.5-IMP01 through S4.5-IMP06 are completed and reviewed.
+
+## 2026-07-16 - S4.5-IMP01 First-Testing Command Shell Handoff
+
+Result: ready for research/review agent review.
+
+Implemented:
+
+- Added `app/backend/api/first_testing.py` with `python -m app.backend.api.first_testing`.
+- Exposed `run_first_testing()`, `first_testing_to_json()`, and `format_first_testing_summary()` from `app.backend.api`.
+- Added validation for direct `.E01` input and `--evidence-dir` plus `--first-segment`, required `--case`, optional `--output`, `--case-name`, `--case-description`, `--actor`, `--adapter pyewf|stub`, `--json-only`, and `--redact-paths`.
+- Rejected `.E02+` primary inputs, unsupported extensions, missing/conflicting input forms, direct directories, and unsafe evidence/case/output overlap before artifact writes.
+- Created the required S4.5-IMP01 artifact layout: `case.db`, `run-manifest.json`, `command-summary.txt`, `intake.json`, `case.json`, `audit.json`, and `unsupported-sections.json`.
+- Reused `run_e01_intake()`, `connect()`, `initialize_schema()`, `insert_case()`, `insert_evidence_source()`, `insert_audit_event()`, and `list_audit_events()`.
+- Added focused tests in `app/tests/test_first_testing_command.py`.
+
+Scope intentionally not implemented:
+
+- No real EWF metadata or verification.
+- No EWF-backed stream, partition/filesystem parsing, E01-backed content provider, file-list output, static HTML, search/timeline, UI, reports, deleted recovery, carving, packaging, native dependency installation, real E01 fixture, commit, or push.
+- Manual E01 status remains `Untested`.
+
+Verification:
+
+- Focused run: `python -m pytest app\tests\test_first_testing_command.py`: 8 passed in 9.86s.
+- Full run: `python -m pytest`: 160 passed in 9.12s.
+
+## 2026-07-16 - S4.5-IMP01 Ticket Preparation
+
+Result: ready for coding-agent handoff; implementation not started by reviewer.
+
+Prepared:
+
+- Added `tickets/stage-4.5/S4.5-IMP01-first-testing-command-shell.md`.
+- Added `prompts/vscode-agent/2026-07-16-s4.5-imp01-first-testing-command-shell.md`.
+- Scoped the ticket to the first-testing command shell, safe case workspace, intake persistence, run manifest, command summary, audit artifact, and unsupported-section output.
+- Required reuse of existing intake and case-store helpers: `run_e01_intake()`, `connect()`, `initialize_schema()`, `insert_case()`, `insert_evidence_source()`, `insert_audit_event()`, and `list_audit_events()`.
+- Required focused automated coverage without real E01 fixtures or native forensic dependencies.
+
+Scope intentionally excluded:
+
+- No real EWF metadata, real EWF verification, EWF-backed stream, partition/filesystem parsing, E01-backed content provider, file-list output, static HTML output, search/timeline implementation, UI, reports, deleted recovery, carving, packaging, commit, or push.
+
+Reviewer notes:
+
+- S5-T01A is accepted and done, so active guidance no longer permits bypassing the Stage 4.5 implementation runway.
+- S4.5-IMP01 is the next practical implementation ticket.
+- S5-T02 through S5-T16 remain `Draft`; Stage 5 search/timeline remains blocked until S4.5-IMP01 through S4.5-IMP06 are completed and reviewed.
+
+Verification:
+
+- Pre-handoff status scan confirmed the S4.5-IMP01 ticket and prompt are present and Stage 5 remains blocked.
+- `python -m pytest`: 152 passed in 3.25s.
+
+## 2026-07-16 - S5-T01A Stage 4.5 Gate Language Hardening
+
+Result: accepted; S5-T01A marked `Done`.
+
+Implemented:
+
+- Removed active Stage 4.5 wording that implied the user could bypass or set aside the Stage 4.5 implementation runway to begin Stage 5 search/timeline.
+- Clarified that the user may pause work, review documentation, or choose when to start S4.5-IMP01, but S5-T02 or later search/timeline implementation must wait for S4.5-IMP01 through S4.5-IMP06 to be completed and reviewed.
+- Kept S5-T01 as `Done` with the accepted failed-gate/blocker result.
+- Kept S5-T02 through S5-T16 as `Draft`.
+- Kept S4.5-IMP01 as the next practical implementation ticket.
+
+Reviewer result:
+
+- No blocking findings.
+- Confirmed active Stage 4.5 and manual-testing guidance no longer allows Stage 5 search/timeline to proceed by setting aside or bypassing S4.5-IMP01 through S4.5-IMP06.
+- Confirmed remaining old-wording matches are historical or explanatory, not active bypass guidance.
+- Marked S5-T01A as `Done`.
+
+Scope intentionally not implemented:
+
+- No app source code, tests, schema, parser behavior, evidence handling behavior, evidence fixtures, first-testing implementation, search/timeline implementation, UI, reports, local artifacts, commit, or push.
+
+Verification:
+
+- Focused active Stage 4.5 wording search: no remaining `set aside`, `priority changes`, `changes priority`, `unless the user changes priority`, `explicitly set aside`, `explicitly moves on`, `user changes priority`, or `unless priority changes` matches.
+- Stage 5 status search: no readiness drift for S5-T02 through S5-T16 in the checked indexes.
+- Remaining old-wording matches are historical review/log/prompt-history notes, privacy wording unrelated to bypassing, or S5-T01/S5-T01A descriptions of the wording that was hardened.
+- `python -m pytest`: 152 passed in 7.64s.
+
+## 2026-07-16 - S5-T01 Readiness And Stage 4.5 Completion Gate
+
+Result: accepted as a completed failed gate; S5-T01 marked `Done`.
+
+Findings:
+
+- S5-T00 is accepted and done.
+- No `S4.5-IMP01` through `S4.5-IMP06` implementation ticket files or prompt files were found.
+- `app/backend/api/first_testing.py` is absent.
+- Reviewed backend code still has only the existing `pyewf` dependency-safe reader skeleton and `pytsk3` dependency-safe filesystem skeleton; real metadata, real verification, EWF-backed streams, real partition/filesystem parsing, and E01-backed file-content providers are not implemented.
+- Stage 4.5 has no reviewed first-testing command, output bundle, file-list artifacts, static HTML summary, or confirmed manual E01 workflow.
+- Manual E01 status remains `Untested`.
+- S5-T02 through S5-T16 must remain `Draft`; Stage 5 search/timeline implementation remains blocked/deferred.
+
+Stage 4.5 completion matrix summary:
+
+- S4.5-IMP01: not created / not implemented / not reviewed.
+- S4.5-IMP02: not created / not implemented / not reviewed.
+- S4.5-IMP03: not created / not implemented / not reviewed.
+- S4.5-IMP04: not created / not implemented / not reviewed.
+- S4.5-IMP05: not created / not implemented / not reviewed.
+- S4.5-IMP06: not created / not implemented / not reviewed.
+
+Allowed Stage 5 planning inputs remain limited to reviewed record families with honest labels: intake/segment discovery results, explicit case/evidence/audit rows, Stage 2 local-file/stub/provider filesystem and preview records, Stage 3 export manifests/results, and Stage 4 provider-backed hash/signature/mismatch/known-file records. Blocked inputs include real parser-backed E01 metadata, first-testing manifests/file-list artifacts, real EWF verification, EWF-backed partition/filesystem records, E01-backed file-content records, and full-text records from E01 content.
+
+Documentation wording note:
+
+- Current Stage 5 docs and `workflow.md` enforce S5-T01 as the hard gate.
+- Older active Stage 4.5 planning/manual-testing docs still contain softer "user changes priority" or "explicitly set aside" wording. This S5-T01 result overrides that wording for Stage 5 readiness.
+
+Reviewer result:
+
+- No blocking issue with the S5-T01 failed-gate record itself.
+- Accepted S5-T01 as `Done` with Stage 5 search/timeline still blocked/deferred.
+- Created S5-T01A as a small documentation-hardening follow-up before S4.5-IMP01 preparation.
+
+Scope intentionally not implemented:
+
+- No app source code, tests, parser behavior, schema, native dependency setup, evidence fixtures, first-testing implementation, search/timeline implementation, UI, reports, local artifacts, commit, or push.
+
+Verification:
+
+- Coding-agent run: `python -m pytest`: 152 passed in 3.34s.
+- Reviewer rerun after S5-T01 acceptance and S5-T01A ticket creation: `python -m pytest`: 152 passed in 7.85s.
+
+## 2026-07-16 - S5-T00 Documentation Organization Cleanup
+
+Result: accepted; S5-T00 marked `Done`.
+
+Implemented:
+
+- Applied the S5-T00 source-of-truth model across the main project docs and indexes.
+- Reduced duplicate long status narrative in `readme.md` and `plan.md`.
+- Kept `tickets/` as ticket scope/status and `prompts/vscode-agent/` as prompt history.
+- Marked S5-T00 as `Review` while keeping S5-T01 through S5-T16 as draft future work.
+- Confirmed S5-T01 remains the hard gate before S5-T02+ search/timeline implementation.
+- Removed `prompts/stage-5a-onboarding/` after confirming it was empty and had no unique information to preserve.
+
+Reviewer result:
+
+- No blocking findings.
+- Updated the Stage 5 review-agent handoff prompt to describe the stage-5a cleanup candidates as resolved rather than current folders to inspect.
+- Marked S5-T00 as `Done`.
+
+Scope intentionally not implemented:
+
+- No app source code, tests, parser behavior, native dependency setup, evidence handling behavior, UI/reporting, Stage 4.5 first-testing implementation, Stage 5 search/timeline implementation, local artifacts, evidence files, fixtures, commit, or push.
+
+Verification:
+
+- Coding-agent run: `python -m pytest`: 152 passed in 7.15s.
+- Reviewer rerun after S5-T00 acceptance/status updates: `python -m pytest`: 152 passed in 5.58s.
+
+## 2026-07-15 - Stage 5 Detailed Ticket Population
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Read the Stage 5 review-agent handoff prompt and populated detailed Stage 5 tickets S5-T01 through S5-T16.
+- Added matching paste-ready VS Code coding-agent prompts for S5-T01 through S5-T16.
+- Updated the Stage 5 README, main plan, prompt indexes, handoff prompt, workflow notes, and current status docs so S5-T00 remains the documentation cleanup gate and S5-T01 is the hard Stage 4.5 completion gate.
+- Documented that S5-T01 must block S5-T02 and later if the Stage 4.5 substantial-test implementation runway is incomplete.
+
+Scope intentionally not implemented:
+
+- No Python source behavior, tests, schema, parser behavior, evidence handling behavior, native dependency setup, search/timeline implementation, UI, reporting, local artifacts, E01 fixtures, commit, or push.
+
+Verification:
+
+- `python -m pytest`: 152 passed in 4.75s.
+
+## 2026-07-15 - S4.5-T08 Documentation And Review Handoff
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Completed the S4.5-T08 documentation-only handoff and marked the ticket `Review`.
+- Reconciled Stage 4.5 status across top-level docs, app/backend docs, ticket indexes, prompt indexes, manual-testing docs, progression, review notes, and documentation logs.
+- Confirmed S4.5-T00 through S4.5-T07 remain planning in review.
+- Confirmed the implementation runway from S4.5-IMP01 through S4.5-IMP06 stays visible, with S4.5-IMP01 as the next practical implementation slice unless the user changes priority.
+- Preserved the current real-E01 truth: segment filename discovery exists, but real EWF metadata, real verification, partition/filesystem parsing, and E01-backed file-content extraction do not.
+- Kept Stage 5 search/timeline deferred and left broad documentation organization cleanup to S5-T00.
+
+Scope intentionally not implemented:
+
+- No Python source behavior, tests, schema, parser behavior, native dependency setup, evidence handling behavior, UI/reporting, Stage 5 search/timeline implementation, broad S5-T00 cleanup, local artifacts, E01 fixtures, dependency installation, commit, or push.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 10.64s.
+
+## 2026-07-15 - S4.5-T07 Workflow Guardrail Review Optimization
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Sent the S4.5-T06 documentation-only handoff prompt to the Stage 4.5 coding-agent task.
+- Expanded S4.5-T07 into a detailed documentation-only workflow, guardrail, and review optimization plan.
+- Added review gates for the future Stage 4.5 implementation runway.
+- Defined per-slice manual-test/review checklists, required handoff format, review-note categories, `functionality.md` manual-test status rules, privacy/redaction rules, no-overclaim checks, and evidence safety checks.
+- Updated `workflow.md` and the manual-testing guide with Stage 4.5 handoff and review rules.
+- Added a ticket-specific coding-agent prompt that points to the Stage 4.5 familiarization prompt.
+
+Scope intentionally not implemented:
+
+- No Python source, product behavior, output rendering, parser behavior, first-testing command behavior, file-content providers, search/timeline, UI, packaging, deleted recovery, carving, local artifacts, E01 fixtures, dependency installation, commit, or push.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 7.28s.
+
+## 2026-07-15 - S4.5-T06 File List And Output Plan
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Sent the S4.5-T05 documentation-only handoff prompt to the Stage 4.5 coding-agent task.
+- Expanded S4.5-T06 into a detailed documentation-only file-list and output plan.
+- Defined command prompt summary, JSON artifact bundle, CSV file-list columns, optional static HTML, redaction rules, and output artifact layout.
+- Added an implementation runway lining up S4.5 planning tickets into future buildable implementation slices before Stage 5 search/timeline.
+- Added a ticket-specific coding-agent prompt that points to the Stage 4.5 familiarization prompt.
+
+Scope intentionally not implemented:
+
+- No Python source, output rendering, CSV writing, HTML generation, first-testing command behavior, parser behavior, file-content providers, local artifacts, E01 fixtures, dependency installation, search/timeline, reporting UI, packaging, deleted recovery, carving, commit, or push.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 4.26s.
+
+## 2026-07-15 - S4.5-T05 E01 File Content Provider Plan
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Sent the S4.5-T04 documentation-only handoff prompt to the Stage 4.5 coding-agent task.
+- Expanded S4.5-T05 into a detailed documentation-only plan for E01-backed file-content providers.
+- Defined the shared selected-file content reader direction plus thin provider wrappers for preview, export, and analysis.
+- Mapped future real parser bytes to existing `preview_file()`, `export_file()`, `hash_file_content()`, `detect_file_signature()`, and `evaluate_extension_mismatch()` behavior.
+- Added provenance, provider identity, status/warning, memory/streaming, deleted/sparse/special-file, test, manual integration, and implementation-sequence planning.
+- Added a ticket-specific coding-agent prompt that points to the Stage 4.5 familiarization prompt.
+
+Scope intentionally not implemented:
+
+- No Python source, dependency installation, byte extraction, content reader, provider wrapper, parser behavior, streaming API, first-testing command behavior, tests, schema migration, E01 fixtures, manual evidence run, file-list export, static HTML, search/timeline, reporting, UI, commit, or push.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 4.30s.
+
+## 2026-07-15 - S4.5-T04 EWF Stream, Partition, And Filesystem Plan
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Sent the S4.5-T03 documentation-only handoff prompt to the Stage 4.5 coding-agent task.
+- Expanded S4.5-T04 into a detailed documentation-only plan for EWF-backed image streams, partition discovery, and real filesystem metadata parsing.
+- Recorded that local `pyewf` and `pytsk3` are still missing.
+- Defined the future data path from selected `.E01` to `ImageByteStream`, `VolumeInfo`, `FilesystemResult`, `FilesystemEntry`, and `list_directory()` outputs.
+- Added dependency/status/warning planning, mocked test strategy, manual integration logging, and future implementation boundaries.
+- Added a ticket-specific coding-agent prompt that points to the Stage 4.5 familiarization prompt.
+
+Scope intentionally not implemented:
+
+- No Python source, dependency installation, EWF stream, partition parser, pytsk image wrapper, real filesystem parser, tests, schema migration, E01 fixtures, manual evidence run, file-content provider, preview/export/hash/signature bridge, file-list export, static HTML, search/timeline, reporting, UI, commit, or push.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 3.65s.
+
+## 2026-07-15 - S4.5-T03 Pyewf Metadata And Verification Plan
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Sent the S4.5-T02 documentation-only handoff prompt to the Stage 4.5 coding-agent task.
+- Expanded S4.5-T03 into a detailed documentation-only plan for real `pyewf` metadata and verification investigation.
+- Recorded that local `pyewf` is still missing.
+- Defined dependency investigation questions, metadata field scope, verification statuses, warning codes, test strategy, manual integration logging, and future implementation boundaries.
+- Added a ticket-specific coding-agent prompt that points to the Stage 4.5 familiarization prompt.
+
+Scope intentionally not implemented:
+
+- No Python source, dependency installation, real metadata reader, real verification, tests, schema migration, E01 fixtures, manual evidence run, EWF stream, partition/filesystem parser, file-content provider, preview/export/hash/signature bridge, file-list export, static HTML, search/timeline, UI, commit, or push.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 5.38s.
+
+## 2026-07-15 - S4.5-T02 Case Workspace And First-Testing Command Plan
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Expanded S4.5-T02 into a detailed documentation-only plan for the first-testing command and case workspace.
+- Defined the future command target, arguments, case workspace layout, manifest fields, text summary shape, JSON artifacts, and audit expectations.
+- Mapped the future command to current intake and case-store helpers.
+- Added a ticket-specific coding-agent prompt that points to the Stage 4.5 familiarization prompt.
+
+Scope intentionally not implemented:
+
+- No Python source, first-testing command, tests, schema migration, dependency installation, evidence fixtures, real EWF metadata, verification, EWF stream, partition/filesystem parser, file-content provider, preview/export/hash/signature bridge, file-list export, static HTML, search/timeline, UI, commit, or push.
+
+Tests:
+
+- `python -m pytest`: 152 passed in 5.64s.
+
+## 2026-07-15 - Stage 4.5 First Testing Scaffold
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Added Stage 4.5 scaffold for first testing with user-provided E01 files before Stage 5 search/timeline.
+- Added draft tickets under `tickets/stage-4.5/`.
+- Added onboarding prompt and app-side user-provided E01/script/manual-test placeholder folders.
+- Updated planning and app docs to keep Stage 4.5 separate from Stage 5 search/timeline implementation.
+- Documented the current functionality summary and the key real-E01 limit: segment discovery exists, but real EWF metadata, verification, partition parsing, filesystem parsing, and file-content extraction do not.
+
+Scope intentionally not implemented:
+
+- No Python source behavior, tests, schema, API wrapper, first-testing command, real `pyewf` metadata reader, verification, search/timeline, persistence, UI, real partition/filesystem parser work, deleted recovery, carving, commit, or push.
+
+Expected verification:
+
+- `python -m pytest`.
+
+## 2026-07-15 - S4.5-T00 Current-Code Utilization Plan
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Expanded S4.5-T00 with a current-code utilization table for the desired command-line E01 MVP.
+- Mapped intended functionality to current functions and classes:
+  - intake and segment discovery;
+  - case-store helpers;
+  - EWF adapter contracts;
+  - image/volume/filesystem shapes;
+  - preview/export/analysis provider surfaces;
+  - audit and output artifacts.
+- Reworked the Stage 4.5 follow-on ticket sequence to align with the current goal.
+- Marked Stage 5 search/timeline as deferred behind first-testing.
+
+Scope intentionally not implemented:
+
+- No source behavior, tests, schema, API wrapper, real EWF metadata reader, verification, EWF stream, parser, file-content provider, output renderer, search/timeline, UI, commit, or push.
+
+Expected verification:
+
+- `python -m pytest`.
+
+## 2026-07-15 - S4.5-T01 User-Provided E01 Handling Plan
+
+Result: ready for user/review confirmation.
+
+Implemented:
+
+- Expanded S4.5-T01 into a detailed user-provided E01 handling and privacy plan.
+- Updated the user-provided E01 fixture documentation and Stage 4.5 manual-testing guide.
+- Added a ticket-specific coding-agent prompt that points to the Stage 4.5 familiarization prompt.
+
+Scope intentionally not implemented:
+
+- No Python source, tests, schema, first-testing command, dependency installation, E01 fixtures, parser behavior, search/timeline, UI, commit, or push.
+
+Expected verification:
+
+- `python -m pytest`.
+
 ## 2026-07-15 - S4-T07 Review
 
 Result: approved for commit.
@@ -23,7 +891,7 @@ Findings:
 - Final Stage 4 docs accurately describe S4-T01 contracts, S4-T02 provider-backed hashing, S4-T03 bounded signature detection, S4-T04 extension mismatch over existing signature results plus metadata, S4-T05 fixture-sized known-file matching over existing hash results plus caller-supplied in-memory records, and S4-T06 persistence planning only.
 - Stage 3 export-output SHA-256 verification remains separate from Stage 4 per-file analysis hashing, and whole-image verification remains unsupported.
 - Docs keep synthetic/generated/provider-backed labels visible and preserve the warning that Stage 5 must not turn synthetic or stub-only data into confident real-evidence findings.
-- Stage 5 remains rough/draft with all tickets unstarted; S5-T00 readiness review is the next appropriate handoff.
+- Stage 5 remains rough/draft with search/timeline unstarted; this older readiness note is now superseded by S5-T00 documentation cleanup first, with readiness/risk audit moved to S5-T01.
 - Manual-test status remains `Untested`.
 
 Tests:
@@ -32,7 +900,7 @@ Tests:
 
 Residual notes:
 
-- Stage 5 should start with a readiness/risk audit that either adds a reality anchor or explicitly limits search/timeline to provenance-rich, labeled provider-backed records.
+- Stage 5 should run documentation cleanup first, then a readiness/risk audit that either adds a reality anchor or explicitly limits search/timeline to provenance-rich, labeled provider-backed records.
 
 ## 2026-07-15 - S4-T07 Stage 4 Documentation Handoff
 

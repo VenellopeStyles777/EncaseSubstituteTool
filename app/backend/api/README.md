@@ -13,7 +13,7 @@ These callables are backend-only and JSON-friendly. They do not provide UI, exec
 
 Stage 3 note: S3-T04 can optionally record export attempts in the case-store audit log when the caller supplies explicit audit context. It does not recover deleted files, parse real filesystems, run broader hash/signature analysis, or use preview-rendered text/hex as export bytes.
 
-Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. There is still no API callable/wrapper for hash, signature, mismatch, known-file, or analysis-result persistence. Preview-rendered text/hex, preview providers, export providers, written export artifacts, and external known-file lists remain disallowed as implicit source analysis content.
+Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. S4.5-IMP01 adds a first-testing command shell and case-workspace bundle. S4.5-IMP02 adds best-effort `pyewf` metadata and separate verification status when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 adds the first EWF stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts and is reviewed done. S4.5-IMP04 adds selected-file E01 content providers for preview/export/hash/signature only when an explicit parser-backed root entry is selected. S4.5-IMP05 adds root-listing-derived file-list JSON/CSV and static local HTML summary output without adding search/timeline, recursion, or UI/reporting system behavior. S4.5-IMP06 is documentation/status handoff work and adds no API behavior. Preview-rendered text/hex, written export artifacts, and external known-file lists remain disallowed as implicit source analysis content.
 
 ## S1-T04 Intake Command
 
@@ -44,11 +44,118 @@ Current status values include:
 
 - `ok`: stub-backed intake completed with synthetic metadata.
 - `metadata_unavailable`: adapter dependency is unavailable, such as missing `pyewf`.
-- `reader_not_implemented`: adapter dependency is importable, but real metadata extraction is not implemented yet.
+- `reader_error`: the adapter dependency is importable, but opening or reading expected metadata failed.
 - `invalid_input`: selected path is missing or not a valid `.E01` first segment.
 - `reader_error`: unexpected adapter exception caught at the command boundary.
 
 S1-T04 does not persist results automatically. Use the case-store helpers explicitly when a case workflow is ready.
+
+## S4.5 First-Testing Command Shell
+
+Callable usage from Python:
+
+```python
+from app.backend.api import run_first_testing
+
+result = run_first_testing(
+    r"path\to\sample.E01",
+    case_path=r".test-artifacts\first-testing\case-a",
+    adapter_name="stub",
+)
+```
+
+Command-line usage from the repository root:
+
+```powershell
+python -m app.backend.api.first_testing path\to\sample.E01 --case .test-artifacts\first-testing\case-a
+```
+
+The alternate input form is:
+
+```powershell
+python -m app.backend.api.first_testing --evidence-dir path\to\evidence --first-segment sample.E01 --case .test-artifacts\first-testing\case-a
+```
+
+Useful options:
+
+- `--output`: artifact output directory; defaults to `<case>\outputs`.
+- `--case-name` / `--case-description`: saved case metadata.
+- `--actor`: optional audit actor.
+- `--adapter pyewf|stub`: defaults to dependency-safe `pyewf`; use `stub` for dependency-free smoke checks.
+- `--json-only`: prints the JSON run manifest instead of a text summary.
+- `--redact-paths`: redacts the evidence root as `<EVIDENCE_ROOT>` in console and `command-summary.txt`; local JSON artifacts keep original paths.
+- `--selected-file-id` / `--selected-file-path`: explicitly select one root entry from `root-listing.json` for preview/analysis/export.
+- `--selected-file-export-dir` / `--selected-file-export-name`: opt in to selected-file export and choose a safe output location/name.
+- `--selected-file-preview-mode raw|text|hex`: preview rendering mode for an explicit selection.
+- `--selected-file-max-bytes`: first-testing in-memory limit for selected-file hash/export.
+
+S4.5-IMP01 and S4.5-IMP02 create:
+
+```text
+<case>\case.db
+<case>\run-manifest.json
+<case>\command-summary.txt
+<output>\intake.json
+<output>\case.json
+<output>\metadata.json
+<output>\verification.json
+<output>\segment-discovery.json
+<output>\ewf-stream.json
+<output>\volumes.json
+<output>\filesystems.json
+<output>\root-listing.json
+<output>\demo-readiness.json
+<output>\selected-file-readiness.json
+<output>\selected-file-preview.json
+<output>\selected-file-analysis.json
+<output>\selected-file-export.json
+<output>\file-list.json
+<output>\file-list.csv
+<output>\reports\summary.html
+<output>\audit.json
+<output>\unsupported-sections.json
+```
+
+The command rejects `.E02+` as the primary input, unsupported extensions, missing/conflicting input forms, and evidence/case/output overlap before writing artifacts. It uses `run_e01_intake()`, persists the intake result with the existing case-store helpers, and records audit events for case creation, evidence intake completion, artifact writes, and run completion.
+
+Current S4.5-IMP01 status values include:
+
+- `ok_with_unsupported_sections`: orchestration, persistence, and artifact writes succeeded, while later real-E01 sections remain unsupported.
+- `invalid_input`: input validation failed before artifact writes.
+- `unsafe_output_path`: evidence/case/output path overlap was refused before artifact writes.
+- `intake_failed`: an unexpected intake status was persisted but the run should not be treated as a successful first-testing workflow.
+
+S4.5-IMP02 metadata/verification behavior:
+
+- Missing `pyewf` remains dependency-safe and returns `metadata_unavailable` plus verification `not_run`.
+- Importable fake/real `pyewf` attempts normalized best-effort metadata such as media size, sector size, segment count, reader version, selected acquisition headers, dates, and stored hash metadata when exposed.
+- Stored hash metadata is preserved in `metadata.json`, but it is not verification success.
+- Verification runs only when the reader exposes an explicit safe method such as `verify()`, `verify_media()`, `check_media()`, or `verify_hashes()`.
+- Verification statuses include `verification_ok`, `verification_failed`, `verification_error`, `verification_partial`, `not_supported`, and `not_run`.
+
+S4.5-IMP03 stream/filesystem behavior:
+
+- `EwfImageByteStream` opens the discovered EWF segment set as a read-only logical image when `pyewf` is available.
+- `discover_volumes(..., strategy="partition_table")` can use `pytsk3.Volume_Info` over that stream and emits byte offsets/lengths in existing `VolumeInfo` shapes.
+- `Pytsk3FilesystemAdapter(image_stream=...)` can inspect a volume root directory and map real parser-backed entries into `FilesystemEntry` records.
+- The first-testing command records EWF stream, volume, filesystem, root-listing, and demo-readiness status separately.
+
+S4.5-IMP04 selected-file content behavior:
+
+- `E01SelectedFileContentReader` reads bytes only for an explicitly selected parser-backed root file through the EWF stream plus `pytsk3`.
+- `E01PreviewContentProvider`, `E01ExportContentProvider`, and `E01AnalysisContentProvider` feed the existing preview, export, hash, signature, and extension-mismatch surfaces.
+- If no file is selected, selected-file artifacts are written with `not_run` statuses and no file is auto-selected.
+- Directories, deleted/unallocated entries, metadata-only entries, unavailable dependencies, unreadable files, and files above the in-memory hash/export limit return structured statuses.
+
+S4.5-IMP05 file-list and static summary behavior:
+
+- `file-list.json` is derived from the current `root-listing.json` only and uses schema `stage4_5.file_list.v1`.
+- If the root listing is unavailable, dependency-blocked, not-run, or not real-parser-backed, the command writes a zero-entry file-list artifact with status/warnings instead of fake entries.
+- `file-list.csv` is UTF-8, uses a standard CSV writer, preserves the documented header order, joins warning codes with `;`, and escapes spreadsheet-formula-looking cells.
+- `outputs/reports/summary.html` is a static local escaped status/artifact summary with no network assets, no JavaScript app, and no evidence content.
+- With `--redact-paths`, console output, `command-summary.txt`, and `summary.html` avoid exposing the raw evidence root; local JSON remains examiner-owned and can retain source paths.
+
+The command still does not create recursive file lists, broad crawls, search/timeline indexes, dynamic UI, report-system/PDF output, deleted recovery, or carving behavior.
 
 ## S2-T05 Directory Listing Callable
 

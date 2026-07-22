@@ -4,7 +4,40 @@ from contextlib import contextmanager
 from pathlib import Path
 import shutil
 
-from app.backend.forensic_core import LocalFileImageStream
+from app.backend.forensic_core import EwfImageByteStream, LocalFileImageStream
+
+
+class FakePyewf:
+    def __init__(self, data: bytes = b"abcdef"):
+        self.data = data
+        self.handles = []
+
+    def handle(self):
+        handle = FakeEwfHandle(self.data)
+        self.handles.append(handle)
+        return handle
+
+
+class FakeEwfHandle:
+    def __init__(self, data: bytes):
+        self.data = data
+        self.opened_paths = None
+        self.closed = False
+
+    def open(self, paths):
+        self.opened_paths = list(paths)
+
+    def close(self):
+        self.closed = True
+
+    def get_media_size(self):
+        return len(self.data)
+
+    def get_bytes_per_sector(self):
+        return 512
+
+    def read_buffer_at_offset(self, size, offset):
+        return self.data[offset : offset + size]
 
 
 @contextmanager
@@ -167,3 +200,64 @@ def test_local_file_stream_allows_zero_length_read():
     assert result.data == b""
     assert result.bytes_read == 0
     assert result.source_size == 6
+
+
+def test_ewf_stream_dependency_unavailable_is_structured():
+    stream = EwfImageByteStream("sample.E01", pyewf_module=None)
+
+    info = stream.describe()
+    result = stream.read_at(0, 4)
+
+    assert info.status.code == "dependency_unavailable"
+    assert info.stream_type == "ewf"
+    assert info.read_only is True
+    assert result.status.code == "dependency_unavailable"
+    assert result.data == b""
+
+
+def test_ewf_stream_fake_describe_and_bounded_reads():
+    fake_pyewf = FakePyewf(b"0123456789")
+    with _stream_fixture_directory("ewf-stream-fake") as directory:
+        segment_one = directory / "sample.E01"
+        segment_two = directory / "sample.E02"
+        _write_bytes(segment_one, b"fake")
+        _write_bytes(segment_two, b"fake")
+        stream = EwfImageByteStream(
+            segment_one,
+            segment_paths=[segment_one, segment_two],
+            pyewf_module=fake_pyewf,
+        )
+
+        info = stream.describe()
+        result = stream.read_at(2, 4)
+        truncated = stream.read_at(8, 8)
+        beyond = stream.read_at(11, 1)
+
+    assert info.status.code == "ok"
+    assert info.size == 10
+    assert stream.segment_paths[0].endswith("sample.E01")
+    assert result.status.code == "ok"
+    assert result.data == b"2345"
+    assert truncated.data == b"89"
+    assert [warning.code for warning in truncated.warnings] == ["read_truncated_at_eof"]
+    assert beyond.status.code == "read_beyond_end"
+    assert all(handle.closed for handle in fake_pyewf.handles)
+
+
+def test_ewf_stream_rejects_negative_ranges_before_reader_calls():
+    fake_pyewf = FakePyewf(b"0123456789")
+    with _stream_fixture_directory("ewf-stream-negative") as directory:
+        segment_one = directory / "sample.E01"
+        _write_bytes(segment_one, b"fake")
+        stream = EwfImageByteStream(
+            segment_one,
+            segment_paths=[segment_one],
+            pyewf_module=fake_pyewf,
+        )
+
+        negative_offset = stream.read_at(-1, 1)
+        negative_length = stream.read_at(0, -1)
+
+    assert negative_offset.status.code == "invalid_range"
+    assert negative_length.status.code == "invalid_range"
+    assert fake_pyewf.handles == []

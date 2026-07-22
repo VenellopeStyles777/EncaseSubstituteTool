@@ -7,8 +7,13 @@ segment-discovery-*/
 .coverage
 htmlcov/
 
+# Local evidence files
+ Test Image/
+
 # Virtual environments
 .venv/
+.python312/
+.python312-embed/
 venv/
 env/
 

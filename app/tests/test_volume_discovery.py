@@ -12,6 +12,32 @@ from app.backend.forensic_core import (
 )
 
 
+class FakeImgInfo:
+    def __init__(self, *args, **kwargs):
+        pass
+
+
+class FakePartition:
+    def __init__(self, start, length, flags, desc):
+        self.start = start
+        self.len = length
+        self.flags = flags
+        self.desc = desc
+
+
+class FakePytsk3:
+    TSK_IMG_TYPE_EXTERNAL = 0
+    TSK_VS_PART_FLAG_ALLOC = 1
+    Img_Info = FakeImgInfo
+
+    @staticmethod
+    def Volume_Info(_image_info):
+        return [
+            FakePartition(0, 1, 4, b"Safety Table"),
+            FakePartition(2048, 4096, 1, b"Basic data partition"),
+        ]
+
+
 @contextmanager
 def _volume_fixture_directory(name: str):
     root = Path.cwd() / ".test-artifacts"
@@ -127,14 +153,56 @@ def test_unsupported_partition_strategy_returns_structured_status():
 
         result = discover_volumes(
             LocalFileImageStream(source_path),
-            strategy="partition_table",
+            strategy="not_a_strategy",
         )
 
     assert result.status.code == "partition_parsing_unsupported"
-    assert result.strategy == "partition_table"
+    assert result.strategy == "not_a_strategy"
     assert result.source_size == 10
     assert result.read_only is True
     assert result.volumes == ()
     assert [warning.code for warning in result.warnings] == [
         "partition_parsing_deferred"
     ]
+
+
+def test_partition_strategy_dependency_unavailable_is_structured():
+    with _volume_fixture_directory("volume-partition-dependency") as directory:
+        source_path = directory / "tiny.raw"
+        _write_bytes(source_path, b"0123456789")
+
+        result = discover_volumes(
+            LocalFileImageStream(source_path),
+            strategy="partition_table",
+            pytsk3_module=None,
+            import_error=ImportError("No module named 'pytsk3'"),
+        )
+
+    assert result.status.code == "partition_dependency_unavailable"
+    assert result.strategy == "partition_table"
+    assert result.volumes == ()
+    assert [warning.code for warning in result.warnings] == [
+        "partition_dependency_unavailable"
+    ]
+
+
+def test_partition_strategy_fake_parser_emits_byte_offsets():
+    with _volume_fixture_directory("volume-partition-fake") as directory:
+        source_path = directory / "tiny.raw"
+        _write_bytes(source_path, b"\0" * 10_000_000)
+
+        result = discover_volumes(
+            LocalFileImageStream(source_path),
+            strategy="partition_table",
+            pytsk3_module=FakePytsk3,
+        )
+
+    assert result.status.code == "ok"
+    assert result.strategy == "partition_table"
+    assert result.stream_type == "local-file"
+    assert len(result.volumes) == 1
+    assert result.volumes[0].volume_id == "volume-0"
+    assert result.volumes[0].offset == 2048 * 512
+    assert result.volumes[0].length == 4096 * 512
+    assert result.volumes[0].volume_type == "Basic data partition"
+    assert [warning.code for warning in result.warnings] == ["partition_entries_skipped"]

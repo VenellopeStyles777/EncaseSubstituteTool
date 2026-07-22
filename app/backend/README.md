@@ -19,7 +19,7 @@ The backend package can be imported cleanly:
 - `app.backend.analysis_workers`
 - `app.backend.api`
 
-Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 added hash/signature analysis result contracts, provider-backed hash calculation, bounded provider-backed file signature detection over explicit analysis content providers, extension mismatch evaluation over reviewed signature results plus file metadata, fixture-sized known-file matching, a documentation-only analysis-result persistence plan, and the S4-T07 documentation handoff. The project remains backend-first and has no Stage 4 API wrappers, search/timeline/reporting/UI, or executable packaging yet.
+Stage 1 added the E01 intake foundation. Stage 2 added the first volume/filesystem browsing boundaries and backend API callables. Stage 3 added the fixture/stub export foundation with manifests, SHA-256/byte-count verification, optional explicit audit logging, and deleted-recovery limitations. Stage 4 added hash/signature analysis result contracts, provider-backed hash calculation, bounded provider-backed file signature detection over explicit analysis content providers, extension mismatch evaluation over reviewed signature results plus file metadata, fixture-sized known-file matching, a documentation-only analysis-result persistence plan, and the S4-T07 documentation handoff. Stage 4.5 planning is in review for user-provided E01 first testing; S4.5-IMP01 is done with the first-testing command shell plus case-workspace artifact bundle, S4.5-IMP02 and S4.5-IMP02A are done with best-effort `pyewf` metadata plus separate verification status and warning cleanup, S4.5-IMP03 is done with EWF-backed stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts, S4.5-IMP04 is done with explicit selected-file E01 preview/export/hash/signature providers, S4.5-IMP05 is done with root-listing-derived file-list JSON/CSV plus static local HTML summary output, and S4.5-IMP06 is done as documentation/status handoff work. The project remains backend-first and has no recursive crawl, search/timeline/reporting system/UI, or executable packaging yet.
 
 ## Tests
 
@@ -39,7 +39,7 @@ python -m pip install pytest
 
 Current verification snapshot:
 
-- `python -m pytest`: 152 passed in 2.45s after the S4-T07 documentation/review handoff review.
+- `.\.python312-embed\python.exe -m pytest`: 184 passed in 41.91s after S4.5-IMP07 command-line testing guide documentation.
 - The project config routes pytest temporary files to `.test-artifacts/pytest-temp` and disables pytest's optional cache provider.
 
 ## Stage 1 Intake Command
@@ -57,6 +57,24 @@ python -m app.backend.api.intake path\to\sample.E01 --adapter stub
 ```
 
 The command does not write to evidence files. It composes segment discovery with the EWF reader adapter boundary and prints JSON for later UI integration.
+
+## Stage 4.5 First-Testing Command Shell
+
+Run the current first-testing command shell from the repository root:
+
+```powershell
+python -m app.backend.api.first_testing path\to\sample.E01 --case .test-artifacts\first-testing\case-a
+```
+
+For dependency-free smoke checks:
+
+```powershell
+python -m app.backend.api.first_testing path\to\sample.E01 --case .test-artifacts\first-testing\case-a --adapter stub
+```
+
+S4.5-IMP01 creates a case workspace with `case.db`, `run-manifest.json`, `command-summary.txt`, and JSON artifacts under `<case>\outputs` by default. S4.5-IMP02 adds `metadata.json`, `verification.json`, and `segment-discovery.json`, using the existing intake result and optional `pyewf` adapter. S4.5-IMP03 adds `ewf-stream.json`, `volumes.json`, `filesystems.json`, `root-listing.json`, and `demo-readiness.json` when the portable runtime can use `pyewf` and `pytsk3`. S4.5-IMP04 adds `selected-file-readiness.json`, `selected-file-preview.json`, `selected-file-analysis.json`, and `selected-file-export.json`; these stay `not_run` unless `--selected-file-id` or `--selected-file-path` explicitly selects a parser-backed root entry. S4.5-IMP05 adds `file-list.json`, `file-list.csv`, manifest/summary artifact inventory fields, and static local `reports\summary.html` from the current root listing only.
+
+Limits: S4.5-IMP06 adds no backend behavior. The first-testing command still does not install native dependencies, auto-select or crawl evidence files, add recursive/nested traversal, start search/timeline, add UI/reporting system behavior, implement deleted recovery, carving, packaging, or required native dependencies. Verification remains `not_run` or `not_supported` unless a safe `pyewf` verification API is available. Hash/export over selected files use the documented in-memory limit unless future reviewed streaming support is added.
 
 ## Stage 2 Capabilities And Limits
 
@@ -132,4 +150,4 @@ Implemented:
 - S4-T06 documents future case-store persistence requirements for analysis results, but does not add schema, helper functions, API wrappers, background jobs, or automatic writes.
 - S4-T07 reconciles documentation/status only and does not add behavior.
 
-Stage 4 must continue to analyze only explicit content providers for hashing/signature detection, avoid hashing or signature-checking preview text/hex or export artifacts as source analysis content, avoid whole-image verification claims without adapter support, and keep known-file matching fixture-sized/in-memory until a later reviewed ticket adds larger datasets. Analysis-result persistence, Stage 4 API wrappers, search/timeline, reporting, UI, real parser work, deleted recovery, carving, external known-file datasets, and required native dependencies remain later reviewed implementation tickets. Stage 5 remains rough/draft and must preserve source/provenance/status/warning/source-kind uncertainty and synthetic/generated/provider-backed labels.
+Stage 4 must continue to analyze only explicit content providers for hashing/signature detection, avoid hashing or signature-checking preview text/hex or export artifacts as source analysis content, avoid whole-image verification claims without adapter support, and keep known-file matching fixture-sized/in-memory until a later reviewed ticket adds larger datasets. Analysis-result persistence, broad search/timeline, reporting, UI, deleted recovery, carving, external known-file datasets, and required native dependencies remain later reviewed implementation tickets. Stage 4.5 is complete through the command-line testing guide. Stage 5 remains draft/deferred and must preserve source/provenance/status/warning/source-kind uncertainty and dependency/not-implemented states after S5-T01 is rerun.

@@ -89,3 +89,16 @@ For Stage 4 tickets:
 - S4-T04 should preserve synthetic/generated source labels from the signature result so mismatch output does not imply real parser evidence when the signature bytes came from stubs or generated fixtures.
 - S4-T05 known-file matching tests should use tiny in-memory known-file records only. They should consume existing `HashAnalysisResult` objects, avoid known-file files/databases/network access, and preserve synthetic/generated hash-source labels so a fixture digest match is not described as real evidence-derived database matching.
 - S4-T07 adds no fixtures and no new fixture behavior. Its handoff keeps Stage 5 rough/draft and requires future search/timeline work to preserve source/provenance/status/warning/source-kind uncertainty plus synthetic/generated/provider-backed labels.
+
+## Stage 4.5 User-Provided E01 Guidance
+
+Stage 4.5 is scaffolded as the added first-testing stage before search/timeline. Its fixture/input goal is to let the user point the project at real local E01 segment sets without committing those files.
+
+For Stage 4.5:
+
+- Do not commit user-provided `.E01/.E02/...` files.
+- Prefer command-line input paths or ignored local scratch folders such as `.test-artifacts/first-testing/`.
+- Treat E01 paths as read-only.
+- Write output summaries outside the evidence directory.
+- Redact sensitive evidence paths before sharing screenshots, transcripts, or review summaries.
+- Do not describe current output as real EWF metadata, verification, partition parsing, filesystem parsing, or file-content extraction until those behaviors are implemented and reviewed.

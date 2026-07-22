@@ -6,30 +6,9 @@ Current project idea: build an EnCase-like forensic analysis application focused
 
 ## Current Status
 
-Stage 4 is complete on top of the backend-first forensic browsing and fixture/stub export foundation:
+Stages 1 through 4 are reviewed backend foundations. The current code can discover `.E01/.E02/...` sibling segment filenames, run the intake JSON command, maintain a minimal SQLite case/evidence/audit schema, use stubbed volume/filesystem/listing/preview/export boundaries, verify written export artifacts, and run provider-backed hash/signature/mismatch/known-file helpers over explicit provider bytes.
 
-- Python backend package skeleton.
-- E01 segment discovery for `.E01/.E02/.E03...` sibling files.
-- EWF reader adapter boundary with a dependency-free stub adapter.
-- Structured dependency-unavailable behavior for missing `pyewf`/libewf.
-- JSON intake command/callable.
-- Minimal SQLite schema for cases, evidence sources, and audit events.
-- Read-only local file byte-stream abstraction for tiny generated files.
-- Whole-image volume discovery boundary.
-- Filesystem adapter boundary with deterministic stub entries and dependency-safe `pytsk3` skeleton behavior.
-- Backend directory listing/file metadata callable over adapter entries.
-- Bounded raw/text/hex preview callable over explicit preview-provider bytes.
-- Export result/manifest/provenance/content-source contract structures.
-- Fixture/stub file export callable over explicit export-provider bytes.
-- SHA-256 and byte-count verification from written export artifacts.
-- Optional export audit events when explicit `ExportAuditContext` is supplied.
-- Deleted-file recovery documented as unsupported/deferred with current adapters.
-- Hash/signature analysis contracts with provenance and explicit analysis content-source identity.
-- Provider-backed per-file hash calculation from explicit Stage 4 analysis providers only: SHA-256 by default, MD5/SHA-1 only when requested.
-- Provider-backed file signature detection over bounded explicit Stage 4 analysis-provider bytes for a small dependency-free magic-byte table.
-- Extension/signature mismatch evaluation over reviewed signature results and file name/path metadata only.
-- Fixture-sized known-file matching over reviewed hash results and caller-supplied in-memory records only.
-- Analysis-result persistence planning that defers schema and behavior changes while requiring future explicit opt-in persistence.
+Stage 4.5 is complete through S4.5-IMP07 as the prerequisite first-testing workflow with user-provided E01 files before Stage 5 search/timeline implementation. The project now has the first command shell and case-workspace bundle, best-effort `pyewf` metadata with separate verification status, an EWF-backed stream, partition-table volume result, real-parser-backed root filesystem listing from the local E01 set, explicit selected-file content providers for preview/export/hash/signature, root-listing-derived file-list JSON/CSV, static local HTML summary, guardrail/review handoff reconciliation, and the command-line testing guide. Stage 5 has detailed future tickets; S5-T01 recorded an older incomplete-runway failed gate, S5-T01A hardened older active wording, and S5-T02+ remain blocked until S5-T01 is rerun.
 
 Run tests from the repository root:
 
@@ -44,6 +23,14 @@ python -m app.backend.api.intake path\to\sample.E01
 ```
 
 Use `--adapter stub` for dependency-free synthetic metadata checks.
+
+Run the S4.5-IMP01 first-testing command shell:
+
+```powershell
+python -m app.backend.api.first_testing path\to\sample.E01 --case .test-artifacts\first-testing\case-a
+```
+
+Use `--adapter stub` for dependency-free smoke checks, `--json-only` for a parseable manifest on stdout, and `--redact-paths` to redact the evidence root in console/summary text.
 
 Use the current backend callables from Python:
 
@@ -72,23 +59,21 @@ from app.backend.forensic_core import (
 What is real versus stubbed today:
 
 - Real local-file behavior: `LocalFileImageStream` can describe and bounded-read tiny local files in read-only binary mode.
-- Stubbed behavior: whole-image volume discovery can wrap a readable non-empty stream as one volume; filesystem listing uses the deterministic `StubFilesystemAdapter` unless a future adapter supplies real entries.
-- Synthetic preview-provider content: `preview_file()` does not extract bytes from real filesystems. The default `StubPreviewProvider` maps the stub `/hello.txt` entry to synthetic `Hello, world!` bytes.
-- Synthetic export-provider content: `export_file()` writes bytes only from an explicit export content provider. The default `StubExportContentProvider` maps `stub-file-hello` to synthetic `Hello, world!` bytes, writes the output and manifest to an examiner/test-selected directory, refuses overwrites, verifies SHA-256/byte count from the written artifact, and audits only when `ExportAuditContext` is supplied.
-- Synthetic/generated analysis-provider content: `hash_file_content()` computes per-file hashes and `detect_file_signature()` inspects bounded prefixes only from explicit Stage 4 analysis providers. The default test provider is separate from preview/export providers and labels synthetic or generated bytes in the result. `evaluate_extension_mismatch()` consumes the resulting signature status plus file name/path metadata only and does not read bytes. `match_known_file_hashes()` consumes reviewed hash results plus tiny caller-supplied in-memory known-file records only and does not calculate hashes, read bytes, or read external known-file lists.
+- Stub/provider behavior: volume, filesystem listing, preview, export, and analysis surfaces currently rely on explicit stubs/providers unless a future adapter supplies real parser-backed data.
+- Real-E01 limit: the project can discover E01 segment filenames, can attempt best-effort `pyewf` metadata/verification when the optional dependency exposes safe APIs, can produce a real-parser-backed root filesystem listing in the portable runtime, can write root-listing-derived file-list JSON/CSV and a static local HTML summary, and can run preview/export/hash/signature only for an explicitly selected parser-backed root entry through S4.5-IMP04 provider wrappers. It does not yet create recursive/nested traversal workflows, broad evidence crawls, or a complete manual testing guide.
 
-Current limitations: the project does not parse real EWF bytes, verify real images, parse real partition tables, parse real filesystems, extract real filesystem content, provide Stage 4 API wrappers, provide a UI/executable, recover deleted files, carve unallocated space, search, report, import external known-file datasets, or automatically persist analysis results. Real forensic libraries are optional and not required for tests.
+Current limitations: the S4.5 first-testing command shell creates a workspace and honest artifacts; S4.5-IMP02 adds metadata/verification artifacts; S4.5-IMP03 adds stream, volume, filesystem, root-listing, and demo-readiness artifacts; S4.5-IMP04 adds selected-file readiness/preview/analysis/export artifacts only when the caller explicitly selects a parser-backed root entry; S4.5-IMP05 adds file-list JSON/CSV plus a static local HTML summary from the current root listing only; and S4.5-IMP07 documents the repeatable command-line workflow. Real verification runs only if a safe `pyewf` verification API is available, and stored hash metadata is not verification success. The project still does not crawl or export arbitrary files, provide nested selected-file traversal, or create a dynamic UI/report system. No search/timeline implementation exists; no UI/executable/reporting system, deleted recovery, carving, external known-file dataset import, automatic analysis persistence, or required native forensic dependency setup exists. Real forensic libraries are optional and not required for default tests.
 
-Current handoff: S3-T01 through S3-T06 and S4-T01 through S4-T07 are reviewed and done. No analysis-result schema or persistence behavior has been added. Stage 5 remains rough/draft and should start with S5-T00 readiness review. Stage 5 must preserve source/provenance/status/warning/source-kind uncertainty plus synthetic/generated/provider-backed labels. The main carryover risk is the lack of a real evidence-backed content path; future stages need a tiny generated or optional fixture-backed reality anchor before search/report/UI work implies real forensic extraction.
+Current handoff: S3-T01 through S3-T06, S4-T01 through S4-T07, and the Stage 4.5 planning package S4.5-T00 through S4.5-T08 are in review/done as documentation work. S4.5-IMP01 through S4.5-IMP07 are reviewed and done. The first-testing command now creates file-list JSON/CSV and a static local HTML summary from the current root listing, and the command-line testing guide is accepted. S5-T01 failed an older readiness gate, so S5-T02 through S5-T16 stay Draft until S5-T01 is rerun against the completed Stage 4.5 runway.
 
 Primary planning files:
 
 - [Goal.md](Goal.md): product vision, scope, development stages, and initial VS Code agent prompt.
 - [research.md](research.md): research notes, references, functionality map, architecture outline, and plugin/tooling recommendations.
-- [tickets/](tickets): ticketing workflow and stage-by-stage implementation tickets.
-- [prompts/](prompts): history of prompts sent to implementation agents.
-- [functionality.md](functionality.md): future feature checklist and acceptance criteria.
-- [plan.md](plan.md): future sprint-level implementation plan.
-- [progression.md](progression.md): future progress tracker.
-- [review.md](review.md): future code-review findings and architectural review notes.
-- [log/](log): working logs for documentation, errors, general notes, and Git activity.
+- [functionality.md](functionality.md): current feature/status/manual-test matrix.
+- [plan.md](plan.md): stage order, ticket sequence, implementation runway, and guardrails.
+- [tickets/](tickets): ticket scope, acceptance criteria, and status.
+- [prompts/](prompts): implementation prompt history and onboarding packets.
+- [progression.md](progression.md): concise chronological development journal and next action.
+- [review.md](review.md): review findings, approvals, risks, and verification notes.
+- [log/](log): documentation-change and decision logs.
