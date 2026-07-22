@@ -11,4 +11,4 @@ Planned responsibilities:
 - never write beside source evidence files;
 - keep unsupported or not-implemented parser states visible.
 
-Current status: documentation scaffold only. The Stage 4.5 planning package is in review, and no Stage 4.5 script or first-testing command has been implemented yet.
+Current status: the active first-testing command is `python -m app.backend.api.first_testing`. S4.5-IMP01 through S4.5-IMP06 are reviewed and done. This folder remains documentation/planning space for future helper scripts; do not add generated evidence output or private run artifacts here.

@@ -12,6 +12,48 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-22 - S4.5-IMP06 Review Acceptance
+
+Result: accepted; S4.5-IMP06 is done.
+
+Findings:
+
+- No blocking issues found.
+- The Stage 4.5 and Stage 5 handoff docs now preserve the reviewed implementation truth through S4.5-IMP05, record S4.5-IMP06 as the documentation/status gate packet, and keep S4.5-IMP07 as the remaining Stage 4.5 blocker.
+- The allowed future Stage 5 inputs are provenance-rich reviewed artifacts only: intake/segments, case/evidence/audit rows, metadata and verification-status records, EWF stream status, volume/filesystem/root-listing records, root-listing-derived file-list outputs, and explicit selected-file records when selection provenance exists.
+- The blocked inputs remain clear: recursive crawl, broad enumeration, full-text E01 content, auto-selected analysis/export, deleted recovery/carving, UI/report records, and unsupported verification-success claims.
+
+Verification:
+
+- Reviewer full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 184 passed in 32.93s.
+- Real-image smoke was not rerun because S4.5-IMP06 is documentation/status-only; the reviewed S4.5-IMP05 no-selection smoke remains the current real-image evidence record.
+
+Remaining scope:
+
+- S4.5-IMP07 command-line testing guide remains required before S5-T01 can rerun as a passing gate.
+- Stage 5 search/timeline remains blocked until S4.5-IMP07 is completed/reviewed and S5-T01 is rerun.
+
+## 2026-07-22 - S4.5-IMP06 Implementation Handoff
+
+Result: ready for research/review agent review.
+
+Completed:
+
+- Reconciled active Stage 4.5 and Stage 5 docs so S4.5-IMP01 through S4.5-IMP05 are reviewed/done, S4.5-IMP06 is in review, S4.5-IMP07 remains drafted, and S5-T02 through S5-T16 remain blocked/draft.
+- Added the Stage 5 gate handoff packet in active docs: completion matrix, reviewed artifacts available, allowed future input records, blocked inputs, required provenance/status/warning labels, and the recommendation to rerun S5-T01 only after S4.5-IMP07 is completed/reviewed.
+- Updated optional stale scaffold docs so they no longer say no first-testing command or real-E01 parser path exists.
+- Preserved the reviewed real-image truth without quoting sensitive metadata, filenames, root entries, or content.
+
+Verification:
+
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 184 passed in 44.69s.
+- Real-image smoke was not rerun for S4.5-IMP06 because this ticket is documentation/status-only; the reviewed S4.5-IMP05 no-selection smoke remains the current real-image evidence record.
+
+Remaining scope:
+
+- S4.5-IMP07 command-line testing guide, recursive traversal, broad crawl, selected-file real-content run with approved selection, search/timeline/indexing, UI/report system, PDF, deleted recovery, carving, packaging, commit, and push remain out of scope.
+- Stage 5 search/timeline remains blocked until S4.5-IMP07 is completed/reviewed and S5-T01 is rerun.
+
 ## 2026-07-17 - S4.5-IMP05 Review Acceptance
 
 Result: accepted; S4.5-IMP05 is done.

@@ -2,7 +2,7 @@
 
 Purpose: track how the project moves from automated tests only to direct manual testing with user-provided E01 files.
 
-Stage 4.5 is not Stage 5 search/timeline. S4.5-IMP01 is reviewed and done as the first command-shell slice. S4.5-IMP02 and S4.5-IMP02A are reviewed and done as the best-effort metadata/verification slice plus warning-semantics correction. S4.5-IMP03 is reviewed and done after the project-local portable Python 3.12 runtime produced EWF stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts from the local E01 set. S4.5-IMP04 is reviewed and done after adding explicit selected-file content providers and selected-file artifacts. S4.5-IMP05 is reviewed and done after adding root-listing-derived file-list JSON/CSV and a static local HTML summary. Final handoff and testing-guide work remain incomplete.
+Stage 4.5 is not Stage 5 search/timeline. S4.5-IMP01 is reviewed and done as the first command-shell slice. S4.5-IMP02 and S4.5-IMP02A are reviewed and done as the best-effort metadata/verification slice plus warning-semantics correction. S4.5-IMP03 is reviewed and done after the project-local portable Python 3.12 runtime produced EWF stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts from the local E01 set. S4.5-IMP04 is reviewed and done after adding explicit selected-file content providers and selected-file artifacts. S4.5-IMP05 is reviewed and done after adding root-listing-derived file-list JSON/CSV and a static local HTML summary. S4.5-IMP06 is reviewed and done for guardrail/review handoff reconciliation; the S4.5-IMP07 command-line testing guide remains incomplete.
 
 ## What Is Implemented Now
 
@@ -64,7 +64,7 @@ Current first-testing sections:
 - explicit current limitations;
 - output paths for JSON artifacts.
 
-Later sections for final handoff and command-line testing guidance remain future S4.5-IMP06 through S4.5-IMP07 work.
+The guardrail/review handoff is reviewed and done in S4.5-IMP06. Exact user-facing command-line testing guidance remains future S4.5-IMP07 work.
 
 ## Planned Case Workspace
 
@@ -135,7 +135,7 @@ The file list starts from the current root listing only. It preserves source pat
 
 The implementation lineup is now: command shell and case workspace, real metadata/verification, EWF stream plus filesystem listing, selected-file content providers, output bundle, guardrail/review handoff, then command-line testing guide. Stage 5 search/timeline must wait until S4.5-IMP01 through S4.5-IMP07 are completed and reviewed.
 
-S4.5-IMP05 is reviewed and done. The real-E01 no-selection smoke discovered 53 segments, produced `metadata_available`, verification `not_supported`, EWF stream status `ok`, partition-table volume status `ok` with 5 volumes, filesystem status `ok`, a `real_parser_backed` root listing with 11 entries, file-list JSON/CSV `ok` with 11 entries, and a static HTML summary; selected-file readiness/preview/hash/signature/export were all `not_run` because no explicit safe file was selected. The next practical implementation slice is S4.5-IMP06 for guardrail/review handoff work. S5-T02 or later search/timeline implementation cannot proceed until the full Stage 4.5 implementation runway through S4.5-IMP07 is complete and reviewed.
+S4.5-IMP05 is reviewed and done. The real-E01 no-selection smoke discovered 53 segments, produced `metadata_available`, verification `not_supported`, EWF stream status `ok`, partition-table volume status `ok` with 5 volumes, filesystem status `ok`, a `real_parser_backed` root listing with 11 entries, file-list JSON/CSV `ok` with 11 entries, and a static HTML summary; selected-file readiness/preview/hash/signature/export were all `not_run` because no explicit safe file was selected. S4.5-IMP06 is reviewed and done for guardrail/review handoff work. The next practical implementation slice is S4.5-IMP07 for the command-line testing guide. S5-T02 or later search/timeline implementation cannot proceed until the full Stage 4.5 implementation runway through S4.5-IMP07 is complete and reviewed.
 
 ## Minimum Demonstration Goal
 
@@ -226,6 +226,27 @@ Every Stage 4.5 implementation handoff should include:
 - confirmation that no evidence file was modified;
 - any redactions made in shared summaries.
 
-Manual-test status in `functionality.md` can remain partial, because local real-E01 smokes have produced reviewed intake, metadata, stream, volume, filesystem, root-listing, and no-selection selected-file artifacts. Mocked dependency tests, stub providers, generated dummy filenames, dependency-unavailable output, and no-selection selected-file output do not count as full selected-file real-E01 testing; later output/guide slices and any selected-file real-content run remain untested until those behaviors are exercised with approved selections.
+Manual-test status in `functionality.md` can remain partial, because local real-E01 smokes have produced reviewed intake, metadata, stream, volume, filesystem, root-listing, file-list/static summary, and no-selection selected-file artifacts. Mocked dependency tests, stub providers, generated dummy filenames, dependency-unavailable output, and no-selection selected-file output do not count as full selected-file real-E01 testing; the final guide workflow and any selected-file real-content run remain untested until those behaviors are exercised with approved selections.
 
 Shared transcripts, screenshots, HTML summaries, and file-list excerpts should redact evidence roots, user profile paths, case/client names, examiner names, evidence numbers, serial numbers, acquisition notes, and sensitive file paths unless the user explicitly approves disclosure.
+
+## Stage 5 Gate Handoff
+
+S4.5-IMP06 prepares the later S5-T01 rerun but does not make Stage 5 pass yet. S4.5-IMP07 remains required for exact commands, artifact inspection steps, troubleshooting, and proof boundaries.
+
+Completion matrix:
+
+| Slice | Review state | Stage 5 gate note |
+| --- | --- | --- |
+| S4.5-IMP01 | Done | Case workspace, intake persistence, manifest, audit, and unsupported-section artifacts are available. |
+| S4.5-IMP02 | Done | Metadata and verification-status artifacts are available; unsupported verification remains visible. |
+| S4.5-IMP02A | Done | Metadata warning labels distinguish partial metadata from stored-hash non-verification. |
+| S4.5-IMP03 | Done | EWF stream, partition-table volume, filesystem, and root-listing artifacts are available when parser dependencies are present. |
+| S4.5-IMP04 | Done | Selected-file preview/export/hash/signature records are available only for explicit parser-backed root-entry selections. |
+| S4.5-IMP05 | Done | Root-listing-derived file-list JSON/CSV and static local HTML summary are available. |
+| S4.5-IMP06 | Done | Guardrail/status reconciliation and Stage 5 gate handoff are reviewed and done. |
+| S4.5-IMP07 | Draft | Command-line testing guide remains required before S5-T01 can rerun as a passing gate. |
+
+Allowed future Stage 5 inputs are reviewed records with provenance and status: intake/segment discovery, case/evidence/audit rows, metadata and verification status, EWF stream status, partition/volume records, filesystem/root-listing entries, root-listing-derived file-list JSON/CSV, and explicit selected-file records. Blocked inputs remain recursive crawl, broad full-volume enumeration, full-text E01 content, arbitrary auto-selected exports/analysis, deleted recovery/carving, UI/report-system outputs, and verification-success claims when verification is unsupported.
+
+Every future search/timeline record must preserve source path, evidence id when available, volume id, file id/path, provider/source identity, source kind, parser/source status, warning list, dependency/not-supported/not-run states, timestamp context, read-only assertion, and source-modified assertion.

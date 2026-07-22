@@ -48,6 +48,6 @@ Shared logs or screenshots should redact private local paths as `<EVIDENCE_ROOT>
 
 ## Current Project Behavior With Real E01 Inputs
 
-Current code can inspect sibling filenames and produce structured segment discovery output.
+Current code can inspect sibling filenames, create a first-testing case workspace, attempt best-effort `pyewf` metadata, keep verification status separate, open the EWF-backed logical image in the portable runtime, discover partition-table volumes, produce a real-parser-backed root listing, write root-listing-derived file-list JSON/CSV, and create a static local HTML summary.
 
-Current code does not yet read real EWF metadata, verify the EWF image, parse partitions, parse filesystems, or extract file bytes from the E01. Those behaviors need Stage 4.5 implementation tickets before they can be demonstrated honestly.
+The command extracts file bytes only when an explicit parser-backed root entry is selected and the request fits the S4.5-IMP04 first-testing size policy. It does not recursively crawl, auto-select files, perform full-text extraction, recover deleted files, carve data, run search/timeline indexing, or provide the final command-line testing guide yet.

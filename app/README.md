@@ -11,8 +11,11 @@ Initial layout:
 - `scripts/`: setup and developer utility scripts.
 - `docs/`: app-specific technical documentation.
 
-Stage 4.5 first-testing scaffold:
+Stage 4.5 first-testing support:
 
 - `fixtures/user-provided-e01/`: notes for real E01 inputs supplied by the user, not committed to Git.
-- `scripts/first_testing/`: planned command/script location for E01 first-testing workflows.
+- `backend/api/first_testing.py`: current first-testing command shell for user-provided E01 paths and safe local artifacts.
+- `scripts/first_testing/`: notes for future helper scripts; the active command currently lives in the backend API module.
 - `docs/manual-testing/`: human-run backend workflow checks before a UI exists.
+
+S4.5-IMP01 through S4.5-IMP06 are reviewed and done. S4.5-IMP07 remains drafted for the exact command-line testing guide before Stage 5 search/timeline can proceed.

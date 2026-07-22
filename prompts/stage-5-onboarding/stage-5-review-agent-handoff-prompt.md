@@ -63,24 +63,24 @@ The current real-E01 truth is still limited:
 - The project can discover `.E01/.E02/...` segment filenames.
 - The project can attempt real EWF metadata through optional `pyewf` and can report explicit verification status; stored hash metadata is not treated as verification success.
 - S4.5-IMP03 is reviewed and done with EWF-backed stream reads, partition-table volume discovery, and a real-parser-backed root listing from the local E01 set.
-- The project does not yet extract real file content from E01 files.
-- Preview, export, hash, signature, and known-file behavior remain provider-backed, fixture/stub/synthetic, or planned unless a later reviewed implementation proves otherwise.
+- The project can extract real file content only for an explicitly selected parser-backed root entry within the S4.5-IMP04 first-testing limits.
+- Preview, export, hash, and signature can consume selected E01-backed bytes only through that explicit parser-backed selected-file path. Known-file behavior remains provider-backed over reviewed hash results.
 
 ## Stage 4.5 State To Inherit
 
 Stage 4.5 was added before Stage 5 because the user wants something testable and demonstrable with actual E01 files.
 
-Stage 4.5 is no longer planning-only. S4.5-T00 through S4.5-T08 are planning/review records, S4.5-IMP01 is reviewed and done as the first command-shell implementation slice, S4.5-IMP02 and S4.5-IMP02A are reviewed and done, S4.5-IMP03 is reviewed and done after producing a real-parser-backed root listing from the local E01 set, S4.5-IMP04 is reviewed and done after adding selected-file E01-backed content providers, S4.5-IMP05 is reviewed and done after adding root-listing-derived file-list JSON/CSV and static local HTML output, and S4.5-IMP06 through S4.5-IMP07 are drafted.
+Stage 4.5 is no longer planning-only. S4.5-T00 through S4.5-T08 are planning/review records, S4.5-IMP01 is reviewed and done as the first command-shell implementation slice, S4.5-IMP02 and S4.5-IMP02A are reviewed and done, S4.5-IMP03 is reviewed and done after producing a real-parser-backed root listing from the local E01 set, S4.5-IMP04 is reviewed and done after adding selected-file E01-backed content providers, S4.5-IMP05 is reviewed and done after adding root-listing-derived file-list JSON/CSV and static local HTML output, S4.5-IMP06 is reviewed and done as the guardrail and Stage 5 gate handoff slice, and S4.5-IMP07 is drafted.
 
 Before starting Stage 5, confirm the current Stage 4.5 runway state:
 
 - S4.5-IMP01 is done;
 - S4.5-IMP02 and S4.5-IMP02A are done;
-- S4.5-IMP03, S4.5-IMP04, and S4.5-IMP05 are reviewed and done, and S4.5-IMP06 through S4.5-IMP07 are drafted but incomplete unless newer reviewed work exists;
+- S4.5-IMP03, S4.5-IMP04, S4.5-IMP05, and S4.5-IMP06 are reviewed and done, and S4.5-IMP07 is drafted but incomplete unless newer reviewed work exists;
 - the portable runtime/dependency setup is project-local and ignored by git;
 - no committed E01 files or private outputs were added;
 - manual E01 testing is partial for intake, metadata, stream, partition-table discovery, root listing, and root-listing-derived file-list/static summary output;
-- the next practical implementation slice is S4.5-IMP06, and Stage 5 search/timeline implementation should not push the Stage 4.5 substantial-test runway back.
+- the next practical implementation slice is S4.5-IMP07, and Stage 5 search/timeline implementation should not push the Stage 4.5 substantial-test runway back.
 
 The Stage 4.5 implementation runway is:
 
@@ -89,7 +89,7 @@ The Stage 4.5 implementation runway is:
 - S4.5-IMP03: real-E01 filesystem demo gate for EWF-backed stream, partition/volume boundary, and root filesystem metadata/listing. Status: Done.
 - S4.5-IMP04: E01-backed selected-file content providers for preview/export/hash/signature. Status: Done.
 - S4.5-IMP05: file-list JSON/CSV, command summary, artifact inventory, static local HTML. Status: Done.
-- S4.5-IMP06: manual-test guardrails, documentation reconciliation, and review handoff. Status: Draft.
+- S4.5-IMP06: manual-test guardrails, documentation reconciliation, and review handoff. Status: Done.
 - S4.5-IMP07: command-line testing guide and evidence workflow instructions. Status: Draft.
 
 ## Stage 5 Entry Rule
@@ -115,7 +115,7 @@ S5-T01 should block S5-T02 and later if the Stage 4.5 substantial-test runway is
 ## Detailed Stage 5 Ticket Queue
 
 - S5-T00: documentation organization, duplication cleanup, and unused/confusing structure review. Status: Done.
-- S5-T01: readiness and Stage 4.5 completion gate. Status: Done; failed gate/blocker because the Stage 4.5 runway remains incomplete. As of the S4.5-IMP05 review handoff, S4.5-IMP06 through S4.5-IMP07 are still required.
+- S5-T01: readiness and Stage 4.5 completion gate. Status: Done; failed gate/blocker because the Stage 4.5 runway remains incomplete. As of the S4.5-IMP06 review acceptance, S4.5-IMP07 is still required.
 - S5-T01A: Stage 4.5 gate language hardening. Status: Done.
 - S5-T02: input inventory and provenance audit. Status: Draft.
 - S5-T03: searchable record contracts. Status: Draft.
@@ -174,11 +174,11 @@ Default to a review stance:
 
 ## Latest Verification Known At Handoff
 
-The latest recorded verification in `review.md` for S5-T00:
+The latest recorded reviewer verification in `review.md` for S4.5-IMP06:
 
 ```powershell
-python -m pytest
-# 152 passed in 5.58s
+.\.python312-embed\python.exe -m pytest
+# 184 passed in 32.93s
 ```
 
 Run the suite again after any new edits or before final review acceptance.
@@ -186,5 +186,5 @@ Run the suite again after any new edits or before final review acceptance.
 ## Next Likely Moves
 
 1. Review the S5-T01 failed-gate record if needed.
-2. Prepare S4.5-IMP02 implementation planning when the user explicitly asks for the next Stage 4.5 slice.
+2. Prepare or review S4.5-IMP07 implementation planning when the user explicitly asks for the next Stage 4.5 slice.
 3. Do not proceed to S5-T02 or later search/timeline tickets until the Stage 4.5 substantial-test runway is completed and reviewed.

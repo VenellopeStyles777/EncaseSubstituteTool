@@ -11,7 +11,7 @@ Suggested first planning format:
 | 2 | Add volume/filesystem browsing MVP | Done | S2-T01 through S2-T07 complete. Stage 2 is a backend fixture/stub browsing foundation, not real EWF/partition/filesystem parsing. |
 | 3 | Add export/recovery foundation | Done | S3-T01 through S3-T06 complete. Stage 3 is a backend fixture/stub export foundation, not real extraction or recovery. |
 | 4 | Add hashing and signature checks | Done | S4-T01 through S4-T07 are reviewed/done. Stage 4 remains provider-backed and does not prove real filesystem extraction. |
-| 4.5 | First testing with user-provided E01 files | Active | Planning package S4.5-T00 through S4.5-T08 is in review. S4.5-IMP01, S4.5-IMP02, S4.5-IMP02A, S4.5-IMP03, S4.5-IMP04, and S4.5-IMP05 are done. S4.5-IMP03 produced an EWF-backed stream, partition-table volume result, and real-parser-backed root filesystem listing from the local E01 set. S4.5-IMP04 added explicit selected-file content providers for preview/export/hash/signature. S4.5-IMP05 added root-listing-derived file-list JSON/CSV, command summary/artifact inventory updates, and static local HTML. S4.5-IMP06 and S4.5-IMP07 remain drafted before Stage 5 search/timeline implementation. |
+| 4.5 | First testing with user-provided E01 files | Active | Planning package S4.5-T00 through S4.5-T08 is in review. S4.5-IMP01, S4.5-IMP02, S4.5-IMP02A, S4.5-IMP03, S4.5-IMP04, S4.5-IMP05, and S4.5-IMP06 are done. S4.5-IMP03 produced an EWF-backed stream, partition-table volume result, and real-parser-backed root filesystem listing from the local E01 set. S4.5-IMP04 added explicit selected-file content providers for preview/export/hash/signature. S4.5-IMP05 added root-listing-derived file-list JSON/CSV, command summary/artifact inventory updates, and static local HTML. S4.5-IMP06 reconciled guardrails and the Stage 5 handoff packet; S4.5-IMP07 remains drafted before Stage 5 search/timeline implementation. |
 | 5 | Add search and timeline foundations | Deferred | Detailed tickets S5-T00 through S5-T16 exist under `tickets/stage-5/`; S5-T00 documentation cleanup is done, S5-T01 is done with a failed gate, and S5-T01A is done. |
 
 ## Completed Foundation Stages
@@ -71,10 +71,17 @@ Stage 4.5 implementation runway:
 - S4.5-IMP03 implements the real-E01 filesystem demo gate from S4.5-T04: EWF-backed stream, partition/volume boundary, and root filesystem metadata/listing. Status: Done; use `.\.python312-embed\python.exe` for real-E01 smoke because `pyewf` and `pytsk3` are available there.
 - S4.5-IMP04 implements E01-backed selected-file content providers for preview/export/hash/signature from S4.5-T05. Status: Done.
 - S4.5-IMP05 implements file-list JSON/CSV, command summary, artifact inventory, and static local HTML from S4.5-T06. Status: Done.
-- S4.5-IMP06 should reconcile manual-test guardrails and review handoff from S4.5-T07/T08. Status: Draft.
+- S4.5-IMP06 reconciles manual-test guardrails and review handoff from S4.5-T07/T08. Status: Done.
 - S4.5-IMP07 should create the command-line testing guide with exact PowerShell commands, artifact inspection steps, troubleshooting, and proof boundaries. Status: Draft.
 - Stage 5 search/timeline implementation should stay deferred until this first-testing implementation runway is reviewed complete. S5-T00 documentation cleanup is done, and S5-T01 has recorded the incomplete runway as a blocker.
-- The next practical implementation step is S4.5-IMP06 for final guardrail review, documentation reconciliation, and Stage 5 handoff preparation.
+- The next practical implementation step is S4.5-IMP07 for the exact command-line testing guide and evidence workflow instructions.
+
+Stage 5 gate handoff for the next S5-T01 rerun:
+
+- Allowed future Stage 5 inputs are reviewed, provenance-rich records from intake/segment discovery, case/evidence/audit rows, metadata and verification-status artifacts, EWF stream status, partition/volume artifacts, filesystem/root-listing records, root-listing-derived file-list JSON/CSV, and selected-file readiness/preview/analysis/export records only when an explicit parser-backed selection proves the source. The static HTML summary is human-readable output, not an authoritative index.
+- Required labels include source path, evidence id when present, volume id, file id/path, provider/source identity, source kind such as `real_parser` or `stub`, parser/source status, dependency/not-supported/not-run states, warning lists, timestamp context, read-only assertion, and source-modified assertion.
+- Blocked inputs include recursive or nested traversal records, broad full-volume crawl records, arbitrary auto-selected preview/export/hash/signature records, full-text records from E01 content, deleted recovery/carving records, UI/report-system records, and any verification-success claim when verification is unsupported or only stored hash metadata exists.
+- S5-T02 and later remain blocked until S4.5-IMP07 is completed/reviewed and S5-T01 is rerun.
 
 Current code utilization for Stage 4.5:
 
@@ -98,12 +105,12 @@ Stage 4.5 guardrails:
 
 Stage 5 remains deferred as the next feature stage and is superseded as the immediate priority by Stage 4.5 first testing. When Stage 5 begins, it should first clean up documentation organization and duplication so the later search/timeline tickets start from a clear source of truth. Its later job is to define search and timeline foundations over explicit, provenance-rich records without hiding parser/source uncertainty.
 
-S5-T01 is a hard gate: it must confirm the Stage 4.5 substantial-test implementation runway is complete and reviewed before S5-T02 or later search/timeline implementation proceeds. The 2026-07-16 S5-T01 pass failed this gate because S4.5-IMP01 through S4.5-IMP06 were not complete and reviewed; the runway now also includes S4.5-IMP07 for the command-line testing guide. S4.5-IMP01 through S4.5-IMP05 are done, but Stage 5 search/timeline remains blocked until the full runway through S4.5-IMP07 is completed and reviewed.
+S5-T01 is a hard gate: it must confirm the Stage 4.5 substantial-test implementation runway is complete and reviewed before S5-T02 or later search/timeline implementation proceeds. The 2026-07-16 S5-T01 pass failed this gate because S4.5-IMP01 through S4.5-IMP06 were not complete and reviewed; the runway now also includes S4.5-IMP07 for the command-line testing guide. S4.5-IMP01 through S4.5-IMP06 are done, but Stage 5 search/timeline remains blocked until the full runway through S4.5-IMP07 is completed and reviewed.
 
 Detailed Stage 5 ticket sequence:
 
 - S5-T00: documentation organization, duplication cleanup, and unused/confusing structure review. Status: Done.
-- S5-T01: readiness and Stage 4.5 completion gate. Status: Done; failed gate/blocker because the S4.5-IMP01 through S4.5-IMP06 runway is incomplete.
+- S5-T01: readiness and Stage 4.5 completion gate. Status: Done; failed gate/blocker; rerun remains blocked until S4.5-IMP07 is completed/reviewed.
 - S5-T01A: Stage 4.5 gate language hardening. Status: Done.
 - S5-T02: input inventory and provenance audit. Status: Draft.
 - S5-T03: searchable record contracts. Status: Draft.

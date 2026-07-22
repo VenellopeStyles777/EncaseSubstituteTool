@@ -2,6 +2,32 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-22 - S4.5-IMP06 Review Acceptance
+
+- Marked `tickets/stage-4.5/S4.5-IMP06-final-guardrail-review-handoff.md` as `Done` after reviewer acceptance.
+- Updated active status docs so S4.5-IMP01 through S4.5-IMP06 are reviewed/done while S4.5-IMP07 remains drafted and required before S5-T01 can pass.
+- Confirmed the Stage 5 gate packet is documentation-only and does not unblock S5-T02 or later search/timeline work.
+- Reviewer verification: `.\.python312-embed\python.exe -m pytest` reported 184 passed in 32.93s.
+- Real-image smoke was not rerun because this ticket is documentation/status-only; the reviewed S4.5-IMP05 no-selection smoke remains the current real-image evidence record.
+
+## 2026-07-22 - S4.5-IMP06 Guardrail Review Handoff Implementation
+
+- Marked `tickets/stage-4.5/S4.5-IMP06-final-guardrail-review-handoff.md` as `Review`.
+- Reconciled active Stage 4.5 and Stage 5 status docs so S4.5-IMP01 through S4.5-IMP05 are reviewed/done, S4.5-IMP06 is in review, S4.5-IMP07 remains drafted, and S5-T02 through S5-T16 remain blocked/draft.
+- Added Stage 5 gate handoff language covering the S4.5-IMP01 through S4.5-IMP07 completion matrix, reviewed artifacts available, allowed future input records, blocked inputs, required provenance/status/warning labels, privacy notes, and remaining real-E01 limitations.
+- Updated optional stale scaffold docs under `app/` so they reflect the existing first-testing command and reviewed E01-backed stream/root-listing/file-list/selected-file limits.
+- Confirmed this pass did not change app source behavior, tests, parser behavior, command options, dependency setup, evidence handling, search/timeline, UI/reporting, deleted recovery, carving, commit, or push.
+- Verification: `.\.python312-embed\python.exe -m pytest` reported 184 passed in 44.69s.
+- Real-image smoke was not rerun for this documentation-only ticket; the reviewed S4.5-IMP05 no-selection smoke remains the current real-image evidence record.
+
+## 2026-07-22 - S4.5-IMP06 Ready Ticket
+
+- Expanded `tickets/stage-4.5/S4.5-IMP06-final-guardrail-review-handoff.md` from a draft into a ready implementation/reconciliation ticket.
+- Rewrote `prompts/vscode-agent/2026-07-16-s4.5-imp06-final-guardrail-review-handoff.md` to match the ready scope.
+- Defined the S4.5-IMP06 boundary as documentation/status/review reconciliation, Stage 5 gate handoff preparation, manual-test status cleanup, and privacy/evidence-safety guardrail hardening.
+- Required the handoff to keep Stage 5 blocked because S4.5-IMP07 remains required for the command-line testing guide before S5-T01 can rerun as a passing gate.
+- Updated Stage 4.5, Stage 5, README, goal, plan, functionality, prompt, progression, and ticket indexes so S4.5-IMP06 is ready while S4.5-IMP07 remains drafted and Stage 5 stays blocked.
+
 ## 2026-07-17 - S4.5-IMP05 Review Acceptance
 
 - Marked `tickets/stage-4.5/S4.5-IMP05-file-list-output-visual-summary.md` as `Done` after reviewer acceptance.

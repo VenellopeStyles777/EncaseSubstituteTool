@@ -6,7 +6,7 @@ Stage 4.5 is not search/timeline. It should not implement broad new forensic fea
 
 ## Stage 4.5 Status
 
-Status: T00 through T08 are planning in review. S4.5-IMP01 is reviewed and done as the first Stage 4.5 command-shell slice. S4.5-IMP02 and S4.5-IMP02A are reviewed and done as the real EWF metadata/verification attempt plus warning-semantics correction. S4.5-IMP03 is reviewed and done after producing a real-parser-backed root listing from the local E01 set with the project-local portable Python 3.12 runtime. S4.5-IMP04 is reviewed and done after adding E01-backed selected-file content providers. S4.5-IMP05 is reviewed and done after adding root-listing-derived file-list JSON/CSV, artifact inventory, command-summary updates, and a static local HTML summary. S4.5-IMP06 and S4.5-IMP07 remain drafted to preserve the rest of the first-testing runway and command-line testing guide.
+Status: T00 through T08 are planning in review. S4.5-IMP01 is reviewed and done as the first Stage 4.5 command-shell slice. S4.5-IMP02 and S4.5-IMP02A are reviewed and done as the real EWF metadata/verification attempt plus warning-semantics correction. S4.5-IMP03 is reviewed and done after producing a real-parser-backed root listing from the local E01 set with the project-local portable Python 3.12 runtime. S4.5-IMP04 is reviewed and done after adding E01-backed selected-file content providers. S4.5-IMP05 is reviewed and done after adding root-listing-derived file-list JSON/CSV, artifact inventory, command-summary updates, and a static local HTML summary. S4.5-IMP06 is reviewed and done for guardrail/review handoff reconciliation. S4.5-IMP07 remains drafted for the command-line testing guide.
 
 ## Current Implemented Functionality Summary
 
@@ -97,7 +97,7 @@ Recommended Stage 4.5 ticket sequence:
 | S4.5-IMP03 | Done | Real E01 filesystem demo gate: EWF-backed stream, partition-table volumes, and real-parser-backed root listing |
 | S4.5-IMP04 | Done | E01-backed selected-file content providers for preview/export/hash/signature |
 | S4.5-IMP05 | Done | File-list JSON/CSV, command summary, artifact inventory, and static local HTML summary |
-| S4.5-IMP06 | Draft | Final guardrail review, documentation reconciliation, and Stage 5 handoff |
+| S4.5-IMP06 | Done | Final guardrail review, documentation reconciliation, and Stage 5 handoff |
 | S4.5-IMP07 | Draft | Command-line testing guide and evidence workflow instructions |
 
 ## Implementation Runway
@@ -112,10 +112,20 @@ These planning tickets line up into implementation slices that must be completed
 | S4.5-IMP03 | S4.5-T04 | Real E01 filesystem demo gate: EWF-backed stream, partition/volume boundary, and root filesystem metadata/listing; reviewed and done |
 | S4.5-IMP04 | S4.5-T05 | E01-backed selected-file content providers for preview/export/hash/signature under explicit size policy; reviewed and done |
 | S4.5-IMP05 | S4.5-T06 | File-list JSON/CSV, command summary, artifact inventory, and static local HTML; reviewed and done |
-| S4.5-IMP06 | S4.5-T07 and S4.5-T08 | Manual-test guardrails, documentation reconciliation, and review handoff; drafted |
+| S4.5-IMP06 | S4.5-T07 and S4.5-T08 | Manual-test guardrails, documentation reconciliation, and review handoff; reviewed and done |
 | S4.5-IMP07 | S4.5-T07 and S4.5-T08 | User-facing command-line testing guide, PowerShell commands, artifact inspection steps, troubleshooting, and proof boundaries; drafted |
 
-The next practical implementation slice is S4.5-IMP06 for final guardrail review, documentation reconciliation, and Stage 5 handoff preparation. Stage 5 search/timeline remains blocked until S4.5-IMP01 through S4.5-IMP07 are completed and reviewed.
+The next practical implementation slice is S4.5-IMP07 for the command-line testing guide and evidence workflow instructions. Stage 5 search/timeline remains blocked until S4.5-IMP01 through S4.5-IMP07 are completed and reviewed.
+
+## Stage 5 Gate Handoff After S4.5-IMP06
+
+S4.5-IMP06 prepares the later S5-T01 rerun but does not make the gate pass. S5-T02 and later search/timeline work must still wait for S4.5-IMP07 to be completed/reviewed and for S5-T01 to be rerun.
+
+Allowed future Stage 5 input records should be limited to reviewed, provenance-rich artifacts: intake and segment discovery, case/evidence/audit rows, metadata and verification status, EWF stream status, partition/volume records, filesystem/root-listing entries, root-listing-derived file-list JSON/CSV, and selected-file readiness/preview/analysis/export records only for explicit parser-backed selections. The static HTML summary is a local human-readable review artifact, not an indexing source.
+
+Blocked inputs remain recursive/nested traversal, broad full-volume crawl, arbitrary auto-selected preview/export/hash/signature, full-text E01 content, deleted recovery/carving, UI/report-system records, and verification-success claims when verification is unsupported or only stored hash metadata exists.
+
+Any later search/timeline record must preserve source path, evidence id when available, volume id, file id/path, provider/source identity, source kind, parser/source status, dependency/not-supported/not-run states, warning list, timestamp context, read-only assertion, and source-modified assertion.
 
 Matching implementation prompts now live under `prompts/vscode-agent/`:
 

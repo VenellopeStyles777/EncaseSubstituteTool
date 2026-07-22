@@ -12,6 +12,30 @@ YYYY-MM-DD
 - Next:
 ```
 
+2026-07-14 to 2026-07-17 summary
+- July 14: completed the Stage 3 export foundation handoff, expanded Stage 4, and implemented/reviewed the core provider-backed analysis pieces: hash/signature contracts, hashing, signature detection, extension mismatch checks, and fixture-sized known-file matching.
+- July 15: finished Stage 4 documentation/status reconciliation, closed Stage 4, and planned Stage 4.5 as a reality-anchor runway before Stage 5 search/timeline work.
+- July 16: started Stage 4.5 implementation with the first-testing command shell and populated the remaining runway tickets/prompts for real E01 metadata, filesystem access, selected-file content, output artifacts, guardrails, and user testing instructions.
+- July 17: advanced Stage 4.5 from metadata/verification into real parser-backed E01 stream, volume, filesystem, root listing, selected-file content providers, and JSON/CSV/HTML file-list artifacts while keeping Stage 5 search/timeline blocked until the runway is complete.
+
+2026-07-22
+- Completed: reviewed and accepted S4.5-IMP06 as done after independent full-suite verification.
+- Learned: the Stage 5 gate packet is now prepared, but it is intentionally not a pass; IMP07 is still needed so a user can repeat the first-testing workflow from exact commands and inspect the expected artifacts.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP07 still needs implementation/review, and S5-T01 must be rerun after that.
+- Next: proceed to S4.5-IMP07 for the command-line testing guide when the user asks. Reviewer verification: `.\.python312-embed\python.exe -m pytest` reported 184 passed in 32.93s.
+
+2026-07-22
+- Completed: implemented S4.5-IMP06 documentation/status reconciliation and marked the ticket ready for review.
+- Learned: the Stage 5 gate handoff can now name reviewed inputs and blocked inputs without unblocking search/timeline; S4.5-IMP07 remains the last Stage 4.5 runway ticket before S5-T01 can rerun.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP07 still needs implementation/review, and S5-T01 must be rerun after that.
+- Next: review S4.5-IMP06, then proceed to S4.5-IMP07 for the exact command-line testing guide. Verification: `.\.python312-embed\python.exe -m pytest` reported 184 passed in 44.69s.
+
+2026-07-22
+- Completed: expanded S4.5-IMP06 into a ready guardrail/review handoff ticket and refreshed its VS Code coding-agent prompt.
+- Learned: IMP06 should prepare the Stage 5 gate packet without unblocking Stage 5 yet; IMP07 remains required for the exact user-facing command-line testing guide.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP06 must be implemented/reviewed and S4.5-IMP07 still needs implementation/review before the Stage 5 gate can pass.
+- Next: feed S4.5-IMP06 to the existing Stage 4.5 coding-agent task and review its handoff when complete.
+
 2026-07-17
 - Completed: implemented S4.5-IMP05 file-list/output bundle work and marked it ready for review.
 - Learned: the current root listing is enough to generate inspectable JSON/CSV and a static local HTML summary without adding recursive traversal, broad crawl, search/timeline indexing, UI, or a report system; unavailable parser states still get honest zero-entry file-list artifacts.
