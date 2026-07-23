@@ -2,6 +2,7 @@
 
 from contextlib import contextmanager
 import csv
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -15,6 +16,9 @@ from app.backend.api.first_testing import (
 )
 from app.backend.case_store import connect
 from app.backend.forensic_core import (
+    ImageReadResult,
+    ImageStreamInfo,
+    ImageStreamStatus,
     PyewfEwfReaderAdapter,
     SelectedFileContentResult,
     SelectedFileContentStatus,
@@ -53,6 +57,38 @@ class FakeHandle:
 
     def verify(self):
         return True
+
+
+class FakeHashEwfImageByteStream:
+    stream_type = "ewf"
+    read_only = True
+    DATA = b"logical image bytes for hashing"
+
+    def __init__(self, selected_path, *, segment_paths=None, **kwargs):
+        self.source_path = str(Path(selected_path).resolve())
+        self.segment_paths = tuple(str(Path(path).resolve()) for path in (segment_paths or [selected_path]))
+        self.data = self.DATA
+
+    def describe(self):
+        return ImageStreamInfo(
+            source_path=self.source_path,
+            stream_type=self.stream_type,
+            size=len(self.data),
+            read_only=True,
+            status=ImageStreamStatus("ok", "fake stream ok", self.source_path),
+        )
+
+    def read_at(self, offset: int, length: int):
+        return ImageReadResult(
+            source_path=self.source_path,
+            stream_type=self.stream_type,
+            read_only=True,
+            offset=offset,
+            length=length,
+            source_size=len(self.data),
+            data=self.data[offset : offset + length],
+            status=ImageStreamStatus("ok", "fake read ok", self.source_path),
+        )
 
 
 SELECTED_BYTES = b"%PDF-1.7\nselected bytes"
@@ -185,6 +221,7 @@ def _required_artifacts(case_dir: Path, output_dir: Path) -> list[Path]:
         output_dir / "filesystems.json",
         output_dir / "root-listing.json",
         output_dir / "demo-readiness.json",
+        output_dir / "image-hash.json",
         output_dir / "selected-file-readiness.json",
         output_dir / "selected-file-preview.json",
         output_dir / "selected-file-analysis.json",
@@ -422,6 +459,7 @@ def test_direct_e01_with_stub_creates_case_artifacts_and_persistence():
             (output_dir / "selected-file-preview.json").read_text(encoding="utf-8")
         )
         file_list = json.loads((output_dir / "file-list.json").read_text(encoding="utf-8"))
+        image_hash = json.loads((output_dir / "image-hash.json").read_text(encoding="utf-8"))
         csv_header = (output_dir / "file-list.csv").read_text(encoding="utf-8").splitlines()[0]
         html_summary = (output_dir / "reports" / "summary.html").read_text(encoding="utf-8")
         artifact_exists = all(path.exists() for path in _required_artifacts(case_dir, output_dir))
@@ -436,6 +474,11 @@ def test_direct_e01_with_stub_creates_case_artifacts_and_persistence():
     assert result["read_only_asserted"] is True
     assert result["selected_file"]["requested"] is False
     assert result["selected_file"]["selection_status"] == "not_run"
+    assert result["image_hash"]["requested"] is False
+    assert result["image_hash"]["status"] == "not_run"
+    assert result["image_hash"]["hexdigest_available"] is False
+    assert image_hash["status"] == "not_run"
+    assert image_hash["hexdigest"] is None
     assert selected_readiness["status"]["code"] == "not_run"
     assert selected_preview["status"] == "not_run"
     assert result["file_list"]["status"] == "not_run"
@@ -443,6 +486,7 @@ def test_direct_e01_with_stub_creates_case_artifacts_and_persistence():
     assert file_list["entry_count"] == 0
     assert csv_header.split(",") == list(FILE_LIST_CSV_HEADERS)
     assert "Stage 4.5 First-Testing Summary" in html_summary
+    assert "Image hash status" in html_summary
     assert "File-list status" in html_summary
     assert artifact_exists
     assert len(evidence_rows) == 1
@@ -513,6 +557,9 @@ def test_default_pyewf_dependency_unavailable_path_writes_honest_unsupported_out
         file_list = json.loads(
             (case_dir / "outputs" / "file-list.json").read_text(encoding="utf-8")
         )
+        image_hash = json.loads(
+            (case_dir / "outputs" / "image-hash.json").read_text(encoding="utf-8")
+        )
 
     assert result["status"] == "ok_with_unsupported_sections"
     assert intake["status"] == "metadata_unavailable"
@@ -526,6 +573,8 @@ def test_default_pyewf_dependency_unavailable_path_writes_honest_unsupported_out
     assert root_listing["parser_backing"] == "dependency_blocked"
     assert file_list["status"]["code"] == "not_available"
     assert file_list["entry_count"] == 0
+    assert image_hash["status"] == "not_run"
+    assert image_hash["requested"] is False
     assert "root_listing_not_real_parser_backed" in [
         warning["code"] for warning in file_list["warnings"]
     ]
@@ -590,6 +639,114 @@ def test_first_testing_writes_metadata_and_verification_artifacts_with_fake_pyew
     assert not any(section["owner"] == "S4.5-IMP03" for section in unsupported["sections"])
     assert not any(section["owner"] == "S4.5-IMP05" for section in unsupported["sections"])
     assert later_artifacts_exist == [True, True, False, True, True]
+
+
+def test_hash_image_option_writes_logical_image_hash_artifact(monkeypatch):
+    monkeypatch.setattr(first_testing_api, "EwfImageByteStream", FakeHashEwfImageByteStream)
+    handle = FakeHandle()
+    adapter = PyewfEwfReaderAdapter(pyewf_module=FakePyewf(handle))
+
+    with _dummy_first_testing_directory("image-hash-success") as directory:
+        evidence_dir = directory / "evidence"
+        _touch_files(evidence_dir, "sample.E01", "sample.E02")
+        case_dir = directory / "case"
+        output_dir = directory / "output"
+
+        result = run_first_testing(
+            evidence_dir / "sample.E01",
+            case_path=case_dir,
+            output_path=output_dir,
+            adapter=adapter,
+            hash_image=True,
+            image_hash_chunk_size=7,
+        )
+
+        image_hash = json.loads((output_dir / "image-hash.json").read_text(encoding="utf-8"))
+        metadata = json.loads((output_dir / "metadata.json").read_text(encoding="utf-8"))
+        manifest = json.loads((case_dir / "run-manifest.json").read_text(encoding="utf-8"))
+        summary = (case_dir / "command-summary.txt").read_text(encoding="utf-8")
+
+    expected_digest = hashlib.sha256(FakeHashEwfImageByteStream.DATA).hexdigest()
+    assert result["image_hash"]["requested"] is True
+    assert result["image_hash"]["status"] == "completed"
+    assert result["image_hash"]["bytes_hashed"] == len(FakeHashEwfImageByteStream.DATA)
+    assert result["image_hash"]["hexdigest_available"] is True
+    assert image_hash["schema_version"] == "stage4_5.image_hash.v1"
+    assert image_hash["status"] == "completed"
+    assert image_hash["algorithm"] == "sha256"
+    assert image_hash["hexdigest"] == expected_digest
+    assert metadata["metadata"]["hashes"]["md5"] == "stored-md5"
+    assert image_hash["hexdigest"] != metadata["metadata"]["hashes"]["md5"]
+    assert image_hash["byte_count_matches_media_size"] is True
+    assert image_hash["source_kind"] == "ewf_logical_image"
+    assert image_hash["adapter_name"] == "pyewf-reader"
+    assert image_hash["segment_count"] == 2
+    assert image_hash["provenance"]["stored_hashes_are_verification"] is False
+    assert image_hash["provenance"]["segment_container_hash"] is False
+    assert image_hash["provenance"]["selected_file_hash"] is False
+    assert image_hash["read_only_asserted"] is True
+    assert image_hash["source_modified"] is False
+    assert manifest["image_hash"]["status"] == "completed"
+    assert manifest["image_hash"]["artifact_path"].endswith("image-hash.json")
+    assert "Image hash request: True (completed)" in summary
+    assert expected_digest not in summary
+
+
+def test_hash_image_dependency_unavailable_is_structured(monkeypatch):
+    def fake_pyewf_adapter():
+        return PyewfEwfReaderAdapter(
+            pyewf_module=None,
+            import_error=ImportError("No module named 'pyewf'"),
+        )
+
+    monkeypatch.setattr(first_testing_api, "PyewfEwfReaderAdapter", fake_pyewf_adapter)
+
+    with _dummy_first_testing_directory("image-hash-dependency-unavailable") as directory:
+        evidence_dir = directory / "evidence"
+        _touch_files(evidence_dir, "sample.E01")
+        case_dir = directory / "case"
+
+        result = run_first_testing(
+            evidence_dir / "sample.E01",
+            case_path=case_dir,
+            hash_image=True,
+        )
+
+        image_hash = json.loads(
+            (case_dir / "outputs" / "image-hash.json").read_text(encoding="utf-8")
+        )
+
+    assert result["image_hash"]["requested"] is True
+    assert result["image_hash"]["status"] == "dependency_unavailable"
+    assert image_hash["status"] == "dependency_unavailable"
+    assert image_hash["hexdigest"] is None
+    assert image_hash["bytes_hashed"] == 0
+    assert "dependency_unavailable" in [warning["code"] for warning in image_hash["warnings"]]
+
+
+def test_hash_image_with_stub_adapter_does_not_hash_stub_bytes():
+    with _dummy_first_testing_directory("image-hash-stub-refusal") as directory:
+        evidence_dir = directory / "evidence"
+        _touch_files(evidence_dir, "sample.E01")
+        case_dir = directory / "case"
+
+        result = run_first_testing(
+            evidence_dir / "sample.E01",
+            case_path=case_dir,
+            adapter_name="stub",
+            hash_image=True,
+        )
+
+        image_hash = json.loads(
+            (case_dir / "outputs" / "image-hash.json").read_text(encoding="utf-8")
+        )
+
+    assert result["image_hash"]["status"] == "stream_unavailable"
+    assert image_hash["status"] == "stream_unavailable"
+    assert image_hash["hexdigest"] is None
+    assert "stub_adapter_image_hash_not_supported" in [
+        warning["code"] for warning in image_hash["warnings"]
+    ]
 
 
 def test_first_testing_manifest_can_record_real_parser_backed_root_listing(monkeypatch):

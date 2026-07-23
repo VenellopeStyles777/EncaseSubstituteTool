@@ -43,7 +43,7 @@ Stage 4 contract start:
 - S4-T06 documents future case-store persistence requirements and keeps current analysis helpers non-persistent.
 - S4-T07 reconciles documentation/status only and adds no core behavior.
 - Per-file analysis content remains separate from Stage 2 preview rendering, Stage 3 export-output verification, and future whole-image verification.
-- Stage 4.5 is the first-testing stage for user-provided E01 files before search/timeline. S4.5-IMP01 is done with a command shell and case-workspace artifact bundle. S4.5-IMP02 upgrades the `pyewf` adapter to attempt best-effort metadata and explicit verification when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 is done with an EWF-backed stream, partition-table volume discovery, and real-parser-backed root listing path. S4.5-IMP04 is done with selected-file E01 content providers for explicit root-entry preview/export/hash/signature. S4.5-IMP05 is done with first-testing output artifacts that normalize the current root listing into file-list JSON/CSV and a static local HTML summary. S4.5-IMP06 is documentation/status handoff work; it does not change core parser behavior or add recursive traversal.
+- Stage 4.5 is the first-testing stage for user-provided E01 files before search/timeline. S4.5-IMP01 is done with a command shell and case-workspace artifact bundle. S4.5-IMP02 upgrades the `pyewf` adapter to attempt best-effort metadata and explicit verification when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 is done with an EWF-backed stream, partition-table volume discovery, and real-parser-backed root listing path. S4.5-IMP04 is done with selected-file E01 content providers for explicit root-entry preview/export/hash/signature. S4.5-IMP05 is done with first-testing output artifacts that normalize the current root listing into file-list JSON/CSV and a static local HTML summary. S4.5-IMP06 is documentation/status handoff work; it does not change core parser behavior or add recursive traversal. S4.5-IMP08 adds chunked full logical-image hashing over the read-only image stream when explicitly requested.
 
 ## S1-T02 Segment Discovery
 
@@ -78,8 +78,10 @@ The adapter layer is intentionally separate from segment discovery. Stage 1 does
 - `ImageByteStream`: protocol for stream metadata and bounded byte-range reads.
 - `LocalFileImageStream`: local file-backed implementation for tiny generated fixtures and later raw-image experiments.
 - `EwfImageByteStream`: optional `pyewf`-backed implementation for segmented EWF images; it uses the discovered segment set, reports logical media size, and supports bounded read-only ranges for parser consumers.
+- `hash_image_stream()`: chunked full-stream hashing helper used by S4.5-IMP08 to compute SHA-256 over the logical image stream, not over stored EWF hash metadata, segment container files, selected-file content, or stub bytes.
 - `ImageStreamInfo`: source metadata and provenance, including source path, stream type, size, read-only assertion, status, and warnings.
 - `ImageReadResult`: bounded read result, including offset, requested length, source size, bytes read, read-only assertion, status, warnings, and raw `bytes` for backend callers.
+- `ImageHashResult` and `ImageHashStatus`: full logical-image hash result/status objects with byte count, logical media size, digest, byte-count match, and warning fields.
 - `ImageStreamStatus` and `ImageStreamWarning`: structured status/warning objects for normal and error paths.
 
 Current behavior:
@@ -88,9 +90,10 @@ Current behavior:
 - supports bounded reads by explicit offset and length;
 - reports missing paths, directory paths, unreadable files, invalid negative ranges, and reads beyond the end of the source as structured statuses;
 - truncates reads that extend past EOF and emits a `read_truncated_at_eof` warning;
+- hashes readable streams in bounded chunks only when the caller explicitly requests it;
 - uses tiny generated files and fakes in default tests and does not require real evidence, `pyewf`, libewf, `pytsk3`, or The Sleuth Kit.
 
-S2-T02/S4.5-IMP03 stream code does not render previews, export files, or hash evidence by itself. S4.5-IMP04 adds selected-file provider wrappers for explicit parser-backed root entries only. S4.5-IMP05 writes file-list output from the existing root-listing metadata, while broad crawls and recursive traversal remain later/out of scope.
+S2-T02/S4.5-IMP03 stream code does not render previews or export files by itself. S4.5-IMP04 adds selected-file provider wrappers for explicit parser-backed root entries only. S4.5-IMP05 writes file-list output from the existing root-listing metadata. S4.5-IMP08 hashes the full logical image only through the explicit first-testing `--hash-image` option, while broad crawls, nested navigation, and recursive traversal remain later/out of scope.
 
 ## S4.5-IMP04 Selected-File Content Providers
 

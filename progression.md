@@ -13,10 +13,22 @@ YYYY-MM-DD
 ```
 
 2026-07-22
+- Completed: implemented S4.5-IMP08 image-level verification hash support and marked the ticket ready for review.
+- Learned: the command can now write `image-hash.json` as `not_run` by default or compute SHA-256 over the full EWF logical image stream when `--hash-image` is explicitly requested; stored EWF hash metadata, segment container files, selected-file hashes, and stub bytes remain excluded from that proof.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP08 still needs review acceptance, S4.5-IMP09/S4.5-IMP10 remain pending, and the real full-image hash is a long-running reviewer/user command unless separately completed. Existing reviewed smoke reports a logical media size of 1,024,209,543,168 bytes.
+- Next: review S4.5-IMP08, then proceed to S4.5-IMP09 for nested directory navigation before S5-T01 is rerun. Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_first_testing_command.py` reported 31 passed in 32.90s. Full verification: `.\.python312-embed\python.exe -m pytest` reported 189 passed in 87.61s.
+
+2026-07-22
+- Completed: added S4.5-IMP08, S4.5-IMP09, and S4.5-IMP10 after hands-on demo feedback.
+- Learned: the no-selection demo is useful but still short of the user's bar without an independent full logical-image hash and visible navigation into actual directories inside the image.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP08 through S4.5-IMP10 must be implemented/reviewed before S5-T01 rerun.
+- Next: feed S4.5-IMP08 to the existing Stage 4.5 coding-agent task when the user is ready.
+
+2026-07-22
 - Completed: reviewed and accepted S4.5-IMP07 as done after guide review, artifact inspection, full portable-runtime tests, and a fresh real-image no-selection smoke.
 - Learned: Stage 4.5 now has the minimum repeatable command-line demo path: create a case workspace, ingest the E01 segment set, show parser-backed root filesystem status, produce file-list JSON/CSV, and open a static local summary while preserving proof boundaries.
-- Blocked by: Stage 5 S5-T02+ remains blocked until S5-T01 is rerun and passes with the completed Stage 4.5 runway.
-- Next: rerun S5-T01 as the Stage 4.5 completion gate before any search/timeline implementation. Reviewer verification: `.\.python312-embed\python.exe -m pytest` reported 184 passed in 28.38s; reviewer real-image no-selection smoke exited 0 with the reviewed non-sensitive status/count shape.
+- Blocked by: Stage 5 S5-T02+ remains blocked. This acceptance was later superseded by hands-on demo feedback requiring S4.5-IMP08 through S4.5-IMP10 before S5-T01 rerun.
+- Next: proceed to the Stage 4.5 demo-feedback extension. Reviewer verification for S4.5-IMP07: `.\.python312-embed\python.exe -m pytest` reported 184 passed in 28.38s; reviewer real-image no-selection smoke exited 0 with the reviewed non-sensitive status/count shape.
 
 2026-07-22
 - Completed: implemented S4.5-IMP07 command-line testing guide work and marked the ticket ready for review.

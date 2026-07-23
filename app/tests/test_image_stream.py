@@ -1,10 +1,11 @@
 """Tests for the S2-T02 read-only image byte-stream abstraction."""
 
 from contextlib import contextmanager
+import hashlib
 from pathlib import Path
 import shutil
 
-from app.backend.forensic_core import EwfImageByteStream, LocalFileImageStream
+from app.backend.forensic_core import EwfImageByteStream, LocalFileImageStream, hash_image_stream
 
 
 class FakePyewf:
@@ -261,3 +262,41 @@ def test_ewf_stream_rejects_negative_ranges_before_reader_calls():
     assert negative_offset.status.code == "invalid_range"
     assert negative_length.status.code == "invalid_range"
     assert fake_pyewf.handles == []
+
+
+def test_hash_image_stream_hashes_deterministic_tiny_stream_in_chunks():
+    with _stream_fixture_directory("image-stream-hash") as directory:
+        source_path = directory / "tiny.raw"
+        data = b"0123456789abcdef"
+        _write_bytes(source_path, data)
+
+        result = hash_image_stream(
+            LocalFileImageStream(source_path),
+            algorithm="sha256",
+            chunk_size=5,
+        )
+
+    assert result.status.code == "completed"
+    assert result.status.ok is True
+    assert result.algorithm == "sha256"
+    assert result.hexdigest == hashlib.sha256(data).hexdigest()
+    assert result.bytes_hashed == len(data)
+    assert result.logical_media_size == len(data)
+    assert result.byte_count_matches_media_size is True
+    assert result.read_only is True
+    assert result.to_dict()["source_kind"] == "local-file_image"
+
+
+def test_hash_image_stream_reports_dependency_unavailable_without_digest():
+    result = hash_image_stream(
+        EwfImageByteStream("sample.E01", pyewf_module=None),
+        algorithm="sha256",
+        chunk_size=4,
+    )
+
+    assert result.status.code == "dependency_unavailable"
+    assert result.hexdigest is None
+    assert result.bytes_hashed == 0
+    assert result.byte_count_matches_media_size is None
+    assert result.to_dict()["source_kind"] == "ewf_logical_image"
+    assert "dependency_unavailable" in [warning.code for warning in result.warnings]

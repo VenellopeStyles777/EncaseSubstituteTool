@@ -2,6 +2,26 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-22 - S4.5-IMP08 Image-Level Hash Implementation
+
+- Marked `tickets/stage-4.5/S4.5-IMP08-image-level-verification-hash.md` as `Review`.
+- Added first-testing documentation for `--hash-image`, `--image-hash-algorithm`, `--image-hash-chunk-size`, and `outputs/image-hash.json`.
+- Updated active Stage 4.5, Stage 5, README, goal, plan, functionality, prompt, backend/API/core, manual-testing, progression, and review docs so S4.5-IMP08 is ready for review while S4.5-IMP09 and S4.5-IMP10 remain pending.
+- Recorded that full logical-image hashing is explicit and opt-in: default runs write image hash status `not_run`; requested runs compute SHA-256 over the EWF logical image stream, not stored EWF hash metadata, segment container files, selected-file hashes, or stub bytes.
+- Recorded that the full local real-image hash was not run to completion in this coding-agent session because the existing reviewed real-image smoke reports a logical media size of 1,024,209,543,168 bytes; reviewer/user can run the documented `--hash-image` command when ready.
+- Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_first_testing_command.py` reported 31 passed in 32.90s.
+- Full verification: `.\.python312-embed\python.exe -m pytest` reported 189 passed in 87.61s.
+- Stage 5 search/timeline remains blocked until S4.5-IMP08 through S4.5-IMP10 are reviewed and S5-T01 is rerun.
+
+## 2026-07-22 - S4.5 Demo Feedback Extension
+
+- Added `tickets/stage-4.5/S4.5-IMP08-image-level-verification-hash.md` as `Ready`.
+- Added `tickets/stage-4.5/S4.5-IMP09-nested-directory-navigation.md` as `Draft`.
+- Added `tickets/stage-4.5/S4.5-IMP10-demo-guide-and-stage-5-gate-refresh.md` as `Draft`.
+- Added matching VS Code coding-agent prompts for S4.5-IMP08 through S4.5-IMP10.
+- Updated active Stage 4.5, Stage 5, README, goal, plan, functionality, prompt, manual-testing, progression, and review docs so Stage 5 remains blocked until the new image-hash and nested-navigation proof points are reviewed.
+- Recorded the user hands-on demo feedback: the demo needs an independent full-image hash and navigation into actual directories/files inside the image before major Stage 5 work.
+
 ## 2026-07-22 - S4.5-IMP07 Review Acceptance
 
 - Marked `tickets/stage-4.5/S4.5-IMP07-command-line-testing-guide.md` as `Done` after reviewer acceptance.
@@ -9,7 +29,7 @@ Purpose: record documentation changes, important source references, and decision
 - Reviewer correction: changed generic real-E01 examples to use the reviewed portable runtime path and clarified status-code inspection for file-list and selected-file readiness artifacts.
 - Reviewer verification: `.\.python312-embed\python.exe -m pytest` reported 184 passed in 28.38s.
 - Reviewer real-image no-selection smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, metadata `metadata_available`, verification `not_supported`, EWF stream `ok`, partition-table status `ok` with 5 volumes, filesystem status `ok`, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, static HTML summary created, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
-- Stage 4.5 implementation runway is now complete through S4.5-IMP07; S5-T02+ remains blocked until S5-T01 is rerun.
+- S4.5-IMP07 was accepted as done. Later hands-on demo feedback extended the Stage 4.5 runway with S4.5-IMP08 through S4.5-IMP10, so S5-T02+ remains blocked.
 
 ## 2026-07-22 - S4.5-IMP07 Command-Line Testing Guide Implementation
 

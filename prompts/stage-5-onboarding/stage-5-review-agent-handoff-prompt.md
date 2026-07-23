@@ -70,17 +70,19 @@ The current real-E01 truth is still limited:
 
 Stage 4.5 was added before Stage 5 because the user wants something testable and demonstrable with actual E01 files.
 
-Stage 4.5 is no longer planning-only. S4.5-T00 through S4.5-T08 are planning/review records, and S4.5-IMP01 through S4.5-IMP07 are reviewed and done. The completed runway includes the first command-shell implementation slice, real metadata/verification status path, EWF stream, partition-table volume discovery, real-parser-backed root listing, selected-file E01-backed content providers, root-listing-derived file-list JSON/CSV, static local HTML output, guardrail/Stage 5 gate handoff, and command-line testing guide.
+Stage 4.5 is no longer planning-only. S4.5-T00 through S4.5-T08 are planning/review records, S4.5-IMP01 through S4.5-IMP07 are reviewed and done, and S4.5-IMP08 is ready for review with explicit full-image hashing. Hands-on demo feedback extended Stage 4.5 with S4.5-IMP08 through S4.5-IMP10 because the user needs an independent full-image hash and real nested directory navigation before Stage 5.
 
 Before starting Stage 5, confirm the current Stage 4.5 runway state:
 
 - S4.5-IMP01 is done;
 - S4.5-IMP02 and S4.5-IMP02A are done;
 - S4.5-IMP03, S4.5-IMP04, S4.5-IMP05, S4.5-IMP06, and S4.5-IMP07 are reviewed and done;
+- S4.5-IMP08 is ready for review with an independent full logical-image hash artifact;
+- S4.5-IMP09 and S4.5-IMP10 are drafted and required;
 - the portable runtime/dependency setup is project-local and ignored by git;
 - no committed E01 files or private outputs were added;
 - manual E01 testing is partial for intake, metadata, stream, partition-table discovery, root listing, and root-listing-derived file-list/static summary output;
-- S5-T01 should be rerun before any S5-T02 or later search/timeline implementation.
+- S5-T01 should not be rerun as passing until S4.5-IMP08 through S4.5-IMP10 are reviewed.
 
 The Stage 4.5 implementation runway is:
 
@@ -91,6 +93,9 @@ The Stage 4.5 implementation runway is:
 - S4.5-IMP05: file-list JSON/CSV, command summary, artifact inventory, static local HTML. Status: Done.
 - S4.5-IMP06: manual-test guardrails, documentation reconciliation, and review handoff. Status: Done.
 - S4.5-IMP07: command-line testing guide and evidence workflow instructions. Status: Done.
+- S4.5-IMP08: independent full logical-image hash artifact. Status: Review.
+- S4.5-IMP09: nested directory navigation into actual filesystem entries. Status: Draft.
+- S4.5-IMP10: demo guide and Stage 5 gate refresh. Status: Draft.
 
 ## Stage 5 Entry Rule
 
@@ -106,7 +111,7 @@ The older readiness/risk audit is now the hard gate:
 
 Search/timeline work starts only after:
 
-- Stage 4.5 first-testing implementation runway S4.5-IMP01 through S4.5-IMP07 is completed and reviewed;
+- Stage 4.5 first-testing implementation runway S4.5-IMP01 through S4.5-IMP10 is completed and reviewed;
 - S5-T00 documentation cleanup is accepted;
 - S5-T01 confirms what data search/timeline can honestly operate on.
 
@@ -115,7 +120,7 @@ S5-T01 should block S5-T02 and later if the Stage 4.5 substantial-test runway is
 ## Detailed Stage 5 Ticket Queue
 
 - S5-T00: documentation organization, duplication cleanup, and unused/confusing structure review. Status: Done.
-- S5-T01: readiness and Stage 4.5 completion gate. Status: Done; older failed gate/blocker from before Stage 4.5 was complete. Rerun is now the next required gate.
+- S5-T01: readiness and Stage 4.5 completion gate. Status: Done; older failed gate/blocker. Rerun remains blocked until S4.5-IMP08 through S4.5-IMP10 are reviewed.
 - S5-T01A: Stage 4.5 gate language hardening. Status: Done.
 - S5-T02: input inventory and provenance audit. Status: Draft.
 - S5-T03: searchable record contracts. Status: Draft.
@@ -181,9 +186,11 @@ The latest recorded reviewer verification in `review.md` for S4.5-IMP07 acceptan
 # 184 passed in 28.38s
 ```
 
-Run the suite again after any new edits or before the S5-T01 rerun acceptance.
+Run the suite again after any new edits or before any future ticket acceptance.
 
 ## Next Likely Moves
 
-1. Rerun S5-T01 as the hard Stage 4.5 completion gate.
-2. Do not proceed to S5-T02 or later search/timeline tickets until S5-T01 passes after S4.5-IMP07 acceptance.
+1. Review S4.5-IMP08.
+2. After S4.5-IMP08 review acceptance, proceed to S4.5-IMP09 and S4.5-IMP10.
+3. Rerun S5-T01 only after S4.5-IMP08 through S4.5-IMP10 are reviewed.
+4. Do not proceed to S5-T02 or later search/timeline tickets until S5-T01 passes after the extended Stage 4.5 runway.

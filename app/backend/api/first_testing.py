@@ -26,6 +26,7 @@ from app.backend.case_store import (
     list_audit_events,
 )
 from app.backend.forensic_core import (
+    DEFAULT_IMAGE_HASH_CHUNK_SIZE,
     DEFAULT_SELECTED_FILE_IN_MEMORY_LIMIT,
     DEFAULT_SIGNATURE_MAX_BYTES,
     E01AnalysisContentProvider,
@@ -36,6 +37,7 @@ from app.backend.forensic_core import (
     EwfImageByteStream,
     PyewfEwfReaderAdapter,
     Pytsk3FilesystemAdapter,
+    SUPPORTED_IMAGE_HASH_ALGORITHMS,
     StubEwfReaderAdapter,
     VolumeDiscoveryStatus,
     VolumeInfo,
@@ -43,12 +45,14 @@ from app.backend.forensic_core import (
     discover_volumes,
     evaluate_extension_mismatch,
     hash_file_content,
+    hash_image_stream,
 )
 
 
 FIRST_TESTING_RUN_SCHEMA_VERSION = "stage4_5.first_testing_run.v1"
 UNSUPPORTED_SECTIONS_SCHEMA_VERSION = "stage4_5.unsupported_sections.v1"
 FILE_LIST_SCHEMA_VERSION = "stage4_5.file_list.v1"
+IMAGE_HASH_SCHEMA_VERSION = "stage4_5.image_hash.v1"
 
 FILE_LIST_CSV_HEADERS = (
     "case_id",
@@ -98,6 +102,9 @@ def run_first_testing(
     selected_file_export_name: str | None = None,
     selected_file_preview_mode: str = "hex",
     selected_file_max_bytes: int = DEFAULT_SELECTED_FILE_IN_MEMORY_LIMIT,
+    hash_image: bool = False,
+    image_hash_algorithm: str = "sha256",
+    image_hash_chunk_size: int = DEFAULT_IMAGE_HASH_CHUNK_SIZE,
 ) -> dict[str, object]:
     """Create the first Stage 4.5 case workspace and artifact bundle.
 
@@ -117,6 +124,8 @@ def run_first_testing(
         selected_file_id=selected_file_id,
         selected_file_path=selected_file_path,
         selected_file_max_bytes=selected_file_max_bytes,
+        image_hash_algorithm=image_hash_algorithm,
+        image_hash_chunk_size=image_hash_chunk_size,
     )
     if validation["status"] != "ok":
         return _failure_result(
@@ -131,6 +140,8 @@ def run_first_testing(
     case_dir = validation["case_dir"]
     output_dir = validation["output_dir"]
     input_form = validation["input_form"]
+    image_hash_algorithm = str(validation["image_hash_algorithm"])
+    image_hash_chunk_size = int(validation["image_hash_chunk_size"])
     selection = _selection_request(
         selected_file_id=selected_file_id,
         selected_file_path=selected_file_path,
@@ -224,6 +235,15 @@ def run_first_testing(
             intake_result=intake_result,
             adapter_name=adapter_name,
         )
+        image_hash_artifact = _image_hash_artifact(
+            selected_path=selected_path,
+            intake_result=intake_result,
+            adapter_name=adapter_name,
+            demo_artifacts=demo_artifacts,
+            requested=hash_image,
+            algorithm=image_hash_algorithm,
+            chunk_size=image_hash_chunk_size,
+        )
         selected_file_artifacts = _selected_file_artifacts(
             selected_path=selected_path,
             intake_result=intake_result,
@@ -252,6 +272,7 @@ def run_first_testing(
         _write_json(artifact_paths["filesystems"], demo_artifacts["filesystems"])
         _write_json(artifact_paths["root_listing"], demo_artifacts["root_listing"])
         _write_json(artifact_paths["demo_readiness"], demo_artifacts["demo_readiness"])
+        _write_json(artifact_paths["image_hash"], image_hash_artifact)
         _write_json(artifact_paths["selected_file_readiness"], selected_file_artifacts["readiness"])
         _write_json(artifact_paths["selected_file_preview"], selected_file_artifacts["preview"])
         _write_json(artifact_paths["selected_file_analysis"], selected_file_artifacts["analysis"])
@@ -310,6 +331,7 @@ def run_first_testing(
             unsupported_sections=unsupported_sections,
             metadata_artifact=metadata_artifact,
             demo_artifacts=demo_artifacts,
+            image_hash_artifact=image_hash_artifact,
             file_list_artifact=file_list_artifact,
             selected_file_artifacts=selected_file_artifacts,
             audit_artifact=audit_artifact,
@@ -354,6 +376,9 @@ def first_testing_to_json(
     selected_file_export_name: str | None = None,
     selected_file_preview_mode: str = "hex",
     selected_file_max_bytes: int = DEFAULT_SELECTED_FILE_IN_MEMORY_LIMIT,
+    hash_image: bool = False,
+    image_hash_algorithm: str = "sha256",
+    image_hash_chunk_size: int = DEFAULT_IMAGE_HASH_CHUNK_SIZE,
     indent: int | None = 2,
 ) -> str:
     """Run the first-testing command shell and serialize the manifest."""
@@ -376,6 +401,9 @@ def first_testing_to_json(
         selected_file_export_name=selected_file_export_name,
         selected_file_preview_mode=selected_file_preview_mode,
         selected_file_max_bytes=selected_file_max_bytes,
+        hash_image=hash_image,
+        image_hash_algorithm=image_hash_algorithm,
+        image_hash_chunk_size=image_hash_chunk_size,
     )
     return json.dumps(result, indent=indent, sort_keys=True)
 
@@ -409,6 +437,7 @@ def format_first_testing_summary(
     volumes = _as_mapping(result.get("volumes"))
     filesystem = _as_mapping(result.get("filesystem"))
     root_listing = _as_mapping(result.get("root_listing"))
+    image_hash = _as_mapping(result.get("image_hash"))
     file_list = _as_mapping(result.get("file_list"))
     selected_file = _as_mapping(result.get("selected_file"))
     selected_preview = _as_mapping(selected_file.get("preview"))
@@ -437,6 +466,10 @@ def format_first_testing_summary(
         f"Volume strategy/status/count: {volumes.get('strategy')} / {volumes.get('status')} / {volumes.get('volume_count')}",
         f"Filesystem status: {filesystem.get('status')}",
         f"Root listing: {root_listing.get('parser_backing')} entries={root_listing.get('entry_count')}",
+        f"Image hash request: {image_hash.get('requested')} ({image_hash.get('status')})",
+        f"Image hash algorithm: {image_hash.get('algorithm')}",
+        f"Image hash bytes: {image_hash.get('bytes_hashed')} / {image_hash.get('logical_media_size')}",
+        f"Image hash byte-count match: {image_hash.get('byte_count_matches_media_size')}",
         f"File list status: {file_list.get('status')}",
         f"File list entries: {file_list.get('entry_count')}",
         f"File list parser backing: {file_list.get('parser_backing')}",
@@ -517,6 +550,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         default=DEFAULT_SELECTED_FILE_IN_MEMORY_LIMIT,
         help="Maximum selected-file bytes for in-memory hash/export operations.",
     )
+    parser.add_argument(
+        "--hash-image",
+        action="store_true",
+        help="Compute an independent SHA-256 hash over the full EWF logical image stream.",
+    )
+    parser.add_argument(
+        "--image-hash-algorithm",
+        default="sha256",
+        help="Full logical-image hash algorithm. Defaults to sha256.",
+    )
+    parser.add_argument(
+        "--image-hash-chunk-size",
+        type=int,
+        default=DEFAULT_IMAGE_HASH_CHUNK_SIZE,
+        help="Chunk size in bytes for full logical-image hashing.",
+    )
     args = parser.parse_args(argv)
 
     result = run_first_testing(
@@ -536,6 +585,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         selected_file_export_name=args.selected_file_export_name,
         selected_file_preview_mode=args.selected_file_preview_mode,
         selected_file_max_bytes=args.selected_file_max_bytes,
+        hash_image=args.hash_image,
+        image_hash_algorithm=args.image_hash_algorithm,
+        image_hash_chunk_size=args.image_hash_chunk_size,
     )
 
     if args.json_only:
@@ -556,6 +608,8 @@ def _validate_request(
     selected_file_id: str | None = None,
     selected_file_path: str | None = None,
     selected_file_max_bytes: int = DEFAULT_SELECTED_FILE_IN_MEMORY_LIMIT,
+    image_hash_algorithm: str = "sha256",
+    image_hash_chunk_size: int = DEFAULT_IMAGE_HASH_CHUNK_SIZE,
 ) -> dict[str, object]:
     if case_path is None:
         return _validation_error("invalid_input", "missing_case", "--case is required.")
@@ -572,6 +626,23 @@ def _validate_request(
             "invalid_input",
             "invalid_selected_file_max_bytes",
             "--selected-file-max-bytes must be greater than or equal to zero.",
+        )
+
+    normalized_image_hash_algorithm = _normalize_image_hash_algorithm(image_hash_algorithm)
+    if normalized_image_hash_algorithm not in SUPPORTED_IMAGE_HASH_ALGORITHMS:
+        return _validation_error(
+            "invalid_input",
+            "unsupported_image_hash_algorithm",
+            "--image-hash-algorithm currently supports only sha256.",
+            {"algorithm": image_hash_algorithm},
+        )
+
+    if image_hash_chunk_size <= 0:
+        return _validation_error(
+            "invalid_input",
+            "invalid_image_hash_chunk_size",
+            "--image-hash-chunk-size must be greater than zero.",
+            {"chunk_size": image_hash_chunk_size},
         )
 
     has_direct_path = evidence_path is not None
@@ -673,6 +744,8 @@ def _validate_request(
         "case_dir": case_dir,
         "output_dir": output_dir,
         "input_form": input_form,
+        "image_hash_algorithm": normalized_image_hash_algorithm,
+        "image_hash_chunk_size": image_hash_chunk_size,
     }
 
 
@@ -793,6 +866,7 @@ def _artifact_paths(case_dir: Path, output_dir: Path) -> dict[str, Path]:
         "filesystems": output_dir / "filesystems.json",
         "root_listing": output_dir / "root-listing.json",
         "demo_readiness": output_dir / "demo-readiness.json",
+        "image_hash": output_dir / "image-hash.json",
         "selected_file_readiness": output_dir / "selected-file-readiness.json",
         "selected_file_preview": output_dir / "selected-file-preview.json",
         "selected_file_analysis": output_dir / "selected-file-analysis.json",
@@ -808,9 +882,14 @@ def _artifact_paths(case_dir: Path, output_dir: Path) -> dict[str, Path]:
 def _unsupported_sections() -> dict[str, object]:
     rows = [
         (
-            "recursive_nested_traversal",
-            "S4.5-IMP06",
-            "Recursive nested traversal and full-volume enumeration remain deferred after S4.5-IMP05.",
+            "nested_directory_navigation",
+            "S4.5-IMP09",
+            "Explicit nested directory navigation into actual filesystem entries remains deferred until S4.5-IMP09.",
+        ),
+        (
+            "recursive_broad_traversal",
+            "Future",
+            "Recursive traversal, broad crawl, and full-volume enumeration remain deferred.",
         ),
         (
             "stage5_search_timeline",
@@ -833,9 +912,9 @@ def _unsupported_sections() -> dict[str, object]:
             "Packaging and distribution work remain deferred.",
         ),
         (
-            "implementation_handoff_manual_test_reconciliation",
-            "S4.5-IMP07",
-            "Final manual-test guardrail reconciliation is not complete until the later handoff slice.",
+            "final_guide_gate_refresh",
+            "S4.5-IMP10",
+            "The final command-line guide and Stage 5 gate refresh remain deferred until after image hash and nested navigation review.",
         ),
     ]
     return {
@@ -984,6 +1063,174 @@ def _segment_discovery_artifact(
     }
 
 
+def _image_hash_artifact(
+    *,
+    selected_path: Path,
+    intake_result: Mapping[str, object],
+    adapter_name: str,
+    demo_artifacts: Mapping[str, Mapping[str, object]],
+    requested: bool,
+    algorithm: str,
+    chunk_size: int,
+) -> dict[str, object]:
+    segment_paths = _segment_paths_from_intake(intake_result)
+    logical_media_size = _as_mapping(demo_artifacts.get("ewf_stream")).get("logical_media_size")
+    if not requested:
+        return _image_hash_status_artifact(
+            selected_path=selected_path,
+            intake_result=intake_result,
+            segment_paths=segment_paths,
+            requested=False,
+            status="not_run",
+            algorithm=algorithm,
+            chunk_size=chunk_size,
+            hexdigest=None,
+            bytes_hashed=0,
+            logical_media_size=logical_media_size,
+            byte_count_matches_media_size=None,
+            started_at=None,
+            completed_at=None,
+            warnings=[],
+            read_only_asserted=True,
+        )
+
+    started_at = _utc_now()
+    if adapter_name == "stub":
+        completed_at = _utc_now()
+        return _image_hash_status_artifact(
+            selected_path=selected_path,
+            intake_result=intake_result,
+            segment_paths=segment_paths,
+            requested=True,
+            status="stream_unavailable",
+            algorithm=algorithm,
+            chunk_size=chunk_size,
+            hexdigest=None,
+            bytes_hashed=0,
+            logical_media_size=logical_media_size,
+            byte_count_matches_media_size=None,
+            started_at=started_at,
+            completed_at=completed_at,
+            warnings=[
+                {
+                    "source": "first_testing_image_hash",
+                    "code": "stub_adapter_image_hash_not_supported",
+                    "message": "Full logical-image hashing requires the EWF stream path; stub adapter bytes are never hashed as image verification.",
+                    "path": str(selected_path),
+                }
+            ],
+            read_only_asserted=True,
+        )
+
+    stream = EwfImageByteStream(
+        selected_path,
+        segment_paths=segment_paths,
+        **_ewf_stream_kwargs_from_intake(intake_result),
+    )
+    result = hash_image_stream(
+        stream,
+        algorithm=algorithm,
+        chunk_size=chunk_size,
+    )
+    result_dict = result.to_dict()
+    status = _as_mapping(result_dict.get("status")).get("code") or result.status.code
+    completed_at = _utc_now()
+    return _image_hash_status_artifact(
+        selected_path=selected_path,
+        intake_result=intake_result,
+        segment_paths=segment_paths,
+        requested=True,
+        status=str(status),
+        algorithm=str(result_dict.get("algorithm") or algorithm),
+        chunk_size=chunk_size,
+        hexdigest=_optional_str(result_dict.get("hexdigest")),
+        bytes_hashed=int(result_dict.get("bytes_hashed") or 0),
+        logical_media_size=result_dict.get("logical_media_size"),
+        byte_count_matches_media_size=result_dict.get("byte_count_matches_media_size"),
+        started_at=started_at,
+        completed_at=completed_at,
+        warnings=[
+            dict(warning)
+            for warning in result_dict.get("warnings", [])
+            if isinstance(warning, Mapping)
+        ],
+        read_only_asserted=bool(result_dict.get("read_only")),
+        hash_result=result_dict,
+    )
+
+
+def _image_hash_status_artifact(
+    *,
+    selected_path: Path,
+    intake_result: Mapping[str, object],
+    segment_paths: Sequence[str],
+    requested: bool,
+    status: str,
+    algorithm: str,
+    chunk_size: int,
+    hexdigest: str | None,
+    bytes_hashed: int,
+    logical_media_size: object,
+    byte_count_matches_media_size: object,
+    started_at: str | None,
+    completed_at: str | None,
+    warnings: Sequence[Mapping[str, object]],
+    read_only_asserted: bool,
+    hash_result: Mapping[str, object] | None = None,
+) -> dict[str, object]:
+    adapter = _as_mapping(intake_result.get("adapter"))
+    dependency = _as_mapping(adapter.get("dependency"))
+    return {
+        "schema_version": IMAGE_HASH_SCHEMA_VERSION,
+        "requested": requested,
+        "status": status,
+        "algorithm": algorithm,
+        "hexdigest": hexdigest,
+        "bytes_hashed": bytes_hashed,
+        "logical_media_size": logical_media_size,
+        "byte_count_matches_media_size": byte_count_matches_media_size,
+        "source_kind": "ewf_logical_image",
+        "adapter_name": "pyewf-reader",
+        "requested_intake_adapter": adapter.get("name"),
+        "segment_count": len(segment_paths),
+        "chunk_size": chunk_size,
+        "started_at": started_at,
+        "completed_at": completed_at,
+        "warnings": [dict(warning) for warning in warnings],
+        "provenance": {
+            "hash_scope": "full_logical_image",
+            "source_path": str(intake_result.get("selected_path") or selected_path),
+            "segment_paths": list(segment_paths),
+            "stream_type": "ewf",
+            "source_kind": "ewf_logical_image",
+            "reader_adapter": "pyewf-reader",
+            "intake_adapter": adapter.get("name"),
+            "dependency": dict(dependency),
+            "stored_hashes_are_verification": False,
+            "segment_container_hash": False,
+            "selected_file_hash": False,
+        },
+        "hash_result": dict(hash_result or {}),
+        "read_only_asserted": read_only_asserted,
+        "source_modified": False,
+        "privacy_note": (
+            "Local artifact may contain evidence paths and a full-image digest; share only "
+            "with reviewer-approved redaction/handling."
+        ),
+    }
+
+
+def _ewf_stream_kwargs_from_intake(intake_result: Mapping[str, object]) -> dict[str, object]:
+    adapter = _as_mapping(intake_result.get("adapter"))
+    dependency = _as_mapping(adapter.get("dependency"))
+    if dependency.get("name") == "pyewf" and dependency.get("available") is False:
+        return {
+            "pyewf_module": None,
+            "import_error": ImportError(str(dependency.get("message") or "pyewf unavailable")),
+        }
+    return {}
+
+
 def _filesystem_demo_artifacts(
     *,
     selected_path: Path,
@@ -998,12 +1245,7 @@ def _filesystem_demo_artifacts(
             parser_backing="stub_adapter",
         )
 
-    stream_kwargs: dict[str, object] = {}
-    adapter = _as_mapping(intake_result.get("adapter"))
-    dependency = _as_mapping(adapter.get("dependency"))
-    if dependency.get("name") == "pyewf" and dependency.get("available") is False:
-        stream_kwargs["pyewf_module"] = None
-        stream_kwargs["import_error"] = ImportError(str(dependency.get("message") or "pyewf unavailable"))
+    stream_kwargs = _ewf_stream_kwargs_from_intake(intake_result)
 
     segment_paths = _segment_paths_from_intake(intake_result)
     stream = EwfImageByteStream(
@@ -1894,6 +2136,7 @@ def _run_manifest(
     unsupported_sections: Mapping[str, object],
     metadata_artifact: Mapping[str, object],
     demo_artifacts: Mapping[str, Mapping[str, object]],
+    image_hash_artifact: Mapping[str, object],
     file_list_artifact: Mapping[str, object],
     selected_file_artifacts: Mapping[str, Mapping[str, object]],
     audit_artifact: Mapping[str, object],
@@ -1911,6 +2154,7 @@ def _run_manifest(
     selected_export = _as_mapping(selected_file_artifacts.get("export"))
     file_list_status = _as_mapping(file_list_artifact.get("status"))
     file_list_warnings = file_list_artifact.get("warnings", [])
+    image_hash_warnings = image_hash_artifact.get("warnings", [])
     sections = unsupported_sections.get("sections", [])
     warnings = intake_result.get("warnings", [])
 
@@ -1931,12 +2175,16 @@ def _run_manifest(
             "actor": actor,
             "requested_adapter": adapter_name,
             "redact_paths": redact_paths,
+            "hash_image": bool(image_hash_artifact.get("requested")),
+            "image_hash_algorithm": image_hash_artifact.get("algorithm"),
+            "image_hash_chunk_size": image_hash_artifact.get("chunk_size"),
         },
         "tool_versions": {
             "run_schema_version": FIRST_TESTING_RUN_SCHEMA_VERSION,
             "intake_schema_version": INTAKE_SCHEMA_VERSION,
             "case_store_schema_version": CASE_STORE_SCHEMA_VERSION,
             "file_list_schema_version": FILE_LIST_SCHEMA_VERSION,
+            "image_hash_schema_version": IMAGE_HASH_SCHEMA_VERSION,
         },
         "case": {
             "case_id": case_id,
@@ -1962,6 +2210,27 @@ def _run_manifest(
             "artifact_path": str(artifact_paths["metadata"]),
         },
         "verification": verification,
+        "image_hash": {
+            "requested": bool(image_hash_artifact.get("requested")),
+            "status": image_hash_artifact.get("status"),
+            "algorithm": image_hash_artifact.get("algorithm"),
+            "hexdigest_available": bool(image_hash_artifact.get("hexdigest")),
+            "bytes_hashed": image_hash_artifact.get("bytes_hashed"),
+            "logical_media_size": image_hash_artifact.get("logical_media_size"),
+            "byte_count_matches_media_size": image_hash_artifact.get(
+                "byte_count_matches_media_size"
+            ),
+            "source_kind": image_hash_artifact.get("source_kind"),
+            "adapter_name": image_hash_artifact.get("adapter_name"),
+            "segment_count": image_hash_artifact.get("segment_count"),
+            "warning_count": len(image_hash_warnings) if isinstance(image_hash_warnings, list) else 0,
+            "warning_codes": _warning_codes(
+                image_hash_warnings if isinstance(image_hash_warnings, list) else []
+            ),
+            "artifact_path": str(artifact_paths["image_hash"]),
+            "read_only_asserted": image_hash_artifact.get("read_only_asserted"),
+            "source_modified": image_hash_artifact.get("source_modified"),
+        },
         "ewf_stream": {
             "status": _as_mapping(demo_artifacts.get("ewf_stream")).get("status"),
             "logical_media_size": _as_mapping(demo_artifacts.get("ewf_stream")).get("logical_media_size"),
@@ -2147,6 +2416,7 @@ def _html_summary_body(
     case = _as_mapping(manifest.get("case"))
     evidence = _as_mapping(manifest.get("evidence"))
     adapter = _as_mapping(manifest.get("adapter"))
+    image_hash = _as_mapping(manifest.get("image_hash"))
     file_list = _as_mapping(manifest.get("file_list"))
     selected_file = _as_mapping(manifest.get("selected_file"))
     artifact_paths = _as_mapping(manifest.get("artifact_paths"))
@@ -2161,6 +2431,10 @@ def _html_summary_body(
         ("Volumes", _as_mapping(manifest.get("volumes")).get("volume_count")),
         ("Filesystem", _as_mapping(manifest.get("filesystem")).get("status")),
         ("Root listing", _root_listing_html_value(manifest)),
+        ("Image hash status", image_hash.get("status")),
+        ("Image hash algorithm", image_hash.get("algorithm")),
+        ("Image hash bytes", f"{image_hash.get('bytes_hashed')} / {image_hash.get('logical_media_size')}"),
+        ("Image hash byte-count match", image_hash.get("byte_count_matches_media_size")),
         ("File-list status", file_list.get("status")),
         ("File-list entries", file_list.get("entry_count")),
         ("File-list parser backing", file_list.get("parser_backing")),
@@ -2309,6 +2583,10 @@ def _resolve(path: str | Path | None) -> Path:
 
 def _as_mapping(value: object) -> Mapping[str, Any]:
     return value if isinstance(value, Mapping) else {}
+
+
+def _normalize_image_hash_algorithm(algorithm: str) -> str:
+    return algorithm.strip().lower().replace("-", "")
 
 
 def _redact_evidence_root(text: str, evidence_root: str) -> str:

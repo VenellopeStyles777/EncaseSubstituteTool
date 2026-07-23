@@ -4,6 +4,15 @@ Purpose: provide copyable PowerShell commands and review steps for the Stage 4.5
 
 This guide is for repository-local manual testing before Stage 5 search/timeline work. It does not add parser behavior, recursive traversal, broad crawl, UI, report-system, deleted recovery, carving, packaging, or search/timeline indexing.
 
+## Current Follow-Up Requirements
+
+Hands-on demo testing found two proof gaps that remain before Stage 5:
+
+- S4.5-IMP08 adds an explicit independent full logical-image hash artifact and is ready for review.
+- S4.5-IMP09 must add nested directory navigation into actual filesystem entries, not just partitions/root counts.
+
+After S4.5-IMP08 and S4.5-IMP09 are reviewed, S4.5-IMP10 must refresh this guide with the final hash/navigation workflow. Until then, this guide records the reviewed no-selection workflow plus the S4.5-IMP08 hash command shape, not the final Stage 4.5 demo guide.
+
 ## Prerequisites
 
 - Run every command from the repository root.
@@ -62,6 +71,14 @@ Real parser-backed no-selection smoke with the local ignored test image:
 .\.python312-embed\python.exe -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case ".test-artifacts\first-testing\manual-guide-real-image" --output ".test-artifacts\first-testing\manual-guide-real-image\outputs" --redact-paths
 ```
 
+Explicit full logical-image hash command. This can be long-running on large evidence, so run it only when the reviewer/user is ready to wait for completion:
+
+```powershell
+.\.python312-embed\python.exe -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case ".test-artifacts\first-testing\image-hash-real-image" --output ".test-artifacts\first-testing\image-hash-real-image\outputs" --hash-image --redact-paths
+```
+
+The hash is computed over the EWF logical image stream, not copied from stored EWF hash metadata, not computed over segment container files, and not derived from selected-file analysis.
+
 Selected-file template only. Replace one placeholder after the user approves a safe, regular, allocated root entry:
 
 ```powershell
@@ -104,6 +121,7 @@ The first-testing command writes a case workspace:
     filesystems.json
     root-listing.json
     demo-readiness.json
+    image-hash.json
     selected-file-readiness.json
     selected-file-preview.json
     selected-file-analysis.json
@@ -163,6 +181,13 @@ $fileList | Select-Object @{Name="status";Expression={$_.status.code}}, entry_co
 Import-Csv "$case\outputs\file-list.csv" | Measure-Object
 ```
 
+Inspect image-hash output:
+
+```powershell
+$imageHash = Get-Content "$case\outputs\image-hash.json" | ConvertFrom-Json
+$imageHash | Select-Object status, algorithm, bytes_hashed, logical_media_size, byte_count_matches_media_size
+```
+
 Open the local static HTML summary only on the local machine:
 
 ```powershell
@@ -207,6 +232,7 @@ For the local ` Test Image/` command, the reviewed expected shape is:
 - filesystem status is `ok`;
 - root listing is `real_parser_backed` with 11 entries;
 - file-list JSON/CSV status is `ok` with 11 entries;
+- image hash status is `not_run` unless `--hash-image` was requested;
 - static local HTML summary is created;
 - selected-file readiness, preview, analysis, and export remain `not_run`;
 - `source_modified` is `false`;
@@ -222,6 +248,9 @@ Do not include real metadata values, root-entry names, file paths from inside ev
 - `metadata_unavailable`: metadata could not be read, usually because the adapter dependency is unavailable.
 - `dependency_unavailable`: an optional parser dependency such as `pyewf` or `pytsk3` is not importable in the active runtime.
 - `not_run`: a section was intentionally not executed, such as selected-file operations without an explicit selection.
+- `completed`: requested image-level hashing completed and byte count matched logical media size.
+- `failed`: requested image-level hashing started but could not complete honestly.
+- `stream_unavailable`: requested image-level hashing could not open a usable EWF logical image stream.
 - `not_supported`: the installed adapter does not expose a reviewed safe API for that action, such as EWF verification.
 - `verification_ok`: verification ran and reported success.
 - `verification_failed`: verification ran and reported failure.
@@ -268,6 +297,7 @@ The no-selection real-image command can prove:
 - partition-table volumes can be discovered;
 - a real-parser-backed root filesystem listing can be produced;
 - root-listing-derived file-list JSON/CSV can be written;
+- an independent full logical-image SHA-256 can be computed only when `--hash-image` is explicitly requested and the command completes;
 - a static local HTML summary can be created;
 - evidence remains read-only and source modification is not asserted.
 
@@ -275,6 +305,7 @@ The no-selection command does not prove:
 
 - recursive or nested directory traversal;
 - broad full-volume crawl;
+- image-level hashing for normal no-selection runs where `--hash-image` was not requested;
 - arbitrary auto-selection, preview, export, hash, or signature analysis;
 - full-text extraction from E01 content;
 - real selected-file extraction without an approved explicit selection;
@@ -285,8 +316,11 @@ The no-selection command does not prove:
 Future ownership:
 
 - S4.5-IMP07 owns this command-line guide.
-- A later reviewed ticket must own recursive traversal, broad crawl, or larger selected-file streaming if those become priorities.
-- S5-T01 must be rerun after S4.5-IMP07 review before S5-T02 or later search/timeline work starts.
+- S4.5-IMP08 owns independent full logical-image hashing and is ready for review.
+- S4.5-IMP09 owns explicit nested directory navigation.
+- S4.5-IMP10 owns the final guide refresh after hash/navigation.
+- A later reviewed ticket must own broad recursive crawl or larger selected-file streaming if those become priorities.
+- S5-T01 must wait until S4.5-IMP08 through S4.5-IMP10 are reviewed before S5-T02 or later search/timeline work starts.
 
 ## Reviewer Transcript Template
 

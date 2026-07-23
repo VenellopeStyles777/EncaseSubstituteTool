@@ -13,7 +13,7 @@ These callables are backend-only and JSON-friendly. They do not provide UI, exec
 
 Stage 3 note: S3-T04 can optionally record export attempts in the case-store audit log when the caller supplies explicit audit context. It does not recover deleted files, parse real filesystems, run broader hash/signature analysis, or use preview-rendered text/hex as export bytes.
 
-Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. S4.5-IMP01 adds a first-testing command shell and case-workspace bundle. S4.5-IMP02 adds best-effort `pyewf` metadata and separate verification status when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 adds the first EWF stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts and is reviewed done. S4.5-IMP04 adds selected-file E01 content providers for preview/export/hash/signature only when an explicit parser-backed root entry is selected. S4.5-IMP05 adds root-listing-derived file-list JSON/CSV and static local HTML summary output without adding search/timeline, recursion, or UI/reporting system behavior. S4.5-IMP06 is documentation/status handoff work and adds no API behavior. Preview-rendered text/hex, written export artifacts, and external known-file lists remain disallowed as implicit source analysis content.
+Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. S4.5-IMP01 adds a first-testing command shell and case-workspace bundle. S4.5-IMP02 adds best-effort `pyewf` metadata and separate verification status when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 adds the first EWF stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts and is reviewed done. S4.5-IMP04 adds selected-file E01 content providers for preview/export/hash/signature only when an explicit parser-backed root entry is selected. S4.5-IMP05 adds root-listing-derived file-list JSON/CSV and static local HTML summary output without adding search/timeline, recursion, or UI/reporting system behavior. S4.5-IMP06 is documentation/status handoff work and adds no API behavior. S4.5-IMP08 adds an explicit `--hash-image` path that writes a full logical-image hash artifact when requested. Preview-rendered text/hex, written export artifacts, stored EWF hash metadata, segment-container hashes, and external known-file lists remain disallowed as implicit source analysis content.
 
 ## S1-T04 Intake Command
 
@@ -88,6 +88,9 @@ Useful options:
 - `--selected-file-export-dir` / `--selected-file-export-name`: opt in to selected-file export and choose a safe output location/name.
 - `--selected-file-preview-mode raw|text|hex`: preview rendering mode for an explicit selection.
 - `--selected-file-max-bytes`: first-testing in-memory limit for selected-file hash/export.
+- `--hash-image`: explicitly compute an independent SHA-256 over the full EWF logical image stream and write `image-hash.json`.
+- `--image-hash-algorithm`: full logical-image hash algorithm; currently supports `sha256`.
+- `--image-hash-chunk-size`: chunk size in bytes for full logical-image hashing.
 
 S4.5-IMP01 and S4.5-IMP02 create:
 
@@ -105,6 +108,7 @@ S4.5-IMP01 and S4.5-IMP02 create:
 <output>\filesystems.json
 <output>\root-listing.json
 <output>\demo-readiness.json
+<output>\image-hash.json
 <output>\selected-file-readiness.json
 <output>\selected-file-preview.json
 <output>\selected-file-analysis.json
@@ -155,7 +159,15 @@ S4.5-IMP05 file-list and static summary behavior:
 - `outputs/reports/summary.html` is a static local escaped status/artifact summary with no network assets, no JavaScript app, and no evidence content.
 - With `--redact-paths`, console output, `command-summary.txt`, and `summary.html` avoid exposing the raw evidence root; local JSON remains examiner-owned and can retain source paths.
 
-The command still does not create recursive file lists, broad crawls, search/timeline indexes, dynamic UI, report-system/PDF output, deleted recovery, or carving behavior.
+S4.5-IMP08 image-level hash behavior:
+
+- default runs write `image-hash.json` with status `not_run`;
+- `--hash-image` opens the EWF logical image stream read-only and computes SHA-256 in chunks;
+- completed artifacts record status, algorithm, hexdigest, bytes hashed, logical media size, byte-count match, provenance, warnings, read-only assertion, and source-modified assertion;
+- missing dependency and stream failures remain structured statuses;
+- stored EWF hash metadata, segment container files, selected-file hashes, and stub bytes are not treated as the independent full-image hash.
+
+The command still does not create nested directory navigation, recursive file lists, broad crawls, search/timeline indexes, dynamic UI, report-system/PDF output, deleted recovery, or carving behavior.
 
 ## S2-T05 Directory Listing Callable
 

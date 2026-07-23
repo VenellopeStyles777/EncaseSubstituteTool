@@ -12,6 +12,44 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-22 - S4.5-IMP08 Implementation Handoff
+
+Result: ready for research/review agent review.
+
+Completed:
+
+- Added explicit `--hash-image`, `--image-hash-algorithm`, and `--image-hash-chunk-size` first-testing options.
+- Added `outputs/image-hash.json` with `not_run` by default and requested full logical-image SHA-256 hashing over the EWF stream.
+- Added chunked image-stream hashing support with dependency/stream failure statuses and read-only/source-modified assertions.
+- Updated run manifest, command summary, static HTML summary, unsupported sections, tests, and active status docs.
+
+Verification:
+
+- Focused portable-runtime run: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_first_testing_command.py`: 31 passed in 32.90s.
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 189 passed in 87.61s.
+- Real full-image hash command was not run to completion in the coding-agent session because the existing reviewed real-image smoke reports a logical media size of 1,024,209,543,168 bytes. The local first segment exists, and the documented reviewer/user command writes under `.test-artifacts\first-testing\image-hash-real-image` with `--hash-image --redact-paths`.
+
+Scope intentionally not implemented:
+
+- No S4.5-IMP09 nested navigation, S4.5-IMP10 guide/gate refresh, Stage 5 search/timeline, recursive traversal, broad crawl, selected-file auto-selection, UI/reporting system, deleted recovery, carving, packaging, dependency installation, commit, or push.
+- Stored EWF hash metadata, segment-container hashes, selected-file hashes, and stub bytes are not treated as independent image-level verification.
+
+## 2026-07-22 - S4.5 Demo Feedback Extension
+
+Result: Stage 4.5 reopened with new hard prerequisites before Stage 5.
+
+User feedback:
+
+- The demo needs an independent verification-style hash for the entire image.
+- The demo needs navigation into actual directories/files inside the image, not only partition/root status.
+
+Ticket decisions:
+
+- Added S4.5-IMP08 as `Ready` for an independent full logical-image hash artifact over the EWF stream.
+- Added S4.5-IMP09 as `Draft` for nested directory navigation into actual filesystem entries.
+- Added S4.5-IMP10 as `Draft` for final command-line guide and Stage 5 gate refresh after hash/navigation.
+- Stage 5 S5-T01 rerun and S5-T02+ remain blocked until S4.5-IMP08 through S4.5-IMP10 are reviewed.
+
 ## 2026-07-22 - S4.5-IMP07 Review Acceptance
 
 Result: accepted; S4.5-IMP07 is done.
@@ -31,8 +69,8 @@ Verification:
 
 Remaining scope:
 
-- Stage 4.5 implementation runway is now complete through S4.5-IMP07.
-- Next required gate is rerunning S5-T01 before any S5-T02 or later search/timeline work.
+- S4.5-IMP07 was accepted as done; later hands-on demo feedback extends the Stage 4.5 runway with S4.5-IMP08 through S4.5-IMP10 before S5-T01 rerun.
+- Next required implementation slice is S4.5-IMP08, not S5-T01.
 
 ## 2026-07-22 - S4.5-IMP07 Implementation Handoff
 
