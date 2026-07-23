@@ -2,7 +2,7 @@
 
 Purpose: track how the project moves from automated tests only to direct manual testing with user-provided E01 files.
 
-Stage 4.5 is not Stage 5 search/timeline. S4.5-IMP01 through S4.5-IMP09A are reviewed and done, including the explicit independent full logical-image hash command path and corrected nested directory navigation into actual filesystem entries. S4.5-IMP10 is drafted for the final guide/gate refresh.
+Stage 4.5 is not Stage 5 search/timeline. S4.5-IMP01 through S4.5-IMP09B are reviewed and done, including the explicit independent full logical-image hash command path, corrected nested directory navigation into actual filesystem entries, and live command-line browser. S4.5-IMP10 is drafted for the final guide/gate refresh after that.
 
 ## What Is Implemented Now
 
@@ -20,6 +20,7 @@ The current backend can:
 - run selected-file preview/export/hash/signature only when an explicit parser-backed root entry is selected and the operation fits the documented first-testing policy;
 - write `file-list.json`, `file-list.csv`, and `outputs/reports/summary.html` from the current root listing only;
 - write `directory-listing.json`, `directory-listing.csv`, and `navigation-readiness.json` for one explicit or bounded-demo nested directory request;
+- run `python -m app.backend.api.directory_browser` as a live shell-like E01 directory browser over the reviewed parser-backed listing path;
 - compute an independent SHA-256 over the full EWF logical image stream only when `--hash-image` is explicitly requested;
 - create a minimal SQLite case/evidence/audit schema when called explicitly;
 - run stubbed volume/filesystem/listing/preview/export workflows;
@@ -30,7 +31,7 @@ The current backend cannot yet:
 - guarantee real EWF metadata when `pyewf` is missing or metadata fields are unavailable;
 - guarantee real EWF verification when no safe `pyewf` verification API is exposed;
 - hash/export selected files above the documented in-memory limit without future streaming support;
-- recursively crawl, enumerate all nested directories, or auto-select files from the E01 image;
+- recursively crawl, enumerate all nested directories, auto-select files from the E01 image, or treat live browser output as a search/timeline index;
 - show a UI or packaged executable.
 
 ## Current Manual E01 Workflow
@@ -141,9 +142,9 @@ S4.5-IMP05 adds the output bundle that makes first testing inspectable without r
 
 The file list starts from the current root listing only. It preserves source path, volume id, file id/path/name, entry type, size, timestamps, allocation/deleted state, parser status, read-only assertion, and warnings. JSON remains authoritative; CSV is for quick review. The HTML summary is a local static artifact, not a UI/search/timeline feature, and it contains statuses, counts, and artifact inventory rather than evidence content.
 
-The implementation lineup is extended: command shell and case workspace, real metadata/verification status, EWF stream plus filesystem listing, selected-file content providers, output bundle, guardrail/review handoff, command-line testing guide, image-level hash, nested directory navigation, and the S4.5-IMP09A file-visible correction. Stage 5 search/timeline must wait until S4.5-IMP10 is reviewed and S5-T01 is rerun.
+The implementation lineup is extended: command shell and case workspace, real metadata/verification status, EWF stream plus filesystem listing, selected-file content providers, output bundle, guardrail/review handoff, command-line testing guide, image-level hash, nested directory navigation, the S4.5-IMP09A file-visible correction, and the S4.5-IMP09B live command-line browser. Stage 5 search/timeline must wait until S4.5-IMP10 is reviewed and S5-T01 is rerun.
 
-S4.5-IMP05 is reviewed and done. The real-E01 no-selection smoke discovered 53 segments, produced `metadata_available`, verification `not_supported`, EWF stream status `ok`, partition-table volume status `ok` with 5 volumes, filesystem status `ok`, a `real_parser_backed` root listing with 11 entries, file-list JSON/CSV `ok` with 11 entries, and a static HTML summary; selected-file readiness/preview/hash/signature/export were all `not_run` because no explicit safe file was selected. S4.5-IMP06 through S4.5-IMP09A are reviewed and done. The real full-image hash remains a long-running reviewer/user command unless separately completed. S4.5-IMP10 remains required before S5-T01 rerun.
+S4.5-IMP05 is reviewed and done. The real-E01 no-selection smoke discovered 53 segments, produced `metadata_available`, verification `not_supported`, EWF stream status `ok`, partition-table volume status `ok` with 5 volumes, filesystem status `ok`, a `real_parser_backed` root listing with 11 entries, file-list JSON/CSV `ok` with 11 entries, and a static HTML summary; selected-file readiness/preview/hash/signature/export were all `not_run` because no explicit safe file was selected. S4.5-IMP06 through S4.5-IMP09B are reviewed and done, including the live command-line browser. The real full-image hash remains a long-running reviewer/user command unless separately completed. S4.5-IMP10 remains required before S5-T01 rerun.
 
 ## Minimum Demonstration Goal
 
@@ -160,7 +161,7 @@ At the bare minimum, the first-testing workflow should eventually show:
 - selected file export for an explicit, size-limited root file and explicit export destination;
 - root file-list export.
 
-Current code has foundations for several of these, S4.5-IMP04 adds the first explicit selected-file content path, S4.5-IMP05 adds root file-list export plus static HTML summary output, S4.5-IMP07 documents the reviewed command-line testing workflow, S4.5-IMP08 adds explicit image-level hashing, S4.5-IMP09 adds one-directory nested navigation, and S4.5-IMP09A makes demo mode prefer file-visible nested listings. Broad crawl remains additional implementation.
+Current code has foundations for several of these, S4.5-IMP04 adds the first explicit selected-file content path, S4.5-IMP05 adds root file-list export plus static HTML summary output, S4.5-IMP07 documents the reviewed command-line testing workflow, S4.5-IMP08 adds explicit image-level hashing, S4.5-IMP09 adds one-directory nested navigation, S4.5-IMP09A makes demo mode prefer file-visible nested listings, and S4.5-IMP09B adds reviewed live terminal navigation. Broad crawl remains additional implementation.
 
 ## Current Code To Reuse
 
@@ -257,8 +258,9 @@ Completion matrix:
 | S4.5-IMP08 | Done | Independent full logical-image hash command path is implemented; real full-image completion is a long-running reviewer/user command unless separately completed. |
 | S4.5-IMP09 | Done | Nested directory navigation is reviewed and done after S4.5-IMP09A. |
 | S4.5-IMP09A | Done | File-visible nested navigation correction is reviewed and done. |
-| S4.5-IMP10 | Draft | Final guide/gate refresh after hash/navigation is required. |
+| S4.5-IMP09B | Done | Interactive E01 directory browser is reviewed and done. |
+| S4.5-IMP10 | Draft | Final guide/gate refresh after hash/navigation/browser is required. |
 
-Allowed future Stage 5 inputs are reviewed records with provenance and status: intake/segment discovery, case/evidence/audit rows, metadata and verification status, EWF stream status, partition/volume records, filesystem/root-listing entries, root-listing-derived file-list JSON/CSV, reviewed explicit nested directory-listing records, and explicit selected-file records. Blocked inputs remain recursive crawl beyond the reviewed one-directory navigation artifact, broad full-volume enumeration, full-text E01 content, arbitrary auto-selected exports/analysis, deleted recovery/carving, UI/report-system outputs, and verification-success claims when verification is unsupported.
+Allowed future Stage 5 inputs are reviewed records with provenance and status: intake/segment discovery, case/evidence/audit rows, metadata and verification status, EWF stream status, partition/volume records, filesystem/root-listing entries, root-listing-derived file-list JSON/CSV, reviewed explicit nested directory-listing/browser records, and explicit selected-file records. Blocked inputs remain recursive crawl beyond the reviewed one-directory navigation/browser artifact, broad full-volume enumeration, full-text E01 content, arbitrary auto-selected exports/analysis, deleted recovery/carving, UI/report-system outputs, and verification-success claims when verification is unsupported.
 
 Every future search/timeline record must preserve source path, evidence id when available, volume id, file id/path, provider/source identity, source kind, parser/source status, warning list, dependency/not-supported/not-run states, timestamp context, read-only assertion, and source-modified assertion.

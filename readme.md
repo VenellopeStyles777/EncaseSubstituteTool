@@ -8,7 +8,7 @@ Current project idea: build an EnCase-like forensic analysis application focused
 
 Stages 1 through 4 are reviewed backend foundations. The current code can discover `.E01/.E02/...` sibling segment filenames, run the intake JSON command, maintain a minimal SQLite case/evidence/audit schema, use stubbed volume/filesystem/listing/preview/export boundaries, verify written export artifacts, and run provider-backed hash/signature/mismatch/known-file helpers over explicit provider bytes.
 
-Stage 4.5 is extended after hands-on demo feedback. S4.5-IMP01 through S4.5-IMP09A are reviewed/done, including the explicit independent full logical-image hash command path and the corrected nested-directory demo that shows regular files when available. S4.5-IMP10 is drafted for the final guide/gate refresh. Stage 5 has detailed future tickets; S5-T01 recorded an older incomplete-runway failed gate, S5-T01A hardened older active wording, and S5-T02+ remain blocked.
+Stage 4.5 is extended after hands-on demo feedback. S4.5-IMP01 through S4.5-IMP09B are reviewed/done, including the explicit independent full logical-image hash command path, the corrected nested-directory demo that shows regular files when available, and the live command-line browser. S4.5-IMP10 is drafted for the final guide/gate refresh. Stage 5 has detailed future tickets; S5-T01 recorded an older incomplete-runway failed gate, S5-T01A hardened older active wording, and S5-T02+ remain blocked.
 
 Run tests from the repository root:
 
@@ -32,12 +32,22 @@ python -m app.backend.api.first_testing path\to\sample.E01 --case .test-artifact
 
 Use `--adapter stub` for dependency-free smoke checks, `--json-only` for a parseable manifest on stdout, and `--redact-paths` to redact the evidence root in console/summary text.
 
+Run the S4.5-IMP09B interactive E01 directory browser in the portable runtime:
+
+```powershell
+.\.python312-embed\python.exe -m app.backend.api.directory_browser --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --redact-paths
+```
+
+The browser supports `dir`/`ls`, `cd`, `cd ..`, `cd /` or `root`, `pwd`, `help`, and `exit`/`quit`. It lists one current directory at a time through the reviewed parser-backed listing path and does not read contents, export, hash, search, recurse, index, or write transcripts by default.
+
 Use the current backend callables from Python:
 
 ```python
 from app.backend.api import (
+    DirectoryBrowserSession,
     ExportAuditContext,
     StubExportContentProvider,
+    directory_browser_to_summary,
     export_file,
     export_file_to_json,
     list_directory,
@@ -60,11 +70,11 @@ What is real versus stubbed today:
 
 - Real local-file behavior: `LocalFileImageStream` can describe and bounded-read tiny local files in read-only binary mode.
 - Stub/provider behavior: volume, filesystem listing, preview, export, and analysis surfaces currently rely on explicit stubs/providers unless a future adapter supplies real parser-backed data.
-- Real-E01 limit: the project can discover E01 segment filenames, can attempt best-effort `pyewf` metadata/verification when the optional dependency exposes safe APIs, can produce a real-parser-backed root filesystem listing in the portable runtime, can write root-listing-derived file-list JSON/CSV and a static local HTML summary, can run preview/export/hash/signature only for an explicitly selected parser-backed root entry through S4.5-IMP04 provider wrappers, can compute an independent SHA-256 over the EWF logical image only when `--hash-image` is requested, and can list one explicit or bounded-demo nested directory through the real parser-backed path. The corrected demo can probe one child-directory level to prefer regular-file-visible listings when available. It does not yet create an interactive `cd`/`dir` shell, recursive traversal workflows, or broad evidence crawls.
+- Real-E01 limit: the project can discover E01 segment filenames, can attempt best-effort `pyewf` metadata/verification when the optional dependency exposes safe APIs, can produce a real-parser-backed root filesystem listing in the portable runtime, can write root-listing-derived file-list JSON/CSV and a static local HTML summary, can run preview/export/hash/signature only for an explicitly selected parser-backed root entry through S4.5-IMP04 provider wrappers, can compute an independent SHA-256 over the EWF logical image only when `--hash-image` is requested, can list one explicit or bounded-demo nested directory through the real parser-backed path, and can run a live `cd`/`dir` terminal browser over that same listing boundary. The corrected demo can probe one child-directory level to prefer regular-file-visible listings when available. The browser is not a recursive traversal workflow or broad evidence crawl.
 
 Current limitations: the S4.5 first-testing command shell creates a workspace and honest artifacts; S4.5-IMP02 adds metadata/verification artifacts; S4.5-IMP03 adds stream, volume, filesystem, root-listing, and demo-readiness artifacts; S4.5-IMP04 adds selected-file readiness/preview/analysis/export artifacts only when the caller explicitly selects a parser-backed root entry; S4.5-IMP05 adds file-list JSON/CSV plus a static local HTML summary from the current root listing only; S4.5-IMP07 documents the repeatable command-line workflow; S4.5-IMP08 adds `image-hash.json` with `not_run` by default or full logical-image SHA-256 when `--hash-image` is requested; and S4.5-IMP09 adds `directory-listing.json`, `directory-listing.csv`, and `navigation-readiness.json` for explicit nested directory navigation. Real verification runs only if a safe `pyewf` verification API is available, and stored hash metadata is not verification success. No search/timeline implementation exists; no UI/executable/reporting system, deleted recovery, carving, external known-file dataset import, automatic analysis persistence, recursive crawl, or required native forensic dependency setup exists.
 
-Current handoff: S3-T01 through S3-T06, S4-T01 through S4-T07, and S4.5-IMP01 through S4.5-IMP09A are reviewed and done. S4.5-IMP10 is drafted, and S5-T02 through S5-T16 stay Draft until the extended Stage 4.5 runway is reviewed and S5-T01 is rerun.
+Current handoff: S3-T01 through S3-T06, S4-T01 through S4-T07, and S4.5-IMP01 through S4.5-IMP09B are reviewed and done. S4.5-IMP10 is drafted, and S5-T02 through S5-T16 stay Draft until the extended Stage 4.5 runway is reviewed and S5-T01 is rerun.
 
 Primary planning files:
 

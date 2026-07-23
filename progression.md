@@ -13,6 +13,18 @@ YYYY-MM-DD
 ```
 
 2026-07-23
+- Completed: reviewed and accepted S4.5-IMP09B as done with a live command-line browser over the reviewed parser-backed `list_directory()` path.
+- Learned: the browser can keep current path state, accept shell-like `dir`/`ls`, `cd`, `cd ..`, `cd /` or `root`, `pwd`, `help`, and `exit`/`quit`, handle quoted names with spaces, and preserve `path_not_directory` when a file is targeted.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP10 still needs implementation/review, and S5-T01 must be rerun after that.
+- Next: proceed to S4.5-IMP10 for the final demo guide and Stage 5 gate refresh. Reviewer focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_directory_browser.py app\tests\test_directory_listing.py app\tests\test_filesystem_adapter.py` reported 28 passed in 0.56s. Reviewer full verification: `.\.python312-embed\python.exe -m pytest` reported 207 passed in 56.56s. Privacy-safe real-image browser smoke exited 0 with 53 segments, root listing `ok` / `real_parser_backed` with 11 entries, nested listing `ok` / `real_parser_backed` with 19 entries, files=19, directories=0, other=0, parent navigation observed, file-target `path_not_directory`, `source_modified: false`, and `read_only_asserted: true`.
+
+2026-07-23
+- Completed: populated S4.5-IMP09B as a ready implementation ticket and prompt for the live E01 command-line directory browser.
+- Learned: the browser should be a stateful terminal loop over the reviewed `list_directory()` parser path, not a separate parser or recursive crawler.
+- Blocked by: at ticket-promotion time, Stage 5 search/timeline remained blocked by S4.5-IMP09B and S4.5-IMP10. Current state is superseded by the review acceptance entry above: S4.5-IMP09B is done and S4.5-IMP10 remains.
+- Next: superseded by the review acceptance entry above; proceed to S4.5-IMP10.
+
+2026-07-23
 - Completed: reviewed and accepted S4.5-IMP09 and S4.5-IMP09A as done.
 - Learned: the corrected demo now reaches a bounded parser-backed nested listing from the real E01 with regular files visible, while explicit nested file paths report `path_not_directory` without reading file content.
 - Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP10 still needs implementation/review, and S5-T01 must be rerun after that.

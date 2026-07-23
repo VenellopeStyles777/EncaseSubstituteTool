@@ -12,4 +12,4 @@ Manual checks should:
 Current manual-test guides:
 
 - `stage-4.5-first-testing.md`: planned first-testing workflow with user-provided E01 files.
-- `stage-4.5-command-line-testing-guide.md`: reviewed S4.5-IMP07 PowerShell guide for the current first-testing command, artifacts, proof boundaries, and reviewer transcript, now noting the S4.5-IMP08 `--hash-image` path plus S4.5-IMP09/S4.5-IMP09A nested directory listing artifacts. S4.5-IMP10 will refresh it for the final Stage 5 gate handoff.
+- `stage-4.5-command-line-testing-guide.md`: reviewed S4.5-IMP07 PowerShell guide for the current first-testing command, artifacts, proof boundaries, reviewer transcript, S4.5-IMP08 `--hash-image` path, S4.5-IMP09/S4.5-IMP09A nested directory listing artifacts, and S4.5-IMP09B live terminal browser command. S4.5-IMP10 will refresh it for the final Stage 5 gate handoff.

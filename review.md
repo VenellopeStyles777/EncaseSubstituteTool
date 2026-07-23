@@ -12,6 +12,67 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-23 - S4.5-IMP09B Review Acceptance
+
+Result: accepted. S4.5-IMP09B is done.
+
+Findings:
+
+- No blocking findings.
+- The live browser satisfies the hands-on demo gap for shell-like `dir`, `cd <folder>`, `cd ..`, `pwd`, `help`, and `exit` navigation over the reviewed parser-backed listing boundary.
+- The implementation reuses EWF segment discovery, `EwfImageByteStream`, partition-table volume discovery, `Pytsk3FilesystemAdapter`, and `list_directory()` rather than creating a separate parser path.
+
+Verification:
+
+- Focused reviewer run: `.\.python312-embed\python.exe -m pytest app\tests\test_directory_browser.py app\tests\test_directory_listing.py app\tests\test_filesystem_adapter.py`: 28 passed in 0.56s.
+- Full reviewer run: `.\.python312-embed\python.exe -m pytest`: 207 passed in 56.56s.
+- Reviewer real-image browser smoke exited 0 with 53 segments, root listing `ok` / `real_parser_backed` with 11 entries, nested listing `ok` / `real_parser_backed` with 19 entries, files=19, directories=0, other=0, parent navigation observed, file-target `path_not_directory`, `source_modified: false`, and `read_only_asserted: true`.
+
+Residual scope:
+
+- S4.5-IMP10 remains required before S5-T01 rerun.
+- Stage 5 search/timeline remains blocked until S4.5-IMP10 is reviewed and S5-T01 is rerun and accepted.
+- The browser is not a recursive crawler, search indexer, content reader, export tool, hashing tool, transcript writer, UI, report system, deleted recovery path, carving path, or packaging slice.
+
+## 2026-07-23 - S4.5-IMP09B Implementation Handoff
+
+Result: ready for research/review agent review.
+
+Completed:
+
+- Added `app.backend.api.directory_browser`, a live terminal browser over the reviewed EWF stream, partition-table volume discovery, `Pytsk3FilesystemAdapter`, and `list_directory()` path.
+- Added a stateful command loop for `help` / `?`, `pwd`, `ls` / `dir`, `cd <path-or-name>`, `cd ..`, `cd /`, `root`, `exit`, and `quit`.
+- Added quoted-name handling, relative/absolute path resolution, parent/root navigation, and `path_not_directory` reporting that leaves the current path unchanged when a file is targeted.
+- Exposed browser helpers from `app.backend.api` and added dependency-free scripted tests.
+- Updated active docs/status so S4.5-IMP09B is `Review`, S4.5-IMP10 remains Draft/pending, and Stage 5 search/timeline remains blocked.
+
+Verification:
+
+- Focused portable-runtime run: `.\.python312-embed\python.exe -m pytest app\tests\test_directory_browser.py app\tests\test_directory_listing.py app\tests\test_filesystem_adapter.py`: 28 passed in 1.26s.
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 207 passed in 54.11s.
+- Privacy-safe real-image browser smoke exited 0 with 53 segments, root listing `ok` / `real_parser_backed` with 11 entries, nested listing `ok` / `real_parser_backed` with 19 entries, files=19, directories=0, other=0, parent navigation `ok`, file-target `path_not_directory`, `source_modified: false`, and `read_only_asserted: true`.
+
+Scope intentionally not implemented:
+
+- No recursive traversal, broad crawl, transcript artifact, content preview/export/hash/signature, selected-file auto-selection, file-list expansion, static HTML/report-system work, search/timeline, UI, deleted recovery, carving, packaging, dependency installation, commit, or push.
+
+## 2026-07-23 - S4.5-IMP09B Ticket Promotion
+
+Result: S4.5-IMP09B is ready to feed to the coding agent.
+
+Direction:
+
+- The live browser should reuse the accepted S4.5-IMP09/09A directory navigation framework.
+- Existing behavior is stateless and artifact-producing: call `list_directory()` for one path and write JSON/CSV.
+- New behavior should be stateful and human-facing: keep a current path, accept `dir`, `ls`, `cd`, `cd ..`, `pwd`, `help`, and `exit`, and call the same parser-backed `list_directory()` boundary at each step.
+
+Ticket decisions:
+
+- Added `tickets/stage-4.5/S4.5-IMP09B-interactive-e01-directory-browser.md`.
+- Added `prompts/vscode-agent/2026-07-23-s4.5-imp09b-interactive-e01-directory-browser.md`.
+- Kept content reads, export, hashing, search/timeline, recursive crawl, UI/reporting, deleted recovery, carving, packaging, and real evidence commits out of scope.
+- Updated Stage 4.5/Stage 5 gate docs so S4.5-IMP09B is required before S4.5-IMP10 and S5-T01 rerun.
+
 ## 2026-07-23 - S4.5-IMP09A Review Acceptance
 
 Result: accepted. S4.5-IMP09 and S4.5-IMP09A are done.
@@ -34,7 +95,7 @@ Verification:
 Residual scope:
 
 - S4.5-IMP10 remains required before S5-T01 rerun.
-- A separate future ticket should own an interactive command-line navigator if the desired experience is shell-like `dir`, `cd <folder>`, and back/up browsing.
+- S4.5-IMP09B now owns the interactive command-line navigator for shell-like `dir`, `cd <folder>`, and back/up browsing.
 
 ## 2026-07-23 - S4.5-IMP09A Implementation Handoff
 

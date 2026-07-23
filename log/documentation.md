@@ -2,6 +2,35 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-23 - S4.5-IMP09B Review Acceptance
+
+- Marked `tickets/stage-4.5/S4.5-IMP09B-interactive-e01-directory-browser.md` as `Done`.
+- Accepted the live terminal browser as the reviewed hands-on navigation layer over the existing parser-backed `list_directory()` path.
+- Recorded reviewer verification: focused portable-runtime tests reported 28 passed in 0.56s, full portable-runtime tests reported 207 passed in 56.56s, and reviewer real-image browser smoke showed a parser-backed root listing plus a nested listing with 19 regular files visible.
+- Preserved the shared-summary privacy rule: report statuses/counts only, not real in-image names, internal paths, metadata values, or file content.
+- Updated active Stage 4.5 and Stage 5 status docs so S4.5-IMP10 is now the remaining Stage 4.5 prerequisite before S5-T01 rerun.
+
+## 2026-07-23 - S4.5-IMP09B Implementation Handoff
+
+- Marked `tickets/stage-4.5/S4.5-IMP09B-interactive-e01-directory-browser.md` as `Review`.
+- Added `app.backend.api.directory_browser` documentation for the live terminal browser command.
+- Recorded that the browser supports `dir`/`ls`, `cd`, `cd ..`, `cd /` or `root`, `pwd`, `help`, `?`, `exit`, and `quit`.
+- Clarified that the browser calls the reviewed parser-backed `list_directory()` path one current directory at a time and does not write transcripts by default.
+- Preserved scope boundaries: no recursive crawl, broad enumeration, search/timeline, content preview/export/hash/signature, selected-file auto-selection, UI/reporting, deleted recovery, carving, packaging, dependency installation, commit, or push.
+- Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_directory_browser.py app\tests\test_directory_listing.py app\tests\test_filesystem_adapter.py` reported 28 passed in 1.26s.
+- Full verification: `.\.python312-embed\python.exe -m pytest` reported 207 passed in 54.11s.
+- Privacy-safe real-image browser smoke exited 0 with 53 segments, root listing `ok` / `real_parser_backed` with 11 entries, nested listing `ok` / `real_parser_backed` with 19 entries, files=19, directories=0, other=0, parent navigation `ok`, file-target `path_not_directory`, `source_modified: false`, and `read_only_asserted: true`.
+- Stage 5 search/timeline remained blocked at implementation handoff time; current state after review acceptance is blocked on S4.5-IMP10 review and S5-T01 rerun.
+
+## 2026-07-23 - S4.5-IMP09B Ready Ticket
+
+- Added `tickets/stage-4.5/S4.5-IMP09B-interactive-e01-directory-browser.md` as `Ready`.
+- Added `prompts/vscode-agent/2026-07-23-s4.5-imp09b-interactive-e01-directory-browser.md`.
+- Recorded the architecture direction: add a stateful terminal browser over the reviewed `list_directory()` parser-backed path rather than a new parser stack.
+- Required live commands include `dir`/`ls`, `cd`, `cd ..`, `cd /` or `root`, `pwd`, `help`, and `exit`/`quit`.
+- Kept recursive crawl, broad enumeration, search/timeline, file-content preview/export/hash/signature, selected-file auto-selection, UI/reporting, deleted recovery, carving, packaging, and evidence commits out of scope.
+- Updated active Stage 4.5, Stage 5, prompt, plan, functionality, and manual-testing docs so S4.5-IMP09B is required before S4.5-IMP10 and S5-T01 rerun.
+
 ## 2026-07-23 - S4.5-IMP09A Review Acceptance
 
 - Marked S4.5-IMP09 and S4.5-IMP09A as `Done` after independent review.

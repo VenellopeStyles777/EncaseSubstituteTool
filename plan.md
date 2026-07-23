@@ -11,7 +11,7 @@ Suggested first planning format:
 | 2 | Add volume/filesystem browsing MVP | Done | S2-T01 through S2-T07 complete. Stage 2 is a backend fixture/stub browsing foundation, not real EWF/partition/filesystem parsing. |
 | 3 | Add export/recovery foundation | Done | S3-T01 through S3-T06 complete. Stage 3 is a backend fixture/stub export foundation, not real extraction or recovery. |
 | 4 | Add hashing and signature checks | Done | S4-T01 through S4-T07 are reviewed/done. Stage 4 remains provider-backed and does not prove real filesystem extraction. |
-| 4.5 | First testing with user-provided E01 files | Active | S4.5-IMP01 through S4.5-IMP09A are reviewed and done. S4.5-IMP10 for final guide/gate refresh remains drafted. |
+| 4.5 | First testing with user-provided E01 files | Active | S4.5-IMP01 through S4.5-IMP09B are reviewed and done, including the live command-line browser. S4.5-IMP10 for final guide/gate refresh remains drafted after that. |
 | 5 | Add search and timeline foundations | Deferred | Detailed tickets S5-T00 through S5-T16 exist under `tickets/stage-5/`; S5-T00 documentation cleanup is done, S5-T01 is done with a failed gate, and S5-T01A is done. |
 
 ## Completed Foundation Stages
@@ -33,7 +33,7 @@ Current real-E01 truth:
 - The project can run only explicit safe `pyewf` verification APIs when available; stored EWF hash metadata is not treated as verification success.
 - S4.5-IMP03 can open the EWF-backed logical image, discover partition-table volumes, and produce a real-parser-backed root filesystem listing from the local E01 set in the portable runtime.
 - The project can extract bytes only for an explicitly selected parser-backed root file within S4.5-IMP04's documented first-testing limits.
-- S4.5-IMP05 can write root-listing-derived `file-list.json`, `file-list.csv`, and static local `outputs/reports/summary.html`; S4.5-IMP09 adds explicit one-directory nested navigation artifacts. Arbitrary export/crawl, recursive traversal, search/timeline, UI, and report-system behavior remain unimplemented.
+- S4.5-IMP05 can write root-listing-derived `file-list.json`, `file-list.csv`, and static local `outputs/reports/summary.html`; S4.5-IMP09 adds explicit one-directory nested navigation artifacts, and S4.5-IMP09B adds a live command-line browser over the same listing path. Arbitrary export/crawl, recursive traversal, search/timeline, UI, and report-system behavior remain unimplemented.
 - S4.5-IMP08 can compute SHA-256 over the full EWF logical image stream only when `--hash-image` is explicitly requested; default runs write image hash status `not_run`.
 
 ## Stage 4.5 First Testing Ticket Plan
@@ -50,6 +50,7 @@ Current first-testing truth:
 - The current backend can run selected-file preview/export/hash/signature only when an explicit root entry is selected and the file fits the documented in-memory policy.
 - The current backend can write file-list JSON/CSV and a static local HTML summary from the current root listing only.
 - The current backend can write `image-hash.json` with `not_run` by default and can compute a full logical-image SHA-256 when `--hash-image` is explicitly requested.
+- The current backend can list one explicit or bounded-demo nested directory and run a live terminal browser over the same reviewed parser-backed listing path.
 - Stage 4 hash/signature behavior is provider-backed and does not yet analyze E01-extracted files.
 
 Updated Stage 4.5 ticket sequence:
@@ -78,14 +79,15 @@ Stage 4.5 implementation runway:
 - S4.5-IMP08 adds an independent full logical-image hash artifact. Status: Done.
 - S4.5-IMP09 adds explicit nested directory navigation into actual filesystem entries. Status: Done after S4.5-IMP09A correction review.
 - S4.5-IMP09A corrects demo mode so it reaches regular files when available and fixes known nested file-path status. Status: Done.
-- S4.5-IMP10 refreshes the guide and Stage 5 gate packet after hash/navigation review. Status: Draft.
+- S4.5-IMP09B adds a live command-line browser over the reviewed directory listing path. Status: Done.
+- S4.5-IMP10 refreshes the guide and Stage 5 gate packet after hash/navigation/browser review. Status: Draft.
 - Stage 5 search/timeline implementation should stay deferred until S4.5-IMP10 is reviewed and S5-T01 is rerun.
 
 Stage 5 gate handoff for the next S5-T01 rerun:
 
 - Allowed future Stage 5 inputs are reviewed, provenance-rich records from intake/segment discovery, case/evidence/audit rows, metadata and verification-status artifacts, image-hash status artifacts, EWF stream status, partition/volume artifacts, filesystem/root-listing records, root-listing-derived file-list JSON/CSV, and selected-file readiness/preview/analysis/export records only when an explicit parser-backed selection proves the source. The static HTML summary is human-readable output, not an authoritative index.
 - Required labels include source path, evidence id when present, volume id, file id/path, provider/source identity, source kind such as `real_parser` or `stub`, parser/source status, dependency/not-supported/not-run states, warning lists, timestamp context, read-only assertion, and source-modified assertion.
-- Blocked inputs include recursive traversal records beyond the reviewed one-directory navigation artifact, broad full-volume crawl records, arbitrary auto-selected preview/export/hash/signature records, full-text records from E01 content, deleted recovery/carving records, UI/report-system records, and any verification-success claim when verification is unsupported, only stored hash metadata exists, or `--hash-image` has not actually completed.
+- Blocked inputs include recursive traversal records beyond the reviewed one-directory navigation/browser proof, broad full-volume crawl records, arbitrary auto-selected preview/export/hash/signature records, full-text records from E01 content, deleted recovery/carving records, UI/report-system records, and any verification-success claim when verification is unsupported, only stored hash metadata exists, or `--hash-image` has not actually completed.
 - S5-T02 and later remain blocked until S4.5-IMP10 is reviewed and S5-T01 is rerun.
 
 Current code utilization for Stage 4.5:
@@ -110,7 +112,7 @@ Stage 4.5 guardrails:
 
 Stage 5 remains deferred as the next feature stage and is superseded as the immediate priority by Stage 4.5 first testing. When Stage 5 begins, it should first clean up documentation organization and duplication so the later search/timeline tickets start from a clear source of truth. Its later job is to define search and timeline foundations over explicit, provenance-rich records without hiding parser/source uncertainty.
 
-S5-T01 is a hard gate: it must confirm the Stage 4.5 substantial-test implementation runway is complete and reviewed before S5-T02 or later search/timeline implementation proceeds. The 2026-07-16 S5-T01 pass failed this gate because S4.5-IMP01 through S4.5-IMP06 were not complete and reviewed. S4.5-IMP01 through S4.5-IMP09A are now done. Stage 5 search/timeline remains blocked until S4.5-IMP10 is reviewed and S5-T01 is rerun.
+S5-T01 is a hard gate: it must confirm the Stage 4.5 substantial-test implementation runway is complete and reviewed before S5-T02 or later search/timeline implementation proceeds. The 2026-07-16 S5-T01 pass failed this gate because S4.5-IMP01 through S4.5-IMP06 were not complete and reviewed. S4.5-IMP01 through S4.5-IMP09B are now done, and S4.5-IMP10 remains drafted. Stage 5 search/timeline remains blocked until S4.5-IMP10 is reviewed and S5-T01 is rerun.
 
 Detailed Stage 5 ticket sequence:
 

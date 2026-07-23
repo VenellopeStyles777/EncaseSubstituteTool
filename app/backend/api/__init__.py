@@ -7,12 +7,15 @@ __all__ = [
     "FILE_PREVIEW_SCHEMA_VERSION",
     "INTAKE_SCHEMA_VERSION",
     "DEFAULT_MANIFEST_SUFFIX",
+    "DirectoryBrowserSession",
     "ExportAuditContext",
     "ExportContent",
     "FIRST_TESTING_RUN_SCHEMA_VERSION",
     "StubExportContentProvider",
     "StubPreviewProvider",
     "directory_listing_to_json",
+    "build_directory_browser_session",
+    "directory_browser_to_summary",
     "export_file",
     "export_file_to_json",
     "first_testing_to_json",
@@ -48,6 +51,14 @@ def __getattr__(name: str):
     }:
         listing_module = import_module("app.backend.api.directory_listing")
         return getattr(listing_module, name)
+
+    if name in {
+        "DirectoryBrowserSession",
+        "build_directory_browser_session",
+        "directory_browser_to_summary",
+    }:
+        browser_module = import_module("app.backend.api.directory_browser")
+        return getattr(browser_module, name)
 
     if name in {
         "FILE_PREVIEW_SCHEMA_VERSION",

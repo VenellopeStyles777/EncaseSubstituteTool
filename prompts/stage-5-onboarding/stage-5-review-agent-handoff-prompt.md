@@ -70,15 +70,16 @@ The current real-E01 truth is still limited:
 
 Stage 4.5 was added before Stage 5 because the user wants something testable and demonstrable with actual E01 files.
 
-Stage 4.5 is no longer planning-only. S4.5-T00 through S4.5-T08 are planning/review records, and S4.5-IMP01 through S4.5-IMP09A are reviewed and done. Hands-on demo feedback extended Stage 4.5 with S4.5-IMP09 and S4.5-IMP10 because the user needs real nested directory navigation and a final gate refresh before Stage 5. S4.5-IMP09 and S4.5-IMP09A are done; S4.5-IMP10 remains required.
+Stage 4.5 is no longer planning-only. S4.5-T00 through S4.5-T08 are planning/review records, and S4.5-IMP01 through S4.5-IMP09B are reviewed and done. Hands-on demo feedback extended Stage 4.5 with S4.5-IMP09, S4.5-IMP09B, and S4.5-IMP10 because the user needs real nested directory navigation, a live command-line browser, and a final gate refresh before Stage 5. S4.5-IMP09, S4.5-IMP09A, and S4.5-IMP09B are done; S4.5-IMP10 remains required.
 
 Before starting Stage 5, confirm the current Stage 4.5 runway state:
 
 - S4.5-IMP01 is done;
 - S4.5-IMP02 and S4.5-IMP02A are done;
-- S4.5-IMP03, S4.5-IMP04, S4.5-IMP05, S4.5-IMP06, S4.5-IMP07, S4.5-IMP08, S4.5-IMP09, and S4.5-IMP09A are reviewed and done;
+- S4.5-IMP03, S4.5-IMP04, S4.5-IMP05, S4.5-IMP06, S4.5-IMP07, S4.5-IMP08, S4.5-IMP09, S4.5-IMP09A, and S4.5-IMP09B are reviewed and done;
 - S4.5-IMP09/S4.5-IMP09A provide bounded nested directory navigation with regular files visible in the corrected local real-E01 smoke and `path_not_directory` for known nested file paths;
-- S4.5-IMP10 is drafted and required;
+- S4.5-IMP09B provides the reviewed live command-line directory browser over the same parser-backed listing path;
+- S4.5-IMP10 is drafted and required after S4.5-IMP09B;
 - the portable runtime/dependency setup is project-local and ignored by git;
 - no committed E01 files or private outputs were added;
 - manual E01 testing is partial for intake, metadata, stream, partition-table discovery, root listing, and root-listing-derived file-list/static summary output;
@@ -96,6 +97,7 @@ The Stage 4.5 implementation runway is:
 - S4.5-IMP08: independent full logical-image hash artifact. Status: Done.
 - S4.5-IMP09: nested directory navigation into actual filesystem entries. Status: Done.
 - S4.5-IMP09A: file-visible nested navigation correction. Status: Done.
+- S4.5-IMP09B: interactive E01 directory browser. Status: Done.
 - S4.5-IMP10: demo guide and Stage 5 gate refresh. Status: Draft.
 
 ## Stage 5 Entry Rule
@@ -180,12 +182,17 @@ Default to a review stance:
 
 ## Latest Verification Known At Handoff
 
-The latest recorded reviewer verification in `review.md` for S4.5-IMP07 acceptance:
+The latest recorded reviewer verification in `review.md` for S4.5-IMP09B acceptance:
 
 ```powershell
+.\.python312-embed\python.exe -m pytest app\tests\test_directory_browser.py app\tests\test_directory_listing.py app\tests\test_filesystem_adapter.py
+# 28 passed in 0.56s
+
 .\.python312-embed\python.exe -m pytest
-# 184 passed in 28.38s
+# 207 passed in 56.56s
 ```
+
+Reviewer real-image browser smoke exited 0 with 53 segments, a parser-backed root listing, a parser-backed nested listing with 19 regular files visible, parent navigation observed, file-target `path_not_directory`, `source_modified: false`, and `read_only_asserted: true`.
 
 Run the suite again after any new edits or before any future ticket acceptance.
 

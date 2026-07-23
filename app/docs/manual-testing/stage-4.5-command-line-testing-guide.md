@@ -10,8 +10,9 @@ Hands-on demo testing found proof gaps that remain before Stage 5:
 
 - S4.5-IMP08 adds an explicit independent full logical-image hash command path and is reviewed/done.
 - S4.5-IMP09 adds explicit nested directory navigation, and S4.5-IMP09A is reviewed/done after correcting the default demo to prefer regular-file-visible nested listings when available.
+- S4.5-IMP09B is reviewed/done with a live command-line browser over the same reviewed parser-backed directory listing path.
 
-S4.5-IMP10 must refresh this guide with the final hash/navigation gate packet. Until then, this guide records the reviewed no-selection workflow plus the S4.5-IMP08 hash command shape and the S4.5-IMP09/S4.5-IMP09A nested-navigation command shape.
+S4.5-IMP10 must refresh this guide with the final hash/navigation/browser gate packet. Until then, this guide records the reviewed no-selection workflow plus the S4.5-IMP08 hash command shape, the S4.5-IMP09/S4.5-IMP09A nested-navigation command shape, and the S4.5-IMP09B live-browser command shape.
 
 ## Prerequisites
 
@@ -93,6 +94,26 @@ Explicit path form, using a path chosen from a local-only root listing inspectio
 
 Use either `--list-directory-path` or `--demo-list-first-directory`, not both. The current command does not expose `--list-directory-id`; directory-id selection remains deferred until the parser-backed file-id shape is reviewed as a stable resolver.
 
+Interactive E01 directory browser with the local ignored test image:
+
+```powershell
+.\.python312-embed\python.exe -m app.backend.api.directory_browser --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --redact-paths
+```
+
+Inside the browser:
+
+```text
+dir
+cd "<directory name from the current listing>"
+dir
+cd ..
+pwd
+help
+exit
+```
+
+The browser keeps a current in-image path, lists direct children only, supports quoted names with spaces, and reports `path_not_directory` if `cd` targets a file. It does not read file contents, export, hash, recurse, search, index, or write a transcript by default.
+
 Selected-file template only. Replace one placeholder after the user approves a safe, regular, allocated root entry:
 
 ```powershell
@@ -107,6 +128,12 @@ Focused parser and first-testing checks:
 
 ```powershell
 .\.python312-embed\python.exe -m pytest app\tests\test_ewf_reader_adapter.py app\tests\test_image_stream.py app\tests\test_volume_discovery.py app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_selected_file_content.py app\tests\test_first_testing_command.py
+```
+
+Focused interactive browser checks:
+
+```powershell
+.\.python312-embed\python.exe -m pytest app\tests\test_directory_browser.py app\tests\test_directory_listing.py app\tests\test_filesystem_adapter.py
 ```
 
 Full suite:
@@ -261,6 +288,7 @@ For the local ` Test Image/` command, the reviewed expected shape is:
 - file-list JSON/CSV status is `ok` with 11 entries;
 - image hash status is `not_run` unless `--hash-image` was requested;
 - directory navigation status is `not_run` unless `--list-directory-path` or `--demo-list-first-directory` was requested;
+- interactive browser status is not represented in the first-testing artifact bundle because `directory_browser` is a live terminal session and does not write transcripts by default;
 - static local HTML summary is created;
 - selected-file readiness, preview, analysis, and export remain `not_run`;
 - `source_modified` is `false`;
@@ -286,6 +314,23 @@ For the local ` Test Image/` nested-navigation demo command, the expected S4.5-I
 - `read_only_asserted` is `true`.
 
 Do not quote the selected real directory name, real child entry names, internal paths, metadata values, or file content in shared notes. Report only statuses and counts.
+
+## Expected Interactive Browser Shape
+
+For the local ` Test Image/` browser command, the expected S4.5-IMP09B review shape is:
+
+- browser setup exits cleanly when the scripted or manual session sends `exit` or `quit`;
+- startup segment discovery reports 53 segments for the local ignored image;
+- root listing is `real_parser_backed` and has a nonzero entry count;
+- `dir` or `ls` shows direct child entries for the current path;
+- `cd` into a real directory succeeds and a later `dir` or `ls` shows a parser-backed nested listing with a nonzero entry count;
+- at least one regular file is visible somewhere in the scripted session when available;
+- `cd ..` returns to the parent path;
+- attempting to `cd` into a known file reports `path_not_directory`;
+- `source_modified` is `false`;
+- `read_only_asserted` is `true`.
+
+The local terminal session may show in-image names so the examiner can browse, but shared notes should report only status and count fields.
 
 ## Status Meanings
 
@@ -353,13 +398,14 @@ The no-selection real-image command can prove:
 - root-listing-derived file-list JSON/CSV can be written;
 - an independent full logical-image SHA-256 can be computed only when `--hash-image` is explicitly requested and the command completes;
 - one explicit or bounded-demo nested directory can be listed only when `--list-directory-path` or `--demo-list-first-directory` is explicitly requested, and demo mode can probe one child-directory level to prefer a regular-file-visible listing when available;
+- live shell-like directory browsing can call the same reviewed parser-backed `list_directory()` path one current directory at a time;
 - a static local HTML summary can be created;
 - evidence remains read-only and source modification is not asserted.
 
 The no-selection command does not prove:
 
 - nested directory navigation unless a nested directory option is supplied;
-- interactive `cd`/`dir` style navigation with go-in/go-back commands;
+- recursive or indexed navigation beyond explicit one-path-at-a-time browser calls;
 - recursive directory traversal;
 - broad full-volume crawl;
 - image-level hashing for normal no-selection runs where `--hash-image` was not requested;
@@ -376,8 +422,8 @@ Future ownership:
 - S4.5-IMP08 owns independent full logical-image hashing and is reviewed/done.
 - S4.5-IMP09 owns explicit nested directory navigation and is reviewed/done.
 - S4.5-IMP09A owns the file-visible demo correction and nested file-path `path_not_directory` status, and is reviewed/done.
-- S4.5-IMP10 owns the final guide refresh after hash/navigation.
-- A separate future ticket should own an interactive command-line navigator if the desired experience is a shell-like `dir`, `cd <folder>`, and back/up workflow.
+- S4.5-IMP09B owns the interactive command-line navigator for a shell-like `dir`, `cd <folder>`, and back/up workflow, and is reviewed/done.
+- S4.5-IMP10 owns the final guide refresh after hash/navigation/browser.
 - A later reviewed ticket must own broad recursive crawl or larger selected-file streaming if those become priorities.
 - S5-T01 must wait until S4.5-IMP10 is reviewed before S5-T02 or later search/timeline work starts.
 
