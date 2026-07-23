@@ -6,7 +6,7 @@ Stage 4.5 is not search/timeline. It should not implement broad new forensic fea
 
 ## Stage 4.5 Status
 
-Status: S4.5-IMP01 through S4.5-IMP09B are reviewed and done. S4.5-IMP09/S4.5-IMP09A prove bounded parser-backed nested directory navigation with regular files visible from the local real E01 smoke, and S4.5-IMP09B adds the live command-line browser over that same listing path. S4.5-IMP10 is drafted and required before Stage 5 resumes.
+Status: S4.5-IMP01 through S4.5-IMP10 are reviewed and done. S4.5-IMP09/S4.5-IMP09A prove bounded parser-backed nested directory navigation with regular files visible from the local real E01 smoke, S4.5-IMP09B adds the live command-line browser over that same listing path, and S4.5-IMP10 provides the final demo guide/gate refresh. Stage 5 now resumes only through an S5-T01 gate rerun.
 
 ## Current Implemented Functionality Summary
 
@@ -103,7 +103,7 @@ Recommended Stage 4.5 ticket sequence:
 | S4.5-IMP09 | Done | Nested directory navigation into actual filesystem entries |
 | S4.5-IMP09A | Done | File-visible nested navigation correction |
 | S4.5-IMP09B | Done | Interactive E01 directory browser |
-| S4.5-IMP10 | Draft | Demo guide and Stage 5 gate refresh after hash/navigation |
+| S4.5-IMP10 | Done | Demo guide and Stage 5 gate refresh after hash/navigation/browser |
 
 ## Implementation Runway
 
@@ -123,13 +123,13 @@ These planning tickets line up into implementation slices that must be completed
 | S4.5-IMP09 | User hands-on demo feedback | Explicit nested directory navigation into actual filesystem entries; reviewed and done after S4.5-IMP09A |
 | S4.5-IMP09A | S4.5-IMP09 review | Ensure demo mode reaches regular files and known nested file paths return `path_not_directory`; reviewed and done |
 | S4.5-IMP09B | User hands-on demo feedback | Live command-line browser over reviewed parser-backed directory listing; reviewed and done |
-| S4.5-IMP10 | User hands-on demo feedback | Final guide and Stage 5 gate refresh after hash/navigation/browser; drafted |
+| S4.5-IMP10 | User hands-on demo feedback | Final guide and Stage 5 gate refresh after hash/navigation/browser; reviewed and done |
 
-S4.5-IMP09A is done as the Stage 4.5 slice after S4.5-IMP09 review findings. S4.5-IMP09B is done with the live `cd`/`dir` style navigator over the same reviewed parser-backed directory listing path. Stage 5 search/timeline remains blocked until S4.5-IMP10 is reviewed and S5-T01 is rerun and accepted.
+S4.5-IMP09A is done as the Stage 4.5 slice after S4.5-IMP09 review findings. S4.5-IMP09B is done with the live `cd`/`dir` style navigator over the same reviewed parser-backed directory listing path. S4.5-IMP10 is done with the final guide/gate refresh. S5-T01 rerun is in review with a passed-gate result, and Stage 5 search/timeline remains blocked until S5-T01 is accepted.
 
-## Stage 5 Gate Handoff After S4.5-IMP06
+## Stage 5 Gate Handoff
 
-S4.5-IMP06 prepared the later S5-T01 rerun, S4.5-IMP07 completed the first command-line testing guide, S4.5-IMP08 added the explicit image-level hash path, S4.5-IMP09/S4.5-IMP09A are done for explicit nested directory navigation with regular files visible in the corrected demo, and S4.5-IMP09B is done with a live terminal browser. S4.5-IMP10 remains the final Stage 4.5 prerequisite after the browser. S5-T02 and later search/timeline work must wait for S4.5-IMP10 review and for S5-T01 to be rerun and accepted.
+S4.5-IMP06 prepared the later S5-T01 rerun, S4.5-IMP07 completed the first command-line testing guide, S4.5-IMP08 added the explicit image-level hash path, S4.5-IMP09/S4.5-IMP09A are done for explicit nested directory navigation with regular files visible in the corrected demo, S4.5-IMP09B is done with a live terminal browser, and S4.5-IMP10 is done with the final guide/gate refresh. S5-T02 and later search/timeline work must wait for S5-T01 to be accepted.
 
 Allowed future Stage 5 input records should be limited to reviewed, provenance-rich artifacts: intake and segment discovery, case/evidence/audit rows, metadata and verification status, EWF stream status, partition/volume records, filesystem/root-listing entries, root-listing-derived file-list JSON/CSV, reviewed image-level hash records, reviewed nested directory-listing records, browser status/count proof, and selected-file readiness/preview/analysis/export records only for explicit parser-backed selections. The static HTML summary is a local human-readable review artifact, not an indexing source.
 

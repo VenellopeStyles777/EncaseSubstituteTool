@@ -2,6 +2,54 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-23 - S5-T01 Rerun Review Acceptance
+
+- Marked `tickets/stage-5/S5-T01-readiness-and-stage-4.5-completion-gate.md` as `Done` after accepting the passed-gate rerun.
+- Updated active Stage 5 status docs so S5-T01 is accepted/done, S5-T02 remains `Draft` as the next ticket to prepare, and S5-T03 through S5-T16 remain draft.
+- Recorded reviewer verification: full portable-runtime tests reported 207 passed in 41.53s, and reviewer real-image no-selection/navigation smoke produced the privacy-safe parser-backed status/count shape with image hash `not_run`, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+- Kept the acceptance documentation-only: no app source behavior, tests, schema, parser behavior, dependency setup, evidence handling, search/timeline implementation, UI/reporting, commit, or push was added.
+
+## 2026-07-23 - S5-T01 Rerun Gate Handoff
+
+- Marked `tickets/stage-5/S5-T01-readiness-and-stage-4.5-completion-gate.md` as `Review` with a passed-gate result.
+- Recorded a Stage 4.5 completion matrix for S4.5-IMP01, S4.5-IMP02, S4.5-IMP02A, S4.5-IMP03, S4.5-IMP04, S4.5-IMP05, S4.5-IMP06, S4.5-IMP07, S4.5-IMP08, S4.5-IMP09, S4.5-IMP09A, S4.5-IMP09B, and S4.5-IMP10.
+- Classified allowed future Stage 5 inputs as reviewed provenance-rich records only, including intake/segment discovery, case/evidence/audit rows, metadata/verification status, EWF stream status, partition/volume records, filesystem/root-listing entries, root-listing-derived file-list JSON/CSV, image-hash status records, explicit nested directory records, browser status/count proof, explicit selected-file records, Stage 4 analysis records, and Stage 3 export/audit records.
+- Preserved blocked inputs: recursive crawl, broad full-volume enumeration, auto-selected extraction/analysis, full-text E01 content, deleted recovery/carving, UI/report-system records, static HTML as an authoritative index, verification-success claims when unsupported, and `not_run` image hashes as completed digest proof.
+- Verification: `.\.python312-embed\python.exe -m pytest` reported 207 passed in 53.94s. Privacy-safe real-image no-selection/navigation smoke exited 0 with 53 segments, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, nested directory listing `ok` / `real_parser_backed` with 19 entries and files=19 directories=0 other=0, image hash `not_run`, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+- S5-T02 through S5-T16 remain `Draft`; no Stage 5 search/timeline implementation, app source behavior, tests, schema, parser behavior, dependency setup, UI/reporting, evidence handling, commit, or push was added.
+
+## 2026-07-23 - S5-T01 Rerun Ticket Promotion
+
+- Marked `tickets/stage-5/S5-T01-readiness-and-stage-4.5-completion-gate.md` as `Ready` for rerun after S4.5-IMP10 acceptance.
+- Added `prompts/vscode-agent/2026-07-23-s5-t01-rerun-readiness-and-stage-4.5-completion-gate.md` so the coding agent evaluates the current Stage 4.5-complete state instead of the historical July 16 failed-gate assumptions.
+- Updated Stage 5 and prompt indexes to keep S5-T02 through S5-T16 blocked/draft until S5-T01 rerun is reviewed and accepted.
+- Kept the rerun documentation-only: no app source behavior, parser/hash/navigation/browser behavior, Stage 5 search/timeline, UI/reporting, dependency setup, evidence handling, commit, or push.
+
+## 2026-07-23 - S4.5-IMP10 Review Acceptance
+
+- Marked `tickets/stage-4.5/S4.5-IMP10-demo-guide-and-stage-5-gate-refresh.md` as `Done`.
+- Accepted the final command-line demo guide and Stage 5 gate refresh as documentation/status-only.
+- Recorded reviewer verification: full portable-runtime tests reported 207 passed in 49.87s, and reviewer real-image no-selection/navigation smoke produced the privacy-safe parser-backed status/count shape with image hash `not_run` and selected-file operations `not_run`.
+- Updated active Stage 4.5 and Stage 5 status docs so the extended Stage 4.5 runway is complete and the next practical action is S5-T01 rerun.
+- Kept S5-T02 through S5-T16 blocked/draft until S5-T01 passes.
+
+## 2026-07-23 - S4.5-IMP10 Implementation Handoff
+
+- Marked `tickets/stage-4.5/S4.5-IMP10-demo-guide-and-stage-5-gate-refresh.md` as `Review`.
+- Updated `app/docs/manual-testing/stage-4.5-command-line-testing-guide.md` with copyable PowerShell flows for fresh-output cleanup, no-selection first-testing, optional full logical-image hashing, nested directory navigation, live browser commands, file-list/static HTML inspection, and selected-file testing only after explicit approved selection.
+- Added `app/docs/manual-testing/stage-4.5-demo-showcase.md` as a short privacy-safe presentation walkthrough for the same documented command-line demo.
+- Updated active Stage 4.5 and Stage 5 status/gate docs so S5-T01 must check S4.5-IMP01 through S4.5-IMP10 before S5-T02 or later search/timeline work can begin.
+- Recorded that full logical-image hashing remains explicit and potentially long-running for the local 1 TB logical image; stored EWF hash metadata is not the independent image hash.
+- Verification: `.\.python312-embed\python.exe -m pytest` reported 207 passed in 49.26s. Privacy-safe real-image no-selection/navigation smoke exited 0 with 53 segments, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, nested directory listing `ok` / `real_parser_backed` with 19 entries and files=19 directories=0 other=0, static HTML created, image hash `not_run`, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+- No source behavior, parser/hash/navigation/browser behavior, Stage 5 search/timeline, UI/reporting, dependency setup, real evidence commits, private output commits, commit, or push was added.
+
+## 2026-07-23 - S4.5-IMP10 Ready Ticket
+
+- Marked `tickets/stage-4.5/S4.5-IMP10-demo-guide-and-stage-5-gate-refresh.md` as `Ready`.
+- Expanded the S4.5-IMP10 ticket and coding-agent prompt with exact guide requirements: fresh-output cleanup, no-selection demo, optional full logical-image hash, nested directory navigation artifacts, live browser commands, static HTML/file-list inspection, selected-file template, proof boundaries, and privacy-safe transcript notes.
+- Updated Stage 4.5, Stage 5, prompt, progression, and review docs so S4.5-IMP10 is the current ready ticket.
+- Reconfirmed that S5-T02 through S5-T16 remain blocked/draft until S4.5-IMP10 is reviewed and S5-T01 is rerun and accepted.
+
 ## 2026-07-23 - S4.5-IMP09B Review Acceptance
 
 - Marked `tickets/stage-4.5/S4.5-IMP09B-interactive-e01-directory-browser.md` as `Done`.

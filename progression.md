@@ -13,6 +13,42 @@ YYYY-MM-DD
 ```
 
 2026-07-23
+- Completed: reviewed and accepted the S5-T01 rerun as done with a passed-gate result.
+- Learned: S4.5-IMP01 through S4.5-IMP10 satisfy the substantial-test runway for the Stage 5 gate, while future Stage 5 work must still preserve provenance/status boundaries and cannot treat `not_run` image hashes, static HTML summaries, browser output, recursive crawl assumptions, or auto-selected content as stronger evidence than they are.
+- Blocked by: S5-T02 is still Draft and must be prepared before implementation; S5-T03 and later remain blocked until earlier Stage 5 tickets are reviewed.
+- Next: prepare S5-T02 as the next ticket. Reviewer verification: `.\.python312-embed\python.exe -m pytest` reported 207 passed in 41.53s. Reviewer real-image no-selection/navigation smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, metadata `metadata_available`, verification `not_supported`, EWF stream `ok`, logical media size 1,024,209,543,168 bytes, 5 volumes, filesystem `ok`, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, nested directory listing `real_parser_backed` with 19 entries, files=19, directories=0, other=0, navigation `nested_directory_files_visible`, static HTML created, image hash `not_run`, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`. Full `--hash-image` was intentionally not run because the local logical image is about 1 TB.
+
+2026-07-23
+- Completed: processed the S5-T01 rerun gate and marked it `Review` with a passed-gate result.
+- Learned: S4.5-IMP01 through S4.5-IMP10 are present, reviewed, and accepted, and Stage 5 can now prepare S5-T02 only after research/review-agent acceptance of this rerun. The allowed Stage 5 inputs are reviewed provenance-rich records, while full-text E01 content, recursive crawl, static HTML as an authoritative index, auto-selected extraction, and `not_run` image hashes remain blocked or non-authoritative.
+- Blocked by: no Stage 4.5 runway blocker remains for this gate, but S5-T02 through S5-T16 must stay `Draft` until the research/review agent accepts the S5-T01 rerun.
+- Next: review S5-T01 rerun; if accepted, prepare S5-T02 as the next ticket without implementing it in this handoff. Verification: `.\.python312-embed\python.exe -m pytest` reported 207 passed in 53.94s. Privacy-safe real-image no-selection/navigation smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, metadata `metadata_available`, verification `not_supported`, EWF stream `ok`, logical media size 1,024,209,543,168 bytes, 5 volumes, filesystem `ok`, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, nested directory listing `ok` / `real_parser_backed` with 19 entries, files=19, directories=0, other=0, static HTML created, image hash `not_run`, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`. Full `--hash-image` was intentionally not run because the local logical image is about 1 TB.
+
+2026-07-23
+- Completed: promoted S5-T01 rerun to `Ready` after S4.5-IMP10 acceptance and created a fresh coding-agent prompt for the current Stage 4.5-complete state.
+- Learned: the rerun must evaluate S4.5-IMP01 through S4.5-IMP10, preserve the July 16 failed gate as historical only, and stop at review without starting S5-T02.
+- Blocked by: at ticket-promotion time, S5-T02 and later search/timeline work still depended on S5-T01 rerun implementation, review, and acceptance. Current state is superseded by the acceptance entry above: S5-T01 rerun is done, and S5-T02 is the next ticket to prepare.
+- Next: feed the S5-T01 rerun prompt to the existing VS Code coding-agent task. Expected result if the gate passes: S5-T01 moves to `Review`, S5-T02 remains `Draft`, and S5-T02 can be recommended only after research/review-agent acceptance.
+
+2026-07-23
+- Completed: reviewed and accepted S4.5-IMP10 as done, completing the extended Stage 4.5 first-testing runway.
+- Learned: the final guide/gate refresh packages the reviewed demo into copyable PowerShell flows for fresh outputs, no-selection E01 runs, optional full logical-image hash, nested directory navigation, live browser usage, file-list/static HTML inspection, and explicit selected-file templates while keeping proof boundaries visible.
+- Blocked by: Stage 5 search/timeline remains blocked until S5-T01 is rerun and accepted.
+- Next: rerun S5-T01 as the next practical ticket; do not start S5-T02 or later search/timeline work until S5-T01 passes. Reviewer verification: `.\.python312-embed\python.exe -m pytest` reported 207 passed in 49.87s. Reviewer real-image no-selection/navigation smoke exited 0 with `ok_with_unsupported_sections`, metadata `metadata_available`, verification `not_supported`, EWF stream `ok`, 5 volumes, filesystem `ok`, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, nested listing `real_parser_backed` with 19 entries, files=19, directories=0, other=0, static HTML created, image hash `not_run`, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`. Full `--hash-image` was intentionally not run because the logical image is large and the command is long-running.
+
+2026-07-23
+- Completed: implemented the S4.5-IMP10 documentation/status reconciliation and marked it ready for review.
+- Learned: the command-line guide now gives copyable PowerShell flows for fresh output cleanup, no-selection first-testing, optional full logical-image hashing, nested directory navigation, live browser use, file-list/static HTML inspection, and selected-file testing only after explicit approved selection.
+- Blocked by: Stage 5 search/timeline remains blocked until S4.5-IMP10 is reviewed and accepted, then S5-T01 is rerun and accepted.
+- Next: review S4.5-IMP10, then rerun S5-T01 as the next practical ticket if review accepts the guide/gate refresh. Verification: `.\.python312-embed\python.exe -m pytest` reported 207 passed in 49.26s. Privacy-safe real-image no-selection/navigation smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, metadata `metadata_available`, verification `not_supported`, EWF stream `ok`, logical media size 1,024,209,543,168 bytes, 5 volumes, filesystem `ok`, root listing `real_parser_backed` with 11 entries, file-list JSON/CSV `ok` with 11 entries, nested directory listing `ok` / `real_parser_backed` with 19 entries, files=19, directories=0, other=0, static HTML created, image hash `not_run`, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`. Full `--hash-image` was intentionally not run because the local logical image is about 1 TB.
+
+2026-07-23
+- Completed: promoted S4.5-IMP10 to `Ready` and refreshed the coding-agent prompt for the final demo guide and Stage 5 gate reconciliation.
+- Learned: after S4.5-IMP09B acceptance, the remaining Stage 4.5 task is documentation/status packaging only: exact demo commands, artifact inspection steps, privacy-safe transcript template, and Stage 5 gate alignment.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP10 must be implemented/reviewed, then S5-T01 must be rerun and accepted.
+- Next: feed S4.5-IMP10 to the existing coding-agent task and review its documentation-only handoff. S5-T02 through S5-T16 must remain blocked/draft.
+
+2026-07-23
 - Completed: reviewed and accepted S4.5-IMP09B as done with a live command-line browser over the reviewed parser-backed `list_directory()` path.
 - Learned: the browser can keep current path state, accept shell-like `dir`/`ls`, `cd`, `cd ..`, `cd /` or `root`, `pwd`, `help`, and `exit`/`quit`, handle quoted names with spaces, and preserve `path_not_directory` when a file is targeted.
 - Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP10 still needs implementation/review, and S5-T01 must be rerun after that.

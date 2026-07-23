@@ -11,8 +11,8 @@ Suggested first planning format:
 | 2 | Add volume/filesystem browsing MVP | Done | S2-T01 through S2-T07 complete. Stage 2 is a backend fixture/stub browsing foundation, not real EWF/partition/filesystem parsing. |
 | 3 | Add export/recovery foundation | Done | S3-T01 through S3-T06 complete. Stage 3 is a backend fixture/stub export foundation, not real extraction or recovery. |
 | 4 | Add hashing and signature checks | Done | S4-T01 through S4-T07 are reviewed/done. Stage 4 remains provider-backed and does not prove real filesystem extraction. |
-| 4.5 | First testing with user-provided E01 files | Active | S4.5-IMP01 through S4.5-IMP09B are reviewed and done, including the live command-line browser. S4.5-IMP10 for final guide/gate refresh remains drafted after that. |
-| 5 | Add search and timeline foundations | Deferred | Detailed tickets S5-T00 through S5-T16 exist under `tickets/stage-5/`; S5-T00 documentation cleanup is done, S5-T01 is done with a failed gate, and S5-T01A is done. |
+| 4.5 | First testing with user-provided E01 files | Done | S4.5-IMP01 through S4.5-IMP10 are reviewed and done, including image hashing, nested navigation, the live command-line browser, and final demo/gate guidance. |
+| 5 | Add search and timeline foundations | Deferred | Detailed tickets S5-T00 through S5-T16 exist under `tickets/stage-5/`; S5-T00 documentation cleanup is done, S5-T01 rerun is accepted/done with a passed-gate result after an older failed gate, S5-T01A is done, and S5-T02 remains Draft as the next ticket to prepare. |
 
 ## Completed Foundation Stages
 
@@ -80,15 +80,15 @@ Stage 4.5 implementation runway:
 - S4.5-IMP09 adds explicit nested directory navigation into actual filesystem entries. Status: Done after S4.5-IMP09A correction review.
 - S4.5-IMP09A corrects demo mode so it reaches regular files when available and fixes known nested file-path status. Status: Done.
 - S4.5-IMP09B adds a live command-line browser over the reviewed directory listing path. Status: Done.
-- S4.5-IMP10 refreshes the guide and Stage 5 gate packet after hash/navigation/browser review. Status: Draft.
-- Stage 5 search/timeline implementation should stay deferred until S4.5-IMP10 is reviewed and S5-T01 is rerun.
+- S4.5-IMP10 refreshes the guide and Stage 5 gate packet after hash/navigation/browser review. Status: Done.
+- Stage 5 search/timeline implementation should stay deferred until S5-T02 and later tickets are prepared, implemented, and reviewed in order.
 
-Stage 5 gate handoff for the next S5-T01 rerun:
+Stage 5 gate handoff after S5-T01 rerun acceptance:
 
 - Allowed future Stage 5 inputs are reviewed, provenance-rich records from intake/segment discovery, case/evidence/audit rows, metadata and verification-status artifacts, image-hash status artifacts, EWF stream status, partition/volume artifacts, filesystem/root-listing records, root-listing-derived file-list JSON/CSV, and selected-file readiness/preview/analysis/export records only when an explicit parser-backed selection proves the source. The static HTML summary is human-readable output, not an authoritative index.
 - Required labels include source path, evidence id when present, volume id, file id/path, provider/source identity, source kind such as `real_parser` or `stub`, parser/source status, dependency/not-supported/not-run states, warning lists, timestamp context, read-only assertion, and source-modified assertion.
 - Blocked inputs include recursive traversal records beyond the reviewed one-directory navigation/browser proof, broad full-volume crawl records, arbitrary auto-selected preview/export/hash/signature records, full-text records from E01 content, deleted recovery/carving records, UI/report-system records, and any verification-success claim when verification is unsupported, only stored hash metadata exists, or `--hash-image` has not actually completed.
-- S5-T02 and later remain blocked until S4.5-IMP10 is reviewed and S5-T01 is rerun.
+- S5-T02 is the next ticket to prepare; S5-T03 and later remain blocked until earlier Stage 5 tickets are reviewed.
 
 Current code utilization for Stage 4.5:
 
@@ -112,14 +112,14 @@ Stage 4.5 guardrails:
 
 Stage 5 remains deferred as the next feature stage and is superseded as the immediate priority by Stage 4.5 first testing. When Stage 5 begins, it should first clean up documentation organization and duplication so the later search/timeline tickets start from a clear source of truth. Its later job is to define search and timeline foundations over explicit, provenance-rich records without hiding parser/source uncertainty.
 
-S5-T01 is a hard gate: it must confirm the Stage 4.5 substantial-test implementation runway is complete and reviewed before S5-T02 or later search/timeline implementation proceeds. The 2026-07-16 S5-T01 pass failed this gate because S4.5-IMP01 through S4.5-IMP06 were not complete and reviewed. S4.5-IMP01 through S4.5-IMP09B are now done, and S4.5-IMP10 remains drafted. Stage 5 search/timeline remains blocked until S4.5-IMP10 is reviewed and S5-T01 is rerun.
+S5-T01 is a hard gate: it must confirm the Stage 4.5 substantial-test implementation runway is complete and reviewed before S5-T02 or later search/timeline implementation proceeds. The 2026-07-16 S5-T01 pass failed this gate because S4.5-IMP01 through S4.5-IMP06 were not complete and reviewed. S4.5-IMP01 through S4.5-IMP10 are now done, and the 2026-07-23 S5-T01 rerun is accepted with a passed-gate result. S5-T02 is the next ticket to prepare.
 
 Detailed Stage 5 ticket sequence:
 
 - S5-T00: documentation organization, duplication cleanup, and unused/confusing structure review. Status: Done.
-- S5-T01: readiness and Stage 4.5 completion gate. Status: Done; older failed gate/blocker; rerun remains blocked until S4.5-IMP10 is reviewed.
+- S5-T01: readiness and Stage 4.5 completion gate. Status: Done; older failed gate/blocker remains historical; rerun accepted after Stage 4.5 completion.
 - S5-T01A: Stage 4.5 gate language hardening. Status: Done.
-- S5-T02: input inventory and provenance audit. Status: Draft.
+- S5-T02: input inventory and provenance audit. Status: Draft; next ticket to prepare.
 - S5-T03: searchable record contracts. Status: Draft.
 - S5-T04: search query, filter, and sort contracts. Status: Draft.
 - S5-T05: file metadata search engine. Status: Draft.

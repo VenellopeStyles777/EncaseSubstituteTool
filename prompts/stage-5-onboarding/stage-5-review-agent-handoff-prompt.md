@@ -63,6 +63,9 @@ The current real-E01 truth is still limited:
 - The project can discover `.E01/.E02/...` segment filenames.
 - The project can attempt real EWF metadata through optional `pyewf` and can report explicit verification status; stored hash metadata is not treated as verification success.
 - S4.5-IMP03 is reviewed and done with EWF-backed stream reads, partition-table volume discovery, and a real-parser-backed root listing from the local E01 set.
+- S4.5-IMP05 is reviewed and done with root-listing-derived `file-list.json`, `file-list.csv`, and a static local HTML summary.
+- S4.5-IMP08 is reviewed and done with an explicit independent logical-image SHA-256 hash command/artifact, but the local 1 TB full-image hash remains a long-running user/reviewer command unless separately completed.
+- S4.5-IMP09, S4.5-IMP09A, and S4.5-IMP09B are reviewed and done with bounded parser-backed nested directory navigation, file-visible demo behavior when available, and a live command-line browser over the same listing path.
 - The project can extract real file content only for an explicitly selected parser-backed root entry within the S4.5-IMP04 first-testing limits.
 - Preview, export, hash, and signature can consume selected E01-backed bytes only through that explicit parser-backed selected-file path. Known-file behavior remains provider-backed over reviewed hash results.
 
@@ -70,20 +73,20 @@ The current real-E01 truth is still limited:
 
 Stage 4.5 was added before Stage 5 because the user wants something testable and demonstrable with actual E01 files.
 
-Stage 4.5 is no longer planning-only. S4.5-T00 through S4.5-T08 are planning/review records, and S4.5-IMP01 through S4.5-IMP09B are reviewed and done. Hands-on demo feedback extended Stage 4.5 with S4.5-IMP09, S4.5-IMP09B, and S4.5-IMP10 because the user needs real nested directory navigation, a live command-line browser, and a final gate refresh before Stage 5. S4.5-IMP09, S4.5-IMP09A, and S4.5-IMP09B are done; S4.5-IMP10 remains required.
+Stage 4.5 is no longer planning-only. S4.5-T00 through S4.5-T08 are planning/review records, and S4.5-IMP01 through S4.5-IMP10 are reviewed and done. Hands-on demo feedback extended Stage 4.5 with S4.5-IMP09, S4.5-IMP09B, and S4.5-IMP10 because the user needed real nested directory navigation, a live command-line browser, and a final gate refresh before Stage 5. S4.5-IMP10 is accepted, and the S5-T01 rerun is accepted/done with a passed-gate result.
 
 Before starting Stage 5, confirm the current Stage 4.5 runway state:
 
 - S4.5-IMP01 is done;
 - S4.5-IMP02 and S4.5-IMP02A are done;
-- S4.5-IMP03, S4.5-IMP04, S4.5-IMP05, S4.5-IMP06, S4.5-IMP07, S4.5-IMP08, S4.5-IMP09, S4.5-IMP09A, and S4.5-IMP09B are reviewed and done;
+- S4.5-IMP03, S4.5-IMP04, S4.5-IMP05, S4.5-IMP06, S4.5-IMP07, S4.5-IMP08, S4.5-IMP09, S4.5-IMP09A, S4.5-IMP09B, and S4.5-IMP10 are reviewed and done;
 - S4.5-IMP09/S4.5-IMP09A provide bounded nested directory navigation with regular files visible in the corrected local real-E01 smoke and `path_not_directory` for known nested file paths;
 - S4.5-IMP09B provides the reviewed live command-line directory browser over the same parser-backed listing path;
-- S4.5-IMP10 is drafted and required after S4.5-IMP09B;
+- S4.5-IMP10 provides the reviewed final demo guide and Stage 5 gate refresh;
 - the portable runtime/dependency setup is project-local and ignored by git;
 - no committed E01 files or private outputs were added;
-- manual E01 testing is partial for intake, metadata, stream, partition-table discovery, root listing, and root-listing-derived file-list/static summary output;
-- S5-T01 should not be rerun as passing until S4.5-IMP10 is reviewed.
+- manual E01 testing is partial for intake, metadata, stream, partition-table discovery, root listing, root-listing-derived file-list/static summary output, bounded nested navigation, and the live browser;
+- S5-T01 rerun is accepted; S5-T02 is the next ticket to prepare.
 
 The Stage 4.5 implementation runway is:
 
@@ -98,7 +101,7 @@ The Stage 4.5 implementation runway is:
 - S4.5-IMP09: nested directory navigation into actual filesystem entries. Status: Done.
 - S4.5-IMP09A: file-visible nested navigation correction. Status: Done.
 - S4.5-IMP09B: interactive E01 directory browser. Status: Done.
-- S4.5-IMP10: demo guide and Stage 5 gate refresh. Status: Draft.
+- S4.5-IMP10: demo guide and Stage 5 gate refresh. Status: Done.
 
 ## Stage 5 Entry Rule
 
@@ -123,9 +126,9 @@ S5-T01 should block S5-T02 and later if the Stage 4.5 substantial-test runway is
 ## Detailed Stage 5 Ticket Queue
 
 - S5-T00: documentation organization, duplication cleanup, and unused/confusing structure review. Status: Done.
-- S5-T01: readiness and Stage 4.5 completion gate. Status: Done; older failed gate/blocker. Rerun remains blocked until S4.5-IMP10 is reviewed.
+- S5-T01: readiness and Stage 4.5 completion gate. Status: Done; older failed gate/blocker remains historical. Rerun accepted after Stage 4.5 completion.
 - S5-T01A: Stage 4.5 gate language hardening. Status: Done.
-- S5-T02: input inventory and provenance audit. Status: Draft.
+- S5-T02: input inventory and provenance audit. Status: Draft; next ticket to prepare.
 - S5-T03: searchable record contracts. Status: Draft.
 - S5-T04: search query, filter, and sort contracts. Status: Draft.
 - S5-T05: file metadata search engine. Status: Draft.
@@ -182,22 +185,19 @@ Default to a review stance:
 
 ## Latest Verification Known At Handoff
 
-The latest recorded reviewer verification in `review.md` for S4.5-IMP09B acceptance:
+The latest reviewer verification in `review.md` is S5-T01 rerun acceptance:
 
 ```powershell
-.\.python312-embed\python.exe -m pytest app\tests\test_directory_browser.py app\tests\test_directory_listing.py app\tests\test_filesystem_adapter.py
-# 28 passed in 0.56s
-
 .\.python312-embed\python.exe -m pytest
-# 207 passed in 56.56s
+# 207 passed in 41.53s
 ```
 
-Reviewer real-image browser smoke exited 0 with 53 segments, a parser-backed root listing, a parser-backed nested listing with 19 regular files visible, parent navigation observed, file-target `path_not_directory`, `source_modified: false`, and `read_only_asserted: true`.
+Privacy-safe reviewer S5-T01 rerun real-image no-selection/navigation smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, metadata `metadata_available`, verification `not_supported`, EWF stream `ok`, logical media size 1,024,209,543,168 bytes, 5 volumes, filesystem `ok`, a parser-backed root listing with 11 entries, file-list JSON/CSV `ok` with 11 entries, a parser-backed nested listing with 19 regular files visible, static HTML created, image hash `not_run`, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
 
-Run the suite again after any new edits or before any future ticket acceptance.
+S5-T02 should be prepared next; do not start S5-T03 or later until earlier Stage 5 tickets are reviewed.
 
 ## Next Likely Moves
 
-1. Feed S4.5-IMP10 to the existing coding-agent task.
-2. Review S4.5-IMP10, then rerun S5-T01.
-3. Do not proceed to S5-T02 or later search/timeline tickets until S5-T01 passes after the extended Stage 4.5 runway.
+1. Prepare S5-T02 as the next ticket.
+2. Review and feed S5-T02 only after its ticket/prompt are populated and marked ready.
+3. Do not proceed to S5-T03 or later search/timeline tickets until earlier Stage 5 tickets are reviewed.

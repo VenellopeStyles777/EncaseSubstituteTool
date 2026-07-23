@@ -6,9 +6,9 @@ After that cleanup gate, Stage 5 must not turn synthetic/provider-backed data in
 
 ## Stage 5 Status
 
-Status: Deferred. Stage 5 search/timeline implementation has not started. S5-T00 documentation cleanup is done; S5-T01 is done with an older failed-gate/blocker result, S5-T01A is done after hardening older active Stage 4.5 bypass/priority wording, and S5-T02 through S5-T16 remain detailed draft tickets with matching prompt files. Stage 4.5 has been extended after hands-on demo feedback; S4.5-IMP08 through S4.5-IMP09B are reviewed/done, and S4.5-IMP10 remains drafted.
+Status: Deferred. Stage 5 search/timeline implementation has not started. S5-T00 documentation cleanup is done; S5-T01 rerun is accepted/done with a passed-gate result after the older historical failed-gate/blocker result, S5-T01A is done after hardening older active Stage 4.5 bypass/priority wording, and S5-T02 through S5-T16 remain detailed draft tickets with matching prompt files. Stage 4.5 has been extended after hands-on demo feedback; S4.5-IMP01 through S4.5-IMP10 are reviewed/done.
 
-Current override: Stage 4.5 first testing remains the near-term prerequisite goal. S4.5-IMP01 through S4.5-IMP09B are reviewed and done, including the corrected nested-navigation demo that shows regular files when available and the live command-line browser. S4.5-IMP10 still needs the final guide/gate refresh. S5-T02 and later search/timeline implementation tickets stay blocked until S4.5-IMP10 is reviewed and S5-T01 is rerun.
+Current override: Stage 4.5 first testing has completed the extended prerequisite runway, and S5-T01 rerun is accepted. S5-T02 is the next ticket to prepare; S5-T03 and later remain draft until earlier Stage 5 tickets are reviewed.
 
 ## Hard Stage 4.5 Gate
 
@@ -18,6 +18,7 @@ S5-T01 must verify the Stage 4.5 runway before any search/timeline implementatio
 | --- | --- |
 | S4.5-IMP01 | First-testing command shell, safe case workspace, intake persistence, manifest, unsupported-section output reviewed |
 | S4.5-IMP02 | Real `pyewf` metadata attempt and verification status reviewed, including dependency-unavailable behavior |
+| S4.5-IMP02A | Metadata warning semantics correction reviewed |
 | S4.5-IMP03 | EWF-backed stream, partition boundary, and root filesystem metadata/listing reviewed |
 | S4.5-IMP04 | E01-backed selected-file content providers for preview/export/hash/signature reviewed |
 | S4.5-IMP05 | File-list JSON/CSV, command summary, artifact inventory, optional static HTML reviewed |
@@ -35,9 +36,9 @@ If S5-T01 finds any of these incomplete, it should record Stage 5 as blocked and
 | Ticket | Status | Purpose |
 | --- | --- | --- |
 | S5-T00 | Done | Documentation organization, duplication cleanup, and unused/confusing structure review |
-| S5-T01 | Done | Readiness and Stage 4.5 completion gate; older failed gate, rerun blocked until S4.5-IMP10 is reviewed |
+| S5-T01 | Done | Readiness and Stage 4.5 completion gate rerun accepted; older failed gate remains historical |
 | S5-T01A | Done | Stage 4.5 gate language hardening for older active bypass/priority wording |
-| S5-T02 | Draft | Input inventory and provenance audit |
+| S5-T02 | Draft | Input inventory and provenance audit; next ticket to prepare |
 | S5-T03 | Draft | Searchable record contracts |
 | S5-T04 | Draft | Search query, filter, and sort contracts |
 | S5-T05 | Draft | File metadata search engine |
@@ -56,7 +57,7 @@ If S5-T01 finds any of these incomplete, it should record Stage 5 as blocked and
 ## Stage 5 Guardrails
 
 - S5-T00 is documentation organization only. It must not implement search/timeline behavior, parser behavior, native dependency setup, UI, reporting, or app source changes.
-- S5-T01 is a gate. It must block S5-T02 and later if the Stage 4.5 substantial-test implementation runway is incomplete, including the remaining S4.5-IMP10 guide/gate refresh.
+- S5-T01 is a gate. It must block S5-T02 and later if the Stage 4.5 substantial-test implementation runway is incomplete or if the reviewed Stage 4.5 artifacts are not provenance-rich enough for the proposed search/timeline inputs.
 - Before deleting or moving any markdown file or folder, preserve unique information in the correct source-of-truth document and update references.
 - Documentation cleanup must make the project easier to follow without erasing important review history.
 - Search results must preserve source path, evidence id when available, volume id, file id/path, source/provider identity, source kind, parser/source status, warning list, and timestamp context.

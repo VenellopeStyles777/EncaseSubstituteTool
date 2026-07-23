@@ -2,7 +2,7 @@
 
 Purpose: track how the project moves from automated tests only to direct manual testing with user-provided E01 files.
 
-Stage 4.5 is not Stage 5 search/timeline. S4.5-IMP01 through S4.5-IMP09B are reviewed and done, including the explicit independent full logical-image hash command path, corrected nested directory navigation into actual filesystem entries, and live command-line browser. S4.5-IMP10 is drafted for the final guide/gate refresh after that.
+Stage 4.5 is not Stage 5 search/timeline. S4.5-IMP01 through S4.5-IMP10 are reviewed and done, including the explicit independent full logical-image hash command path, corrected nested directory navigation into actual filesystem entries, live command-line browser, and final demo guide/gate refresh.
 
 ## What Is Implemented Now
 
@@ -142,9 +142,9 @@ S4.5-IMP05 adds the output bundle that makes first testing inspectable without r
 
 The file list starts from the current root listing only. It preserves source path, volume id, file id/path/name, entry type, size, timestamps, allocation/deleted state, parser status, read-only assertion, and warnings. JSON remains authoritative; CSV is for quick review. The HTML summary is a local static artifact, not a UI/search/timeline feature, and it contains statuses, counts, and artifact inventory rather than evidence content.
 
-The implementation lineup is extended: command shell and case workspace, real metadata/verification status, EWF stream plus filesystem listing, selected-file content providers, output bundle, guardrail/review handoff, command-line testing guide, image-level hash, nested directory navigation, the S4.5-IMP09A file-visible correction, and the S4.5-IMP09B live command-line browser. Stage 5 search/timeline must wait until S4.5-IMP10 is reviewed and S5-T01 is rerun.
+The implementation lineup is extended and reviewed: command shell and case workspace, real metadata/verification status, EWF stream plus filesystem listing, selected-file content providers, output bundle, guardrail/review handoff, command-line testing guide, image-level hash, nested directory navigation, the S4.5-IMP09A file-visible correction, the S4.5-IMP09B live command-line browser, and the S4.5-IMP10 final guide/gate refresh. S5-T01 rerun is accepted; S5-T02 is the next Stage 5 ticket to prepare.
 
-S4.5-IMP05 is reviewed and done. The real-E01 no-selection smoke discovered 53 segments, produced `metadata_available`, verification `not_supported`, EWF stream status `ok`, partition-table volume status `ok` with 5 volumes, filesystem status `ok`, a `real_parser_backed` root listing with 11 entries, file-list JSON/CSV `ok` with 11 entries, and a static HTML summary; selected-file readiness/preview/hash/signature/export were all `not_run` because no explicit safe file was selected. S4.5-IMP06 through S4.5-IMP09B are reviewed and done, including the live command-line browser. The real full-image hash remains a long-running reviewer/user command unless separately completed. S4.5-IMP10 remains required before S5-T01 rerun.
+S4.5-IMP05 is reviewed and done. The real-E01 no-selection smoke discovered 53 segments, produced `metadata_available`, verification `not_supported`, EWF stream status `ok`, partition-table volume status `ok` with 5 volumes, filesystem status `ok`, a `real_parser_backed` root listing with 11 entries, file-list JSON/CSV `ok` with 11 entries, and a static HTML summary; selected-file readiness/preview/hash/signature/export were all `not_run` because no explicit safe file was selected. S4.5-IMP06 through S4.5-IMP10 are reviewed and done, including the live command-line browser and final demo guide/gate refresh. The real full-image hash remains a long-running reviewer/user command unless separately completed. S5-T01 rerun is accepted/done.
 
 ## Minimum Demonstration Goal
 
@@ -241,7 +241,7 @@ Shared transcripts, screenshots, HTML summaries, and file-list excerpts should r
 
 ## Stage 5 Gate Handoff
 
-S4.5-IMP06 prepared the later S5-T01 rerun, and S4.5-IMP07 added exact commands, artifact inspection steps, troubleshooting, and proof boundaries. Hands-on demo feedback now requires S4.5-IMP08 through S4.5-IMP10 before S5-T01 can rerun as passing.
+S4.5-IMP06 prepared the later S5-T01 rerun, and S4.5-IMP07 added exact commands, artifact inspection steps, troubleshooting, and proof boundaries. Hands-on demo feedback added and reviewed S4.5-IMP08 through S4.5-IMP10 before S5-T01 rerun acceptance.
 
 Completion matrix:
 
@@ -259,7 +259,7 @@ Completion matrix:
 | S4.5-IMP09 | Done | Nested directory navigation is reviewed and done after S4.5-IMP09A. |
 | S4.5-IMP09A | Done | File-visible nested navigation correction is reviewed and done. |
 | S4.5-IMP09B | Done | Interactive E01 directory browser is reviewed and done. |
-| S4.5-IMP10 | Draft | Final guide/gate refresh after hash/navigation/browser is required. |
+| S4.5-IMP10 | Done | Final guide/gate refresh after hash/navigation/browser is reviewed and done. |
 
 Allowed future Stage 5 inputs are reviewed records with provenance and status: intake/segment discovery, case/evidence/audit rows, metadata and verification status, EWF stream status, partition/volume records, filesystem/root-listing entries, root-listing-derived file-list JSON/CSV, reviewed explicit nested directory-listing/browser records, and explicit selected-file records. Blocked inputs remain recursive crawl beyond the reviewed one-directory navigation/browser artifact, broad full-volume enumeration, full-text E01 content, arbitrary auto-selected exports/analysis, deleted recovery/carving, UI/report-system outputs, and verification-success claims when verification is unsupported.
 

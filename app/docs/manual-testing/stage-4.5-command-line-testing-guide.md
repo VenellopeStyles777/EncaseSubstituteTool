@@ -4,15 +4,16 @@ Purpose: provide copyable PowerShell commands and review steps for the Stage 4.5
 
 This guide is for repository-local manual testing before Stage 5 search/timeline work. It does not add parser behavior, recursive traversal, broad crawl, UI, report-system, deleted recovery, carving, packaging, or search/timeline indexing.
 
-## Current Follow-Up Requirements
+## Current Stage 4.5 Demo Package
 
-Hands-on demo testing found proof gaps that remain before Stage 5:
+S4.5-IMP10 is the final documentation/status refresh for the reviewed Stage 4.5 demo runway.
 
 - S4.5-IMP08 adds an explicit independent full logical-image hash command path and is reviewed/done.
 - S4.5-IMP09 adds explicit nested directory navigation, and S4.5-IMP09A is reviewed/done after correcting the default demo to prefer regular-file-visible nested listings when available.
 - S4.5-IMP09B is reviewed/done with a live command-line browser over the same reviewed parser-backed directory listing path.
+- S4.5-IMP10 packages the final copyable guide and Stage 5 gate packet and is reviewed/done.
 
-S4.5-IMP10 must refresh this guide with the final hash/navigation/browser gate packet. Until then, this guide records the reviewed no-selection workflow plus the S4.5-IMP08 hash command shape, the S4.5-IMP09/S4.5-IMP09A nested-navigation command shape, and the S4.5-IMP09B live-browser command shape.
+S5-T01 rerun is accepted with a passed-gate result. S5-T02 is the next Stage 5 ticket to prepare; S5-T03 and later stay draft until earlier Stage 5 tickets are reviewed.
 
 ## Prerequisites
 
@@ -37,6 +38,126 @@ S4.5-IMP10 must refresh this guide with the final hash/navigation/browser gate p
 - Do not write outputs beside E01 segments.
 - Local JSON artifacts may preserve examiner-owned paths. Shared console text, `command-summary.txt`, screenshots, transcripts, and HTML excerpts should redact private paths as `<EVIDENCE_ROOT>`.
 - Selected-file preview/export/hash/signature is opt-in. Do not run it against real evidence unless the user approves a specific safe root entry.
+
+## Hands-On Demo Flow
+
+These commands are intended to be copied from the repository root. They use separate output folders so each proof stays easy to inspect.
+
+Set demo paths:
+
+```powershell
+$demoRoot = ".test-artifacts\first-testing"
+$noSelectionCase = "$demoRoot\s4-5-demo-no-selection"
+$navigationCase = "$demoRoot\s4-5-demo-navigation"
+$hashCase = "$demoRoot\s4-5-demo-image-hash"
+$selectedCase = "$demoRoot\s4-5-demo-selected-file"
+```
+
+Optional fresh-output cleanup under `.test-artifacts\first-testing\`:
+
+```powershell
+foreach ($path in @($noSelectionCase, $navigationCase, $hashCase, $selectedCase)) {
+    if (Test-Path -LiteralPath $path) {
+        Remove-Item -LiteralPath $path -Recurse -Force
+    }
+}
+```
+
+Run the no-selection E01 workflow:
+
+```powershell
+.\.python312-embed\python.exe -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case $noSelectionCase --output "$noSelectionCase\outputs" --redact-paths --json-only
+```
+
+Inspect the no-selection artifacts without pasting private values:
+
+```powershell
+$manifest = Get-Content "$noSelectionCase\run-manifest.json" | ConvertFrom-Json
+$root = Get-Content "$noSelectionCase\outputs\root-listing.json" | ConvertFrom-Json
+$fileList = Get-Content "$noSelectionCase\outputs\file-list.json" | ConvertFrom-Json
+$manifest | Select-Object status, source_modified, read_only_asserted
+$root | Select-Object status, parser_backing, entry_count
+$fileList | Select-Object @{Name="status";Expression={$_.status.code}}, entry_count, parser_backing
+Import-Csv "$noSelectionCase\outputs\file-list.csv" | Measure-Object
+```
+
+Open the static local HTML summary on the local machine:
+
+```powershell
+Invoke-Item "$noSelectionCase\outputs\reports\summary.html"
+```
+
+Run the nested directory navigation demo:
+
+```powershell
+.\.python312-embed\python.exe -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case $navigationCase --output "$navigationCase\outputs" --demo-list-first-directory --redact-paths --json-only
+```
+
+Inspect the nested navigation artifacts:
+
+```powershell
+$navigation = Get-Content "$navigationCase\outputs\navigation-readiness.json" | ConvertFrom-Json
+$listing = Get-Content "$navigationCase\outputs\directory-listing.json" | ConvertFrom-Json
+$navigation | Select-Object status, selected_directory_entry_count, selected_directory_file_count, selected_depth, real_parser_backed
+$listing | Select-Object status, selector_mode, entry_count, file_count, directory_count, other_entry_count, parser_backing, read_only_asserted, source_modified
+Import-Csv "$navigationCase\outputs\directory-listing.csv" | Select-Object entry_type, size, allocated, deleted | Format-Table -AutoSize
+```
+
+Optional full logical-image hash command. The local logical image is about 1 TB, so this can be long-running; do not claim the hash is complete unless this command actually finishes and `image-hash.json` reports `completed`.
+
+```powershell
+.\.python312-embed\python.exe -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case $hashCase --output "$hashCase\outputs" --hash-image --redact-paths --json-only
+```
+
+Inspect `image-hash.json` after a hash run:
+
+```powershell
+$imageHash = Get-Content "$hashCase\outputs\image-hash.json" | ConvertFrom-Json
+$imageHash | Select-Object status, algorithm, bytes_hashed, logical_media_size, byte_count_matches_media_size, read_only_asserted, source_modified
+```
+
+The independent image hash is computed over the EWF logical image stream. Stored EWF hash metadata, segment-container file hashes, selected-file hashes, and stub bytes are not this proof.
+
+Run the live command-line browser:
+
+```powershell
+.\.python312-embed\python.exe -m app.backend.api.directory_browser --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --redact-paths
+```
+
+Inside the browser:
+
+```text
+dir
+cd "<directory name from the current listing>"
+dir
+cd ..
+pwd
+help
+exit
+```
+
+The browser lists actual parser-backed filesystem entries one current directory at a time. It is not a recursive crawl, search index, timeline index, content reader, export command, hash command, report generator, or transcript writer.
+
+Selected-file preview/export/hash/signature template only. Replace one placeholder after the user approves a safe, regular, allocated root entry:
+
+```powershell
+.\.python312-embed\python.exe -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case $selectedCase --output "$selectedCase\outputs" --selected-file-id "<approved-root-entry-file-id>" --selected-file-export-dir "$selectedCase\exports" --redact-paths --json-only
+```
+
+Inspect selected-file outputs only after an explicit approved selection:
+
+```powershell
+$readiness = Get-Content "$selectedCase\outputs\selected-file-readiness.json" | ConvertFrom-Json
+$preview = Get-Content "$selectedCase\outputs\selected-file-preview.json" | ConvertFrom-Json
+$analysis = Get-Content "$selectedCase\outputs\selected-file-analysis.json" | ConvertFrom-Json
+$export = Get-Content "$selectedCase\outputs\selected-file-export.json" | ConvertFrom-Json
+$readiness.status.code
+$preview.status
+$analysis.status
+$export.status
+```
+
+Do not auto-select a file from real evidence for shared testing. Do not paste file content or real in-image paths into a shared transcript.
 
 ## Basic Commands
 
@@ -423,9 +544,9 @@ Future ownership:
 - S4.5-IMP09 owns explicit nested directory navigation and is reviewed/done.
 - S4.5-IMP09A owns the file-visible demo correction and nested file-path `path_not_directory` status, and is reviewed/done.
 - S4.5-IMP09B owns the interactive command-line navigator for a shell-like `dir`, `cd <folder>`, and back/up workflow, and is reviewed/done.
-- S4.5-IMP10 owns the final guide refresh after hash/navigation/browser.
+- S4.5-IMP10 owns the final guide refresh after hash/navigation/browser and is reviewed/done.
 - A later reviewed ticket must own broad recursive crawl or larger selected-file streaming if those become priorities.
-- S5-T01 must wait until S4.5-IMP10 is reviewed before S5-T02 or later search/timeline work starts.
+- S5-T01 rerun is accepted with a passed-gate result. S5-T02 is the next Stage 5 ticket to prepare; S5-T03 or later work must wait until earlier Stage 5 tickets are reviewed.
 
 ## Reviewer Transcript Template
 
@@ -445,12 +566,17 @@ Filesystem status:
 Root-listing backing/count:
 File-list JSON/CSV status/count:
 Directory navigation status/count/type counts:
+Image-hash status/bytes/logical-size:
+Browser root/nested status/counts:
+Browser parent navigation:
+Browser file-target status:
 Static HTML summary created:
 Selected-file operations:
 Source modified:
 Read-only asserted:
 Artifacts checked:
 Skipped or unavailable pieces:
+Full image hash skipped/completed:
 Privacy notes:
 Scope confirmation:
 ```
