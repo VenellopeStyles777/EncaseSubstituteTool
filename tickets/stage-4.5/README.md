@@ -6,7 +6,7 @@ Stage 4.5 is not search/timeline. It should not implement broad new forensic fea
 
 ## Stage 4.5 Status
 
-Status: S4.5-IMP01 through S4.5-IMP07 are reviewed and done. Hands-on demo feedback reopened Stage 4.5 for two missing proof points: an independent full logical-image hash and explicit nested directory navigation into actual filesystem entries. S4.5-IMP08 is ready for review; S4.5-IMP09 and S4.5-IMP10 are drafted and required before Stage 5 resumes.
+Status: S4.5-IMP01 through S4.5-IMP09A are reviewed and done. S4.5-IMP09 now proves bounded parser-backed nested directory navigation with regular files visible from the local real E01 smoke. S4.5-IMP10 is drafted and required before Stage 5 resumes.
 
 ## Current Implemented Functionality Summary
 
@@ -49,7 +49,7 @@ Current real-E01 truth:
 - The current `pyewf` adapter can attempt best-effort metadata and explicit verification when `pyewf` is importable; if `pyewf` or a safe verification API is unavailable, it reports structured dependency/unsupported statuses.
 - S4.5-IMP03 adds a project-local portable-runtime path for EWF-backed stream reads, partition-table volume discovery, and a real-parser-backed root filesystem listing from the local E01 set.
 - The current backend can extract bytes only for an explicitly selected parser-backed root file through the S4.5-IMP04 provider path; it does not crawl, auto-select, or export arbitrary evidence files.
-- S4.5-IMP05 can turn the current root listing into `file-list.json`, `file-list.csv`, and a static local `outputs/reports/summary.html`; it does not add image-level hashing, nested directory navigation, recursive traversal, indexing, search/timeline, UI, or a report system.
+- S4.5-IMP05 can turn the current root listing into `file-list.json`, `file-list.csv`, and a static local `outputs/reports/summary.html`; S4.5-IMP09 adds explicit one-directory nested navigation artifacts, and S4.5-IMP09A makes the bounded demo prefer regular-file-visible nested listings when available. These tickets do not add recursive traversal, broad crawl, indexing, search/timeline, UI, or a report system.
 - Stage 4 hash/signature behavior operates on explicit provider bytes, not E01-extracted filesystem bytes.
 
 ## Current Code Utilization Plan
@@ -65,8 +65,8 @@ This is the working map from the desired bare-minimum command-line workflow to t
 | EWF metadata | `EwfReaderAdapter`, `StubEwfReaderAdapter`, `PyewfEwfReaderAdapter.read_metadata()` | S4.5-IMP02 attempts best-effort normalized pyewf metadata when the dependency is importable and keeps missing fields as warnings | EWF-backed streams and parser consumers remain later slices |
 | Verification | `EwfReaderAdapter.verify()`, `VerificationStatus` | S4.5-IMP02 keeps verification separate from metadata and runs only explicit supported verification APIs | Independent logical-image hash artifact is S4.5-IMP08 |
 | Volume discovery | `discover_volumes()`, `VolumeInfo` | S4.5-IMP03 adds a `partition_table` strategy over an EWF-backed stream while preserving whole-image behavior | Deeper partition policy and edge-case handling remain later refinement |
-| Navigate file structure | `FilesystemAdapter`, `Pytsk3FilesystemAdapter`, `list_directory()` | S4.5-IMP03 maps real parser-backed root entries into existing listing/result shapes | Explicit nested directory navigation is S4.5-IMP09 |
-| File metadata | `FilesystemEntry`, directory-listing result entries | S4.5-IMP03 can populate root entries from a real filesystem parser when dependencies are available; S4.5-IMP05 exports current root entries to JSON/CSV | Recursive traversal and full-volume enumeration remain later/out of scope |
+| Navigate file structure | `FilesystemAdapter`, `Pytsk3FilesystemAdapter`, `list_directory()` | S4.5-IMP03 maps real parser-backed root entries into existing listing/result shapes; S4.5-IMP09 lists one explicit or bounded-demo nested directory; S4.5-IMP09A makes demo mode prefer file-visible nested listings when available | Recursive traversal and full-volume enumeration remain later/out of scope |
+| File metadata | `FilesystemEntry`, directory-listing result entries | S4.5-IMP03 can populate root entries from a real filesystem parser when dependencies are available; S4.5-IMP05 exports current root entries to JSON/CSV; S4.5-IMP09/S4.5-IMP09A export the selected nested directory listing to JSON/CSV | Broad crawl and all-volume enumeration remain later/out of scope |
 | Preview raw/text/hex | `preview_file()`, `PreviewContentProvider` | S4.5-IMP04 adds a selected-file E01 preview provider over explicit parser-backed bytes | Full file-list previews and auto-selection remain out of scope |
 | File hash/signature | `hash_file_content()`, `detect_file_signature()`, `evaluate_extension_mismatch()` | S4.5-IMP04 adds a selected-file E01 analysis provider with bounded signature and in-memory hash policy | Broad analysis over all evidence files remains out of scope |
 | Export selected file | `export_file()`, `ExportContentProvider`, `ExportAuditContext` | S4.5-IMP04 adds a selected-file E01 export provider for explicit, size-limited selections and explicit export dirs | Broad export/crawl and large-file streaming remain out of scope |
@@ -99,8 +99,9 @@ Recommended Stage 4.5 ticket sequence:
 | S4.5-IMP05 | Done | File-list JSON/CSV, command summary, artifact inventory, and static local HTML summary |
 | S4.5-IMP06 | Done | Final guardrail review, documentation reconciliation, and Stage 5 handoff |
 | S4.5-IMP07 | Done | Command-line testing guide and evidence workflow instructions |
-| S4.5-IMP08 | Review | Independent full logical-image hash artifact |
-| S4.5-IMP09 | Draft | Nested directory navigation into actual filesystem entries |
+| S4.5-IMP08 | Done | Independent full logical-image hash artifact |
+| S4.5-IMP09 | Done | Nested directory navigation into actual filesystem entries |
+| S4.5-IMP09A | Done | File-visible nested navigation correction |
 | S4.5-IMP10 | Draft | Demo guide and Stage 5 gate refresh after hash/navigation |
 
 ## Implementation Runway
@@ -117,21 +118,20 @@ These planning tickets line up into implementation slices that must be completed
 | S4.5-IMP05 | S4.5-T06 | File-list JSON/CSV, command summary, artifact inventory, and static local HTML; reviewed and done |
 | S4.5-IMP06 | S4.5-T07 and S4.5-T08 | Manual-test guardrails, documentation reconciliation, and review handoff; reviewed and done |
 | S4.5-IMP07 | S4.5-T07 and S4.5-T08 | User-facing command-line testing guide, PowerShell commands, artifact inspection steps, troubleshooting, and proof boundaries; reviewed and done |
-| S4.5-IMP08 | User hands-on demo feedback | Independent SHA-256 full logical-image hash artifact over the EWF stream; ready for review |
-| S4.5-IMP09 | User hands-on demo feedback | Explicit nested directory navigation into actual filesystem entries; drafted |
+| S4.5-IMP08 | User hands-on demo feedback | Independent SHA-256 full logical-image hash artifact over the EWF stream; reviewed/done for capability |
+| S4.5-IMP09 | User hands-on demo feedback | Explicit nested directory navigation into actual filesystem entries; reviewed and done after S4.5-IMP09A |
+| S4.5-IMP09A | S4.5-IMP09 review | Ensure demo mode reaches regular files and known nested file paths return `path_not_directory`; reviewed and done |
 | S4.5-IMP10 | User hands-on demo feedback | Final guide and Stage 5 gate refresh after hash/navigation; drafted |
 
-S4.5-IMP08 is ready for review. After review, S4.5-IMP09 is the next practical implementation slice. Stage 5 search/timeline remains blocked until S4.5-IMP08 through S4.5-IMP10 are reviewed and S5-T01 is rerun and accepted.
+S4.5-IMP09A is done as the Stage 4.5 slice after S4.5-IMP09 review findings. It still writes bounded command artifacts rather than a live `cd`/`dir` style navigator; a separate future ticket should own that interactive browsing experience if desired. Stage 5 search/timeline remains blocked until S4.5-IMP10 is reviewed and S5-T01 is rerun and accepted.
 
 ## Stage 5 Gate Handoff After S4.5-IMP06
 
-S4.5-IMP06 prepared the later S5-T01 rerun, and S4.5-IMP07 completed the first command-line testing guide. User hands-on testing then added S4.5-IMP08 through S4.5-IMP10 as new hard prerequisites. S5-T02 and later search/timeline work must wait for those tickets and for S5-T01 to be rerun and accepted.
+S4.5-IMP06 prepared the later S5-T01 rerun, S4.5-IMP07 completed the first command-line testing guide, S4.5-IMP08 added the explicit image-level hash path, and S4.5-IMP09/S4.5-IMP09A are done for explicit nested directory navigation with regular files visible in the corrected demo. S4.5-IMP10 remains the hard remaining Stage 4.5 prerequisite. S5-T02 and later search/timeline work must wait for S4.5-IMP10 review and for S5-T01 to be rerun and accepted.
 
-Allowed future Stage 5 input records should be limited to reviewed, provenance-rich artifacts: intake and segment discovery, case/evidence/audit rows, metadata and verification status, EWF stream status, partition/volume records, filesystem/root-listing entries, root-listing-derived file-list JSON/CSV, future reviewed image-level hash records, future reviewed nested directory-listing records, and selected-file readiness/preview/analysis/export records only for explicit parser-backed selections. The static HTML summary is a local human-readable review artifact, not an indexing source.
+Allowed future Stage 5 input records should be limited to reviewed, provenance-rich artifacts: intake and segment discovery, case/evidence/audit rows, metadata and verification status, EWF stream status, partition/volume records, filesystem/root-listing entries, root-listing-derived file-list JSON/CSV, reviewed image-level hash records, reviewed nested directory-listing records, and selected-file readiness/preview/analysis/export records only for explicit parser-backed selections. The static HTML summary is a local human-readable review artifact, not an indexing source.
 
-Blocked inputs remain recursive/nested traversal, broad full-volume crawl, arbitrary auto-selected preview/export/hash/signature, full-text E01 content, deleted recovery/carving, UI/report-system records, and verification-success claims when verification is unsupported or only stored hash metadata exists.
-
-After S4.5-IMP09, replace "recursive/nested traversal" here with the narrower remaining limit: broad recursive crawl remains blocked, while reviewed explicit nested directory-listing records may be allowed.
+Blocked inputs remain recursive traversal beyond the reviewed one-directory navigation artifact, broad full-volume crawl, arbitrary auto-selected preview/export/hash/signature, full-text E01 content, deleted recovery/carving, UI/report-system records, and verification-success claims when verification is unsupported or only stored hash metadata exists.
 
 Any later search/timeline record must preserve source path, evidence id when available, volume id, file id/path, provider/source identity, source kind, parser/source status, dependency/not-supported/not-run states, warning list, timestamp context, read-only assertion, and source-modified assertion.
 
@@ -146,6 +146,7 @@ Matching implementation prompts now live under `prompts/vscode-agent/`:
 - `2026-07-16-s4.5-imp07-command-line-testing-guide.md`
 - `2026-07-22-s4.5-imp08-image-level-verification-hash.md`
 - `2026-07-22-s4.5-imp09-nested-directory-navigation.md`
+- `2026-07-23-s4.5-imp09a-file-visible-navigation-correction.md`
 - `2026-07-22-s4.5-imp10-demo-guide-and-stage-5-gate-refresh.md`
 
 ## Stage 4.5 Guardrails

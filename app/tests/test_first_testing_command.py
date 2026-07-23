@@ -9,6 +9,7 @@ import shutil
 
 from app.backend.api import first_testing as first_testing_api
 from app.backend.api.first_testing import (
+    DIRECTORY_LISTING_CSV_HEADERS,
     FILE_LIST_CSV_HEADERS,
     FIRST_TESTING_RUN_SCHEMA_VERSION,
     main,
@@ -23,6 +24,7 @@ from app.backend.forensic_core import (
     SelectedFileContentResult,
     SelectedFileContentStatus,
     SelectedFileContentWarning,
+    StubEwfReaderAdapter,
 )
 
 
@@ -228,6 +230,9 @@ def _required_artifacts(case_dir: Path, output_dir: Path) -> list[Path]:
         output_dir / "selected-file-export.json",
         output_dir / "file-list.json",
         output_dir / "file-list.csv",
+        output_dir / "directory-listing.json",
+        output_dir / "directory-listing.csv",
+        output_dir / "navigation-readiness.json",
         output_dir / "reports" / "summary.html",
         output_dir / "audit.json",
         output_dir / "unsupported-sections.json",
@@ -428,6 +433,296 @@ def _fake_file_list_demo_artifacts(*, selected_path, intake_result, adapter_name
     }
 
 
+def _fake_navigation_demo_artifacts(*, selected_path, intake_result, adapter_name):
+    entries = [
+        {
+            "file_id": "volume-0:10",
+            "path": "/Empty",
+            "name": "Empty",
+            "entry_type": "directory",
+            "size": 0,
+            "allocated": True,
+            "deleted": False,
+            "source_path": str(selected_path),
+            "volume_id": "volume-0",
+            "volume_offset": 512,
+            "volume_length": 4096,
+            "filesystem_type": "ntfs",
+            "adapter_name": "pytsk3-filesystem-adapter",
+            "read_only": True,
+            "status": {"code": "ok", "ok": True, "message": "entry ok"},
+            "warnings": [],
+            "timestamps": {},
+        },
+        {
+            "file_id": "volume-0:11",
+            "path": "/Good",
+            "name": "Good",
+            "entry_type": "directory",
+            "size": 0,
+            "allocated": True,
+            "deleted": False,
+            "source_path": str(selected_path),
+            "volume_id": "volume-0",
+            "volume_offset": 512,
+            "volume_length": 4096,
+            "filesystem_type": "ntfs",
+            "adapter_name": "pytsk3-filesystem-adapter",
+            "read_only": True,
+            "status": {"code": "ok", "ok": True, "message": "entry ok"},
+            "warnings": [],
+            "timestamps": {},
+        },
+        {
+            "file_id": "volume-0:12",
+            "path": "/root-note.txt",
+            "name": "root-note.txt",
+            "entry_type": "file",
+            "size": 12,
+            "allocated": True,
+            "deleted": False,
+            "source_path": str(selected_path),
+            "volume_id": "volume-0",
+            "volume_offset": 512,
+            "volume_length": 4096,
+            "filesystem_type": "ntfs",
+            "adapter_name": "pytsk3-filesystem-adapter",
+            "read_only": True,
+            "status": {"code": "ok", "ok": True, "message": "entry ok"},
+            "warnings": [],
+            "timestamps": {},
+        },
+    ]
+    directory_listing = {
+        "schema_version": "stage2.directory_listing.v1",
+        "status": {"code": "ok", "ok": True, "message": "Directory listing completed."},
+        "directory_path": "/",
+        "source_path": str(selected_path),
+        "volume_id": "volume-0",
+        "volume_offset": 512,
+        "volume_length": 4096,
+        "filesystem_type": "ntfs",
+        "adapter": {
+            "name": "pytsk3-filesystem-adapter",
+            "available": True,
+            "dependency": {"name": "pytsk3", "available": True},
+        },
+        "read_only": True,
+        "entry_count": 3,
+        "entries": entries,
+        "warnings": [],
+    }
+    return {
+        "ewf_stream": {
+            "schema_version": "stage4_5.first_testing_ewf_stream.v1",
+            "status": "ok",
+            "logical_media_size": 8192,
+        },
+        "volumes": {
+            "schema_version": "stage4_5.first_testing_volumes.v1",
+            "status": "ok",
+            "strategy": "partition_table",
+            "volume_count": 1,
+            "volume_discovery": {
+                "schema_version": "stage2.volume_discovery.v1",
+                "status": {"code": "ok", "ok": True, "message": "ok"},
+                "volumes": [
+                    {
+                        "volume_id": "volume-0",
+                        "volume_index": 0,
+                        "source_path": str(selected_path),
+                        "stream_type": "ewf",
+                        "source_size": 8192,
+                        "offset": 512,
+                        "length": 4096,
+                        "volume_type": "ntfs",
+                        "description": "fake volume",
+                        "read_only": True,
+                        "status": {"code": "ok", "ok": True, "message": "ok"},
+                        "warnings": [],
+                    }
+                ],
+            },
+        },
+        "filesystems": {
+            "schema_version": "stage4_5.first_testing_filesystems.v1",
+            "status": "ok",
+            "filesystem_count": 1,
+            "filesystems": [],
+        },
+        "root_listing": {
+            "schema_version": "stage4_5.first_testing_root_listing.v1",
+            "status": "ok",
+            "parser_backing": "real_parser_backed",
+            "entry_count": 3,
+            "directory_listing": directory_listing,
+            "entries": entries,
+        },
+        "demo_readiness": {
+            "schema_version": "stage4_5.first_testing_demo_readiness.v1",
+            "status": "real_parser_backed_root_listing_available",
+            "root_entry_count": 3,
+            "root_listing_parser_backing": "real_parser_backed",
+        },
+    }
+
+
+def _fake_nested_directory_result(volume, directory_path, adapter):
+    if directory_path == "/Empty":
+        entries = []
+    else:
+        entries = [
+            {
+                "case_id": None,
+                "evidence_id": None,
+                "source_path": volume.source_path,
+                "volume_id": volume.volume_id,
+                "volume_offset": volume.offset,
+                "volume_length": volume.length,
+                "filesystem_type": "ntfs",
+                "adapter_name": "pytsk3-filesystem-adapter",
+                "file_id": "volume-0:20",
+                "path": f"{directory_path}/nested.txt",
+                "name": "nested.txt",
+                "entry_type": "file",
+                "size": 25,
+                "allocated": True,
+                "deleted": False,
+                "read_only": True,
+                "timestamps": {
+                    "created": None,
+                    "modified": None,
+                    "accessed": None,
+                    "metadata_changed": None,
+                },
+                "status": {"code": "ok", "ok": True, "message": "entry ok"},
+                "warnings": [],
+            }
+        ]
+    return {
+        "schema_version": "stage2.directory_listing.v1",
+        "status": {"code": "ok", "ok": True, "message": "nested listing ok"},
+        "directory_path": directory_path,
+        "source_path": volume.source_path,
+        "volume_id": volume.volume_id,
+        "volume_offset": volume.offset,
+        "volume_length": volume.length,
+        "filesystem_type": "ntfs",
+        "adapter": {
+            "name": "pytsk3-filesystem-adapter",
+            "available": True,
+            "dependency": {"name": "pytsk3", "available": True},
+        },
+        "read_only": True,
+        "entry_count": len(entries),
+        "entries": entries,
+        "warnings": [],
+    }
+
+
+def _fake_child_visible_nested_directory_result(volume, directory_path, adapter):
+    if directory_path == "/Empty":
+        entries = []
+    elif directory_path == "/Good":
+        entries = [
+            {
+                "case_id": None,
+                "evidence_id": None,
+                "source_path": volume.source_path,
+                "volume_id": volume.volume_id,
+                "volume_offset": volume.offset,
+                "volume_length": volume.length,
+                "filesystem_type": "ntfs",
+                "adapter_name": "pytsk3-filesystem-adapter",
+                "file_id": "volume-0:21",
+                "path": "/Good/Child",
+                "name": "Child",
+                "entry_type": "directory",
+                "size": 0,
+                "allocated": True,
+                "deleted": False,
+                "read_only": True,
+                "timestamps": {
+                    "created": None,
+                    "modified": None,
+                    "accessed": None,
+                    "metadata_changed": None,
+                },
+                "status": {"code": "ok", "ok": True, "message": "entry ok"},
+                "warnings": [],
+            }
+        ]
+    else:
+        entries = [
+            {
+                "case_id": None,
+                "evidence_id": None,
+                "source_path": volume.source_path,
+                "volume_id": volume.volume_id,
+                "volume_offset": volume.offset,
+                "volume_length": volume.length,
+                "filesystem_type": "ntfs",
+                "adapter_name": "pytsk3-filesystem-adapter",
+                "file_id": "volume-0:22",
+                "path": f"{directory_path}/visible.txt",
+                "name": "visible.txt",
+                "entry_type": "file",
+                "size": 25,
+                "allocated": True,
+                "deleted": False,
+                "read_only": True,
+                "timestamps": {
+                    "created": None,
+                    "modified": None,
+                    "accessed": None,
+                    "metadata_changed": None,
+                },
+                "status": {"code": "ok", "ok": True, "message": "entry ok"},
+                "warnings": [],
+            }
+        ]
+    return {
+        "schema_version": "stage2.directory_listing.v1",
+        "status": {"code": "ok", "ok": True, "message": "nested listing ok"},
+        "directory_path": directory_path,
+        "source_path": volume.source_path,
+        "volume_id": volume.volume_id,
+        "volume_offset": volume.offset,
+        "volume_length": volume.length,
+        "filesystem_type": "ntfs",
+        "adapter": {
+            "name": "pytsk3-filesystem-adapter",
+            "available": True,
+            "dependency": {"name": "pytsk3", "available": True},
+        },
+        "read_only": True,
+        "entry_count": len(entries),
+        "entries": entries,
+        "warnings": [],
+    }
+
+
+def _fake_nested_file_path_result(volume, directory_path, adapter):
+    result = _fake_nested_directory_result(volume, directory_path, adapter)
+    if directory_path == "/Good/nested.txt":
+        result["status"] = {
+            "code": "path_not_directory",
+            "ok": False,
+            "message": "requested path is a file",
+        }
+        result["entries"] = []
+        result["entry_count"] = 0
+        result["warnings"] = [
+            {
+                "source": "directory_listing",
+                "code": "path_not_directory",
+                "message": "Requested path is not a directory.",
+                "path": directory_path,
+            }
+        ]
+    return result
+
+
 def test_direct_e01_with_stub_creates_case_artifacts_and_persistence():
     with _dummy_first_testing_directory("direct-stub") as directory:
         evidence_dir = directory / "evidence & root"
@@ -459,6 +754,9 @@ def test_direct_e01_with_stub_creates_case_artifacts_and_persistence():
             (output_dir / "selected-file-preview.json").read_text(encoding="utf-8")
         )
         file_list = json.loads((output_dir / "file-list.json").read_text(encoding="utf-8"))
+        directory_listing = json.loads(
+            (output_dir / "directory-listing.json").read_text(encoding="utf-8")
+        )
         image_hash = json.loads((output_dir / "image-hash.json").read_text(encoding="utf-8"))
         csv_header = (output_dir / "file-list.csv").read_text(encoding="utf-8").splitlines()[0]
         html_summary = (output_dir / "reports" / "summary.html").read_text(encoding="utf-8")
@@ -482,8 +780,12 @@ def test_direct_e01_with_stub_creates_case_artifacts_and_persistence():
     assert selected_readiness["status"]["code"] == "not_run"
     assert selected_preview["status"] == "not_run"
     assert result["file_list"]["status"] == "not_run"
+    assert result["directory_navigation"]["requested"] is False
+    assert result["directory_navigation"]["status"] == "not_run"
     assert file_list["status"]["code"] == "not_run"
     assert file_list["entry_count"] == 0
+    assert directory_listing["status"] == "not_run"
+    assert directory_listing["entry_count"] == 0
     assert csv_header.split(",") == list(FILE_LIST_CSV_HEADERS)
     assert "Stage 4.5 First-Testing Summary" in html_summary
     assert "Image hash status" in html_summary
@@ -883,6 +1185,325 @@ def test_first_testing_writes_file_list_csv_manifest_and_static_html(monkeypatch
     assert not any(section["owner"] == "S4.5-IMP05" for section in unsupported["sections"])
     assert not (output_dir / "search-index.json").exists()
     assert not (output_dir / "timeline.json").exists()
+
+
+def test_first_testing_lists_explicit_nested_directory_path(monkeypatch):
+    monkeypatch.setattr(
+        first_testing_api,
+        "_filesystem_demo_artifacts",
+        _fake_navigation_demo_artifacts,
+    )
+    monkeypatch.setattr(first_testing_api, "EwfImageByteStream", FakeHashEwfImageByteStream)
+    monkeypatch.setattr(first_testing_api, "list_directory", _fake_nested_directory_result)
+
+    with _dummy_first_testing_directory("nested-directory-path") as directory:
+        evidence_dir = directory / "evidence"
+        _touch_files(evidence_dir, "sample.E01", "sample.E02")
+        selected_path = evidence_dir / "sample.E01"
+        case_dir = directory / "case"
+        output_dir = directory / "output"
+
+        result = run_first_testing(
+            selected_path,
+            case_path=case_dir,
+            output_path=output_dir,
+            adapter=StubEwfReaderAdapter(),
+            list_directory_path="Good/",
+            redact_paths=True,
+        )
+        directory_listing = json.loads(
+            (output_dir / "directory-listing.json").read_text(encoding="utf-8")
+        )
+        navigation_readiness = json.loads(
+            (output_dir / "navigation-readiness.json").read_text(encoding="utf-8")
+        )
+        manifest = json.loads((case_dir / "run-manifest.json").read_text(encoding="utf-8"))
+        summary = (case_dir / "command-summary.txt").read_text(encoding="utf-8")
+        html_summary = (output_dir / "reports" / "summary.html").read_text(encoding="utf-8")
+        with (output_dir / "directory-listing.csv").open(
+            "r",
+            encoding="utf-8",
+            newline="",
+        ) as handle:
+            csv_rows = list(csv.reader(handle))
+        unsupported = json.loads(
+            (output_dir / "unsupported-sections.json").read_text(encoding="utf-8")
+        )
+
+    assert result["directory_navigation"]["requested"] is True
+    assert result["directory_navigation"]["selector_mode"] == "path"
+    assert result["directory_navigation"]["status"] == "ok"
+    assert result["directory_navigation"]["entry_count"] == 1
+    assert result["directory_navigation"]["file_count"] == 1
+    assert result["directory_navigation"]["directory_count"] == 0
+    assert result["directory_navigation"]["parser_backing"] == "real_parser_backed"
+    assert directory_listing["schema_version"] == "stage4_5.directory_listing.v1"
+    assert directory_listing["requested_path"] == "/Good"
+    assert directory_listing["resolved_path"] == "/Good"
+    assert directory_listing["status"] == "ok"
+    assert directory_listing["source_kind"] == "ewf_logical_image"
+    assert directory_listing["parser_backing"] == "real_parser_backed"
+    assert directory_listing["entries"][0]["path"] == "/Good/nested.txt"
+    assert directory_listing["entries"][0]["case_id"] == result["case"]["case_id"]
+    assert directory_listing["entries"][0]["evidence_id"] == result["evidence"]["evidence_id"]
+    assert directory_listing["provenance"]["recursive"] is False
+    assert directory_listing["provenance"]["content_extraction"] is False
+    assert directory_listing["read_only_asserted"] is True
+    assert directory_listing["source_modified"] is False
+    assert directory_listing["selected_depth"] == 1
+    assert directory_listing["file_visible"] is True
+    assert directory_listing["candidate_directory_count"] == 2
+    assert directory_listing["attempted_directory_count"] == 1
+    assert directory_listing["attempted_child_directory_count"] == 0
+    assert navigation_readiness["status"] == "nested_directory_files_visible"
+    assert navigation_readiness["candidate_directory_count"] == 2
+    assert navigation_readiness["attempted_directory_count"] == 1
+    assert navigation_readiness["attempted_child_directory_count"] == 0
+    assert navigation_readiness["selected_depth"] == 1
+    assert navigation_readiness["file_visible"] is True
+    assert csv_rows[0] == list(DIRECTORY_LISTING_CSV_HEADERS)
+    assert csv_rows[1][csv_rows[0].index("path")] == "/Good/nested.txt"
+    assert manifest["directory_navigation"]["status"] == "ok"
+    assert manifest["directory_navigation"]["readiness_status"] == "nested_directory_files_visible"
+    assert manifest["directory_navigation"]["selected_depth"] == 1
+    assert manifest["directory_navigation"]["file_visible"] is True
+    assert manifest["directory_navigation"]["attempted_child_directory_count"] == 0
+    assert manifest["directory_navigation"]["json_path"].endswith("directory-listing.json")
+    assert manifest["directory_navigation"]["csv_path"].endswith("directory-listing.csv")
+    assert manifest["directory_navigation"]["readiness_path"].endswith("navigation-readiness.json")
+    assert "Directory navigation status: ok" in summary
+    assert "Directory navigation entries: 1" in summary
+    assert str(evidence_dir.resolve()) not in summary
+    assert "Directory navigation status" in html_summary
+    assert str(evidence_dir.resolve()) not in html_summary
+    assert not any(section["owner"] == "S4.5-IMP09" for section in unsupported["sections"])
+    assert not (output_dir / "search-index.json").exists()
+    assert not (output_dir / "timeline.json").exists()
+    assert not (output_dir / "exports").exists()
+
+
+def test_first_testing_demo_list_first_directory_tries_second_candidate(monkeypatch):
+    monkeypatch.setattr(
+        first_testing_api,
+        "_filesystem_demo_artifacts",
+        _fake_navigation_demo_artifacts,
+    )
+    monkeypatch.setattr(first_testing_api, "EwfImageByteStream", FakeHashEwfImageByteStream)
+    monkeypatch.setattr(first_testing_api, "list_directory", _fake_nested_directory_result)
+
+    with _dummy_first_testing_directory("nested-directory-demo") as directory:
+        evidence_dir = directory / "evidence"
+        _touch_files(evidence_dir, "sample.E01")
+        selected_path = evidence_dir / "sample.E01"
+        case_dir = directory / "case"
+        output_dir = directory / "output"
+
+        result = run_first_testing(
+            selected_path,
+            case_path=case_dir,
+            output_path=output_dir,
+            adapter=StubEwfReaderAdapter(),
+            demo_list_first_directory=True,
+        )
+        directory_listing = json.loads(
+            (output_dir / "directory-listing.json").read_text(encoding="utf-8")
+        )
+        navigation_readiness = json.loads(
+            (output_dir / "navigation-readiness.json").read_text(encoding="utf-8")
+        )
+
+    assert result["directory_navigation"]["selector_mode"] == "demo_first_directory"
+    assert result["directory_navigation"]["status"] == "ok"
+    assert result["directory_navigation"]["entry_count"] == 1
+    assert result["directory_navigation"]["file_count"] == 1
+    assert result["directory_navigation"]["candidate_directory_count"] == 2
+    assert result["directory_navigation"]["attempted_directory_count"] == 2
+    assert result["directory_navigation"]["attempted_child_directory_count"] == 0
+    assert result["directory_navigation"]["selected_depth"] == 1
+    assert result["directory_navigation"]["file_visible"] is True
+    assert directory_listing["requested_path"] == "/Good"
+    assert directory_listing["resolved_path"] == "/Good"
+    assert directory_listing["file_count"] == 1
+    assert directory_listing["directory_count"] == 0
+    assert navigation_readiness["status"] == "nested_directory_files_visible"
+    assert navigation_readiness["attempted_directory_count"] == 2
+    assert navigation_readiness["attempted_child_directory_count"] == 0
+    assert navigation_readiness["selected_depth"] == 1
+    assert navigation_readiness["file_visible"] is True
+
+
+def test_first_testing_demo_list_first_directory_probes_child_directory_for_files(monkeypatch):
+    monkeypatch.setattr(
+        first_testing_api,
+        "_filesystem_demo_artifacts",
+        _fake_navigation_demo_artifacts,
+    )
+    monkeypatch.setattr(first_testing_api, "EwfImageByteStream", FakeHashEwfImageByteStream)
+    monkeypatch.setattr(
+        first_testing_api,
+        "list_directory",
+        _fake_child_visible_nested_directory_result,
+    )
+
+    with _dummy_first_testing_directory("nested-directory-demo-child-visible") as directory:
+        evidence_dir = directory / "evidence"
+        _touch_files(evidence_dir, "sample.E01")
+        selected_path = evidence_dir / "sample.E01"
+        case_dir = directory / "case"
+        output_dir = directory / "output"
+
+        result = run_first_testing(
+            selected_path,
+            case_path=case_dir,
+            output_path=output_dir,
+            adapter=StubEwfReaderAdapter(),
+            demo_list_first_directory=True,
+        )
+        directory_listing = json.loads(
+            (output_dir / "directory-listing.json").read_text(encoding="utf-8")
+        )
+        navigation_readiness = json.loads(
+            (output_dir / "navigation-readiness.json").read_text(encoding="utf-8")
+        )
+        manifest = json.loads((case_dir / "run-manifest.json").read_text(encoding="utf-8"))
+        summary = (case_dir / "command-summary.txt").read_text(encoding="utf-8")
+        html_summary = (output_dir / "reports" / "summary.html").read_text(encoding="utf-8")
+
+    assert result["directory_navigation"]["status"] == "ok"
+    assert result["directory_navigation"]["entry_count"] == 1
+    assert result["directory_navigation"]["file_count"] == 1
+    assert result["directory_navigation"]["directory_count"] == 0
+    assert result["directory_navigation"]["selected_depth"] == 2
+    assert result["directory_navigation"]["file_visible"] is True
+    assert result["directory_navigation"]["attempted_directory_count"] == 2
+    assert result["directory_navigation"]["attempted_child_directory_count"] == 1
+    assert directory_listing["requested_path"] == "/Good/Child"
+    assert directory_listing["resolved_path"] == "/Good/Child"
+    assert directory_listing["selected_depth"] == 2
+    assert directory_listing["file_visible"] is True
+    assert directory_listing["candidate_directory_count"] == 2
+    assert directory_listing["attempted_directory_count"] == 2
+    assert directory_listing["attempted_child_directory_count"] == 1
+    assert navigation_readiness["status"] == "nested_directory_files_visible"
+    assert navigation_readiness["selected_depth"] == 2
+    assert navigation_readiness["file_visible"] is True
+    assert navigation_readiness["attempted_child_directory_count"] == 1
+    assert manifest["directory_navigation"]["readiness_status"] == "nested_directory_files_visible"
+    assert manifest["directory_navigation"]["selected_depth"] == 2
+    assert manifest["directory_navigation"]["file_visible"] is True
+    assert "Directory navigation selected depth: 2" in summary
+    assert "Directory navigation file visible: True" in summary
+    assert "Directory navigation attempts: root=2 child=1" in summary
+    assert "Directory navigation selected depth" in html_summary
+    assert "Directory navigation file visible" in html_summary
+    assert "root=2 child=1" in html_summary
+
+
+def test_first_testing_explicit_nested_file_path_reports_not_directory(monkeypatch):
+    monkeypatch.setattr(
+        first_testing_api,
+        "_filesystem_demo_artifacts",
+        _fake_navigation_demo_artifacts,
+    )
+    monkeypatch.setattr(first_testing_api, "EwfImageByteStream", FakeHashEwfImageByteStream)
+    monkeypatch.setattr(first_testing_api, "list_directory", _fake_nested_file_path_result)
+
+    with _dummy_first_testing_directory("nested-file-path-not-directory") as directory:
+        evidence_dir = directory / "evidence"
+        _touch_files(evidence_dir, "sample.E01")
+        selected_path = evidence_dir / "sample.E01"
+        case_dir = directory / "case"
+        output_dir = directory / "output"
+
+        result = run_first_testing(
+            selected_path,
+            case_path=case_dir,
+            output_path=output_dir,
+            adapter=StubEwfReaderAdapter(),
+            list_directory_path="/Good/nested.txt",
+        )
+        directory_listing = json.loads(
+            (output_dir / "directory-listing.json").read_text(encoding="utf-8")
+        )
+        navigation_readiness = json.loads(
+            (output_dir / "navigation-readiness.json").read_text(encoding="utf-8")
+        )
+
+    assert result["directory_navigation"]["status"] == "path_not_directory"
+    assert result["directory_navigation"]["entry_count"] == 0
+    assert result["directory_navigation"]["parser_backing"] == "real_parser_backed"
+    assert directory_listing["status"] == "path_not_directory"
+    assert directory_listing["source_kind"] == "ewf_logical_image"
+    assert directory_listing["parser_backing"] == "real_parser_backed"
+    assert directory_listing["selected_depth"] == 2
+    assert directory_listing["file_visible"] is False
+    assert [warning["code"] for warning in directory_listing["warnings"]] == [
+        "path_not_directory"
+    ]
+    assert navigation_readiness["status"] == "path_not_directory"
+    assert navigation_readiness["selected_depth"] == 2
+    assert navigation_readiness["file_visible"] is False
+
+
+def test_conflicting_directory_selectors_rejected_before_artifact_writes():
+    with _dummy_first_testing_directory("reject-directory-selector-conflict") as directory:
+        evidence_dir = directory / "evidence"
+        _touch_files(evidence_dir, "sample.E01")
+        case_dir = directory / "case"
+        output_dir = directory / "output"
+
+        result = run_first_testing(
+            evidence_dir / "sample.E01",
+            case_path=case_dir,
+            output_path=output_dir,
+            adapter_name="stub",
+            list_directory_path="/Good",
+            demo_list_first_directory=True,
+        )
+        case_exists = case_dir.exists()
+        output_exists = output_dir.exists()
+
+    assert result["status"] == "invalid_input"
+    assert result["warnings"][0]["code"] == "conflicting_directory_selector_forms"
+    assert not case_exists
+    assert not output_exists
+
+
+def test_directory_navigation_unavailable_without_real_parser_backing():
+    with _dummy_first_testing_directory("nested-directory-unavailable") as directory:
+        evidence_dir = directory / "evidence"
+        _touch_files(evidence_dir, "sample.E01")
+        case_dir = directory / "case"
+        output_dir = directory / "output"
+
+        result = run_first_testing(
+            evidence_dir / "sample.E01",
+            case_path=case_dir,
+            output_path=output_dir,
+            adapter_name="stub",
+            list_directory_path="/Documents",
+        )
+        directory_listing = json.loads(
+            (output_dir / "directory-listing.json").read_text(encoding="utf-8")
+        )
+        with (output_dir / "directory-listing.csv").open(
+            "r",
+            encoding="utf-8",
+            newline="",
+        ) as handle:
+            csv_rows = list(csv.reader(handle))
+
+    assert result["directory_navigation"]["requested"] is True
+    assert result["directory_navigation"]["status"] == "filesystem_unavailable"
+    assert result["directory_navigation"]["entry_count"] == 0
+    assert directory_listing["status"] == "filesystem_unavailable"
+    assert directory_listing["source_kind"] == "unavailable"
+    assert directory_listing["parser_backing"] == "stub_adapter"
+    assert directory_listing["entry_count"] == 0
+    assert [warning["code"] for warning in directory_listing["warnings"]] == [
+        "root_listing_not_real_parser_backed"
+    ]
+    assert csv_rows == [list(DIRECTORY_LISTING_CSV_HEADERS)]
 
 
 def test_first_testing_selected_file_artifacts_use_explicit_selection(monkeypatch):

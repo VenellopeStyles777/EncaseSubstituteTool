@@ -18,4 +18,4 @@ Stage 4.5 first-testing support:
 - `scripts/first_testing/`: notes for future helper scripts; the active command currently lives in the backend API module.
 - `docs/manual-testing/`: human-run backend workflow checks before a UI exists.
 
-S4.5-IMP01 through S4.5-IMP07 are reviewed and done. S4.5-IMP08 is ready for review with explicit image-level hashing, while S4.5-IMP09 nested directory navigation and S4.5-IMP10 guide/gate refresh remain required before Stage 5 search/timeline can resume.
+S4.5-IMP01 through S4.5-IMP08 are reviewed and done. S4.5-IMP09 nested directory navigation and the S4.5-IMP09A file-visible correction are in review, and S4.5-IMP10 guide/gate refresh remains required before Stage 5 search/timeline can resume.

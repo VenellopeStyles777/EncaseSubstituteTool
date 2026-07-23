@@ -43,7 +43,7 @@ Stage 4 contract start:
 - S4-T06 documents future case-store persistence requirements and keeps current analysis helpers non-persistent.
 - S4-T07 reconciles documentation/status only and adds no core behavior.
 - Per-file analysis content remains separate from Stage 2 preview rendering, Stage 3 export-output verification, and future whole-image verification.
-- Stage 4.5 is the first-testing stage for user-provided E01 files before search/timeline. S4.5-IMP01 is done with a command shell and case-workspace artifact bundle. S4.5-IMP02 upgrades the `pyewf` adapter to attempt best-effort metadata and explicit verification when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 is done with an EWF-backed stream, partition-table volume discovery, and real-parser-backed root listing path. S4.5-IMP04 is done with selected-file E01 content providers for explicit root-entry preview/export/hash/signature. S4.5-IMP05 is done with first-testing output artifacts that normalize the current root listing into file-list JSON/CSV and a static local HTML summary. S4.5-IMP06 is documentation/status handoff work; it does not change core parser behavior or add recursive traversal. S4.5-IMP08 adds chunked full logical-image hashing over the read-only image stream when explicitly requested.
+- Stage 4.5 is the first-testing stage for user-provided E01 files before search/timeline. S4.5-IMP01 is done with a command shell and case-workspace artifact bundle. S4.5-IMP02 upgrades the `pyewf` adapter to attempt best-effort metadata and explicit verification when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 is done with an EWF-backed stream, partition-table volume discovery, and real-parser-backed root listing path. S4.5-IMP04 is done with selected-file E01 content providers for explicit root-entry preview/export/hash/signature. S4.5-IMP05 is done with first-testing output artifacts that normalize the current root listing into file-list JSON/CSV and a static local HTML summary. S4.5-IMP06 is documentation/status handoff work; it does not change core parser behavior or add recursive traversal. S4.5-IMP08 adds chunked full logical-image hashing over the read-only image stream when explicitly requested. S4.5-IMP09 adds an explicit one-directory nested listing path through the parser-backed filesystem adapter, and S4.5-IMP09A adds the file-visible bounded-demo correction.
 
 ## S1-T02 Segment Discovery
 
@@ -93,7 +93,7 @@ Current behavior:
 - hashes readable streams in bounded chunks only when the caller explicitly requests it;
 - uses tiny generated files and fakes in default tests and does not require real evidence, `pyewf`, libewf, `pytsk3`, or The Sleuth Kit.
 
-S2-T02/S4.5-IMP03 stream code does not render previews or export files by itself. S4.5-IMP04 adds selected-file provider wrappers for explicit parser-backed root entries only. S4.5-IMP05 writes file-list output from the existing root-listing metadata. S4.5-IMP08 hashes the full logical image only through the explicit first-testing `--hash-image` option, while broad crawls, nested navigation, and recursive traversal remain later/out of scope.
+S2-T02/S4.5-IMP03 stream code does not render previews or export files by itself. S4.5-IMP04 adds selected-file provider wrappers for explicit parser-backed root entries only. S4.5-IMP05 writes file-list output from the existing root-listing metadata. S4.5-IMP08 hashes the full logical image only through the explicit first-testing `--hash-image` option. S4.5-IMP09/S4.5-IMP09A can list one explicit or bounded-demo nested directory and prefer a file-visible listing when available, while broad crawls, recursive traversal, and an interactive navigation shell remain later/out of scope.
 
 ## S4.5-IMP04 Selected-File Content Providers
 
@@ -131,7 +131,7 @@ S2-T03/S4.5-IMP03 volume discovery does not list directories, render previews, e
 
 - `FilesystemAdapter`: protocol for read-only filesystem metadata adapters.
 - `StubFilesystemAdapter`: dependency-free deterministic adapter for tests and later directory-listing integration.
-- `Pytsk3FilesystemAdapter`: optional pytsk3 skeleton that reports structured dependency status without requiring `pytsk3`.
+- `Pytsk3FilesystemAdapter`: optional pytsk3 adapter that reports structured dependency status without requiring `pytsk3` and can list the root or one requested directory when an image stream is supplied.
 - `FilesystemResult`: source/volume-level result with adapter name, dependency status, source path, volume id, volume offset/length, filesystem type, read-only assertion, root path, entries, status, and warnings.
 - `FilesystemEntry`: file/directory metadata shape for later S2-T05 listing, including file id, path, name, type, size, allocation/deleted state, timestamps, source provenance, adapter name, read-only assertion, status, and warnings.
 
@@ -140,10 +140,11 @@ Current behavior:
 - stub adapter returns deterministic root entries for `/Documents` and `/hello.txt`;
 - stub entries are allocated and not deleted;
 - pytsk3 adapter returns `dependency_unavailable` when `pytsk3` is missing;
-- importable pytsk3 can inspect a root directory when an image stream and volume are supplied, mapping real parser entries into `FilesystemEntry` shapes and labeling parser-backed results with warnings/provenance;
+- importable pytsk3 can inspect a root directory or one requested nested directory when an image stream and volume are supplied, mapping real parser entries into `FilesystemEntry` shapes and labeling parser-backed results with warnings/provenance;
+- parser-backed nested file paths are classified as `path_not_directory` without reading file content;
 - tests do not require real evidence, real filesystems, `pytsk3`, or The Sleuth Kit.
 
-S2-T04/S4.5-IMP03 does not render previews, export files, recover deleted files, hash evidence, or require native forensic dependencies for default tests. `FilesystemEntry.allocated` and `FilesystemEntry.deleted` are metadata fields only; they do not expose recoverable byte ranges or content providers.
+S2-T04/S4.5-IMP03/S4.5-IMP09/S4.5-IMP09A do not render previews, export files, recover deleted files, hash evidence, recursively crawl evidence, provide an interactive directory shell, or require native forensic dependencies for default tests. `FilesystemEntry.allocated` and `FilesystemEntry.deleted` are metadata fields only; they do not expose recoverable byte ranges or content providers.
 
 ## S2-T05 Directory Listing And File Metadata View
 
@@ -158,9 +159,9 @@ Current behavior:
 - preserves source path, volume id, volume offset/length, filesystem type, adapter/dependency information, read-only assertion, entry status/warnings, allocation/deleted state, and timestamps;
 - root listing with `StubFilesystemAdapter` returns `/Documents` and `/hello.txt`;
 - root listing with a successful S4.5-IMP03 parser-backed adapter can return real root entries from an EWF-backed image stream;
-- non-root directories return `path_unsupported`, files return `path_not_directory`, unknown paths return `path_not_found`, and dependency-unavailable/not-implemented adapters return `filesystem_unavailable`.
+- non-root directories return `path_unsupported` for root-only adapters, files return `path_not_directory`, unknown paths return `path_not_found`, dependency-unavailable/not-implemented adapters return `filesystem_unavailable`, and parser-backed adapters with a nested lister can return direct children for one requested directory.
 
-S2-T05 does not read file content, render previews, export/recover files, compute hashes, add UI, or require native forensic dependencies for default tests. Raw/text/hex preview remains S2-T06.
+S2-T05 does not read file content, render previews, export/recover files, compute hashes, add UI, provide a live `cd`/`dir` style navigator, or require native forensic dependencies for default tests. Raw/text/hex preview remains S2-T06.
 
 ## S2-T06 Raw/Text/Hex Preview Foundation
 

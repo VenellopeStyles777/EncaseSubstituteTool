@@ -53,8 +53,36 @@ FIRST_TESTING_RUN_SCHEMA_VERSION = "stage4_5.first_testing_run.v1"
 UNSUPPORTED_SECTIONS_SCHEMA_VERSION = "stage4_5.unsupported_sections.v1"
 FILE_LIST_SCHEMA_VERSION = "stage4_5.file_list.v1"
 IMAGE_HASH_SCHEMA_VERSION = "stage4_5.image_hash.v1"
+DIRECTORY_LISTING_SCHEMA_VERSION = "stage4_5.directory_listing.v1"
+NAVIGATION_READINESS_SCHEMA_VERSION = "stage4_5.navigation_readiness.v1"
 
 FILE_LIST_CSV_HEADERS = (
+    "case_id",
+    "evidence_id",
+    "source_path",
+    "volume_id",
+    "volume_offset",
+    "volume_length",
+    "filesystem_type",
+    "adapter_name",
+    "file_id",
+    "path",
+    "name",
+    "entry_type",
+    "size",
+    "allocated",
+    "deleted",
+    "created",
+    "modified",
+    "accessed",
+    "metadata_changed",
+    "status_code",
+    "status_ok",
+    "status_message",
+    "warning_codes",
+)
+
+DIRECTORY_LISTING_CSV_HEADERS = (
     "case_id",
     "evidence_id",
     "source_path",
@@ -105,6 +133,8 @@ def run_first_testing(
     hash_image: bool = False,
     image_hash_algorithm: str = "sha256",
     image_hash_chunk_size: int = DEFAULT_IMAGE_HASH_CHUNK_SIZE,
+    list_directory_path: str | None = None,
+    demo_list_first_directory: bool = False,
 ) -> dict[str, object]:
     """Create the first Stage 4.5 case workspace and artifact bundle.
 
@@ -126,6 +156,8 @@ def run_first_testing(
         selected_file_max_bytes=selected_file_max_bytes,
         image_hash_algorithm=image_hash_algorithm,
         image_hash_chunk_size=image_hash_chunk_size,
+        list_directory_path=list_directory_path,
+        demo_list_first_directory=demo_list_first_directory,
     )
     if validation["status"] != "ok":
         return _failure_result(
@@ -142,6 +174,10 @@ def run_first_testing(
     input_form = validation["input_form"]
     image_hash_algorithm = str(validation["image_hash_algorithm"])
     image_hash_chunk_size = int(validation["image_hash_chunk_size"])
+    directory_selector = _directory_selector_request(
+        list_directory_path=list_directory_path,
+        demo_list_first_directory=demo_list_first_directory,
+    )
     selection = _selection_request(
         selected_file_id=selected_file_id,
         selected_file_path=selected_file_path,
@@ -261,6 +297,15 @@ def run_first_testing(
             demo_artifacts=demo_artifacts,
             redact_paths=redact_paths,
         )
+        directory_navigation_artifacts = _directory_navigation_artifacts(
+            case_id=case_id,
+            evidence_id=evidence_id,
+            selected_path=selected_path,
+            intake_result=intake_result,
+            demo_artifacts=demo_artifacts,
+            adapter_name=adapter_name,
+            selector=directory_selector,
+        )
 
         _write_json(artifact_paths["intake"], intake_result)
         _write_json(artifact_paths["case"], case_artifact)
@@ -279,6 +324,12 @@ def run_first_testing(
         _write_json(artifact_paths["selected_file_export"], selected_file_artifacts["export"])
         _write_json(artifact_paths["file_list_json"], file_list_artifact)
         _write_file_list_csv(artifact_paths["file_list_csv"], file_list_artifact)
+        _write_json(artifact_paths["directory_listing_json"], directory_navigation_artifacts["listing"])
+        _write_directory_listing_csv(
+            artifact_paths["directory_listing_csv"],
+            directory_navigation_artifacts["listing"],
+        )
+        _write_json(artifact_paths["navigation_readiness"], directory_navigation_artifacts["readiness"])
         _write_json(artifact_paths["unsupported_sections"], unsupported_sections)
 
         insert_audit_event(
@@ -333,6 +384,7 @@ def run_first_testing(
             demo_artifacts=demo_artifacts,
             image_hash_artifact=image_hash_artifact,
             file_list_artifact=file_list_artifact,
+            directory_navigation_artifacts=directory_navigation_artifacts,
             selected_file_artifacts=selected_file_artifacts,
             audit_artifact=audit_artifact,
             artifact_paths=artifact_paths,
@@ -379,6 +431,8 @@ def first_testing_to_json(
     hash_image: bool = False,
     image_hash_algorithm: str = "sha256",
     image_hash_chunk_size: int = DEFAULT_IMAGE_HASH_CHUNK_SIZE,
+    list_directory_path: str | None = None,
+    demo_list_first_directory: bool = False,
     indent: int | None = 2,
 ) -> str:
     """Run the first-testing command shell and serialize the manifest."""
@@ -404,6 +458,8 @@ def first_testing_to_json(
         hash_image=hash_image,
         image_hash_algorithm=image_hash_algorithm,
         image_hash_chunk_size=image_hash_chunk_size,
+        list_directory_path=list_directory_path,
+        demo_list_first_directory=demo_list_first_directory,
     )
     return json.dumps(result, indent=indent, sort_keys=True)
 
@@ -439,6 +495,7 @@ def format_first_testing_summary(
     root_listing = _as_mapping(result.get("root_listing"))
     image_hash = _as_mapping(result.get("image_hash"))
     file_list = _as_mapping(result.get("file_list"))
+    directory_navigation = _as_mapping(result.get("directory_navigation"))
     selected_file = _as_mapping(result.get("selected_file"))
     selected_preview = _as_mapping(selected_file.get("preview"))
     selected_analysis = _as_mapping(selected_file.get("analysis"))
@@ -473,6 +530,14 @@ def format_first_testing_summary(
         f"File list status: {file_list.get('status')}",
         f"File list entries: {file_list.get('entry_count')}",
         f"File list parser backing: {file_list.get('parser_backing')}",
+        f"Directory navigation request: {directory_navigation.get('requested')} ({directory_navigation.get('selector_mode')})",
+        f"Directory navigation status: {directory_navigation.get('status')}",
+        f"Directory navigation entries: {directory_navigation.get('entry_count')}",
+        f"Directory navigation type counts: files={directory_navigation.get('file_count')} directories={directory_navigation.get('directory_count')} other={directory_navigation.get('other_entry_count')}",
+        f"Directory navigation selected depth: {directory_navigation.get('selected_depth')}",
+        f"Directory navigation file visible: {directory_navigation.get('file_visible')}",
+        f"Directory navigation attempts: root={directory_navigation.get('attempted_directory_count')} child={directory_navigation.get('attempted_child_directory_count')}",
+        f"Directory navigation parser backing: {directory_navigation.get('parser_backing')}",
         f"HTML summary: {_summary_artifact_path(file_list.get('html_summary_path'), case.get('workspace'))}",
         f"Selected file request: {selected_file.get('requested')} ({selected_file.get('selection_status')})",
         f"Selected file preview status: {selected_preview.get('status')}",
@@ -566,6 +631,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         default=DEFAULT_IMAGE_HASH_CHUNK_SIZE,
         help="Chunk size in bytes for full logical-image hashing.",
     )
+    parser.add_argument(
+        "--list-directory-path",
+        help="Explicit directory path from root to list through the real parser-backed filesystem path.",
+    )
+    parser.add_argument(
+        "--demo-list-first-directory",
+        action="store_true",
+        help="Try bounded root-directory candidates until one nonempty nested listing is found.",
+    )
     args = parser.parse_args(argv)
 
     result = run_first_testing(
@@ -588,6 +662,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         hash_image=args.hash_image,
         image_hash_algorithm=args.image_hash_algorithm,
         image_hash_chunk_size=args.image_hash_chunk_size,
+        list_directory_path=args.list_directory_path,
+        demo_list_first_directory=args.demo_list_first_directory,
     )
 
     if args.json_only:
@@ -610,6 +686,8 @@ def _validate_request(
     selected_file_max_bytes: int = DEFAULT_SELECTED_FILE_IN_MEMORY_LIMIT,
     image_hash_algorithm: str = "sha256",
     image_hash_chunk_size: int = DEFAULT_IMAGE_HASH_CHUNK_SIZE,
+    list_directory_path: str | None = None,
+    demo_list_first_directory: bool = False,
 ) -> dict[str, object]:
     if case_path is None:
         return _validation_error("invalid_input", "missing_case", "--case is required.")
@@ -643,6 +721,13 @@ def _validate_request(
             "invalid_image_hash_chunk_size",
             "--image-hash-chunk-size must be greater than zero.",
             {"chunk_size": image_hash_chunk_size},
+        )
+
+    if list_directory_path and demo_list_first_directory:
+        return _validation_error(
+            "invalid_input",
+            "conflicting_directory_selector_forms",
+            "Use either --list-directory-path or --demo-list-first-directory, not both.",
         )
 
     has_direct_path = evidence_path is not None
@@ -873,6 +958,9 @@ def _artifact_paths(case_dir: Path, output_dir: Path) -> dict[str, Path]:
         "selected_file_export": output_dir / "selected-file-export.json",
         "file_list_json": output_dir / "file-list.json",
         "file_list_csv": output_dir / "file-list.csv",
+        "directory_listing_json": output_dir / "directory-listing.json",
+        "directory_listing_csv": output_dir / "directory-listing.csv",
+        "navigation_readiness": output_dir / "navigation-readiness.json",
         "html_summary": output_dir / "reports" / "summary.html",
         "audit": output_dir / "audit.json",
         "unsupported_sections": output_dir / "unsupported-sections.json",
@@ -881,11 +969,6 @@ def _artifact_paths(case_dir: Path, output_dir: Path) -> dict[str, Path]:
 
 def _unsupported_sections() -> dict[str, object]:
     rows = [
-        (
-            "nested_directory_navigation",
-            "S4.5-IMP09",
-            "Explicit nested directory navigation into actual filesystem entries remains deferred until S4.5-IMP09.",
-        ),
         (
             "recursive_broad_traversal",
             "Future",
@@ -1674,6 +1757,582 @@ def _first_present(
     return None
 
 
+def _directory_selector_request(
+    *,
+    list_directory_path: str | None,
+    demo_list_first_directory: bool,
+) -> dict[str, object]:
+    if list_directory_path:
+        return {
+            "requested": True,
+            "selector_mode": "path",
+            "requested_path": _normalize_file_path(list_directory_path),
+        }
+    if demo_list_first_directory:
+        return {
+            "requested": True,
+            "selector_mode": "demo_first_directory",
+            "requested_path": None,
+        }
+    return {
+        "requested": False,
+        "selector_mode": "not_run",
+        "requested_path": None,
+    }
+
+
+def _directory_navigation_artifacts(
+    *,
+    case_id: str,
+    evidence_id: str,
+    selected_path: Path,
+    intake_result: Mapping[str, object],
+    demo_artifacts: Mapping[str, Mapping[str, object]],
+    adapter_name: str,
+    selector: Mapping[str, object],
+) -> dict[str, dict[str, object]]:
+    root_listing = _as_mapping(demo_artifacts.get("root_listing"))
+    root_entries = root_listing.get("entries")
+    candidates = _root_directory_candidates(root_entries if isinstance(root_entries, list) else [])
+    if not selector.get("requested"):
+        listing = _directory_listing_status_artifact(
+            case_id=case_id,
+            evidence_id=evidence_id,
+            selected_path=selected_path,
+            intake_result=intake_result,
+            selector=selector,
+            status="not_run",
+            parser_backing="not_run",
+            entries=[],
+            requested_path=None,
+            resolved_path=None,
+            warnings=[],
+            candidate_directory_count=len(candidates),
+            attempted_directory_count=0,
+            attempted_child_directory_count=0,
+        )
+        return {
+            "listing": listing,
+            "readiness": _navigation_readiness_artifact(
+                listing=listing,
+                root_listing=root_listing,
+                candidate_directory_count=len(candidates),
+                attempted_directory_count=0,
+                attempted_child_directory_count=0,
+            ),
+        }
+
+    if adapter_name == "stub" or root_listing.get("parser_backing") != "real_parser_backed":
+        parser_backing = str(root_listing.get("parser_backing") or "unavailable")
+        status = "dependency_unavailable" if parser_backing == "dependency_blocked" else "filesystem_unavailable"
+        listing = _directory_listing_status_artifact(
+            case_id=case_id,
+            evidence_id=evidence_id,
+            selected_path=selected_path,
+            intake_result=intake_result,
+            selector=selector,
+            status=status,
+            parser_backing=parser_backing,
+            entries=[],
+            requested_path=_optional_str(selector.get("requested_path")),
+            resolved_path=None,
+            warnings=[
+                {
+                    "source": "first_testing_directory_navigation",
+                    "code": "root_listing_not_real_parser_backed",
+                    "message": "Nested directory navigation requires a real-parser-backed root listing.",
+                }
+            ],
+            candidate_directory_count=len(candidates),
+            attempted_directory_count=0,
+            attempted_child_directory_count=0,
+        )
+        return {
+            "listing": listing,
+            "readiness": _navigation_readiness_artifact(
+                listing=listing,
+                root_listing=root_listing,
+                candidate_directory_count=len(candidates),
+                attempted_directory_count=0,
+                attempted_child_directory_count=0,
+            ),
+        }
+
+    volume = _volume_for_navigation(demo_artifacts)
+    if volume is None:
+        listing = _directory_listing_status_artifact(
+            case_id=case_id,
+            evidence_id=evidence_id,
+            selected_path=selected_path,
+            intake_result=intake_result,
+            selector=selector,
+            status="filesystem_unavailable",
+            parser_backing="real_parser_backed",
+            entries=[],
+            requested_path=_optional_str(selector.get("requested_path")),
+            resolved_path=None,
+            warnings=[
+                {
+                    "source": "first_testing_directory_navigation",
+                    "code": "volume_context_unavailable",
+                    "message": "Root listing was available, but the matching volume context could not be restored.",
+                }
+            ],
+            candidate_directory_count=len(candidates),
+            attempted_directory_count=0,
+            attempted_child_directory_count=0,
+        )
+        return {
+            "listing": listing,
+            "readiness": _navigation_readiness_artifact(
+                listing=listing,
+                root_listing=root_listing,
+                candidate_directory_count=len(candidates),
+                attempted_directory_count=0,
+                attempted_child_directory_count=0,
+            ),
+        }
+
+    stream = EwfImageByteStream(
+        selected_path,
+        segment_paths=_segment_paths_from_intake(intake_result),
+        **_ewf_stream_kwargs_from_intake(intake_result),
+    )
+    filesystem_adapter = Pytsk3FilesystemAdapter(image_stream=stream)
+    selector_mode = str(selector.get("selector_mode") or "not_run")
+    if selector_mode == "path":
+        requested_path = _optional_str(selector.get("requested_path")) or "/"
+        result = list_directory(volume, requested_path, filesystem_adapter)
+        listing = _directory_listing_from_result(
+            case_id=case_id,
+            evidence_id=evidence_id,
+            selected_path=selected_path,
+            intake_result=intake_result,
+            selector=selector,
+            requested_path=requested_path,
+            result=result,
+            parser_backing=_directory_result_parser_backing(result),
+            selected_depth=_directory_path_depth(str(result.get("directory_path") or requested_path)),
+            candidate_directory_count=len(candidates),
+            attempted_directory_count=1,
+            attempted_child_directory_count=0,
+        )
+        return {
+            "listing": listing,
+            "readiness": _navigation_readiness_artifact(
+                listing=listing,
+                root_listing=root_listing,
+                candidate_directory_count=len(candidates),
+                attempted_directory_count=1,
+                attempted_child_directory_count=0,
+            ),
+        }
+
+    attempted = 0
+    attempted_child = 0
+    first_nonempty: dict[str, object] | None = None
+    for candidate in candidates[:20]:
+        candidate_path = _optional_str(candidate.get("path"))
+        if candidate_path is None:
+            continue
+        attempted += 1
+        result = list_directory(volume, candidate_path, filesystem_adapter)
+        listing = _directory_listing_from_result(
+            case_id=case_id,
+            evidence_id=evidence_id,
+            selected_path=selected_path,
+            intake_result=intake_result,
+            selector=selector,
+            requested_path=candidate_path,
+            result=result,
+            parser_backing=_directory_result_parser_backing(result),
+            selected_depth=_directory_path_depth(str(result.get("directory_path") or candidate_path)),
+            candidate_directory_count=len(candidates),
+            attempted_directory_count=attempted,
+            attempted_child_directory_count=attempted_child,
+        )
+        listing["candidate_directory_count"] = len(candidates)
+        listing["attempted_directory_count"] = attempted
+        listing["attempted_child_directory_count"] = attempted_child
+        if listing.get("status") != "ok" or int(listing.get("entry_count") or 0) == 0:
+            continue
+        if first_nonempty is None:
+            first_nonempty = listing
+        if int(listing.get("file_count") or 0) > 0:
+            return {
+                "listing": listing,
+                "readiness": _navigation_readiness_artifact(
+                    listing=listing,
+                    root_listing=root_listing,
+                    candidate_directory_count=len(candidates),
+                    attempted_directory_count=attempted,
+                    attempted_child_directory_count=attempted_child,
+                ),
+            }
+
+        child_candidates = _root_directory_candidates(listing.get("entries", []))
+        for child_candidate in child_candidates[:20]:
+            child_path = _optional_str(child_candidate.get("path"))
+            if child_path is None:
+                continue
+            attempted_child += 1
+            child_result = list_directory(volume, child_path, filesystem_adapter)
+            child_listing = _directory_listing_from_result(
+                case_id=case_id,
+                evidence_id=evidence_id,
+                selected_path=selected_path,
+                intake_result=intake_result,
+                selector=selector,
+                requested_path=child_path,
+                result=child_result,
+                parser_backing=_directory_result_parser_backing(child_result),
+                selected_depth=_directory_path_depth(str(child_result.get("directory_path") or child_path)),
+                candidate_directory_count=len(candidates),
+                attempted_directory_count=attempted,
+                attempted_child_directory_count=attempted_child,
+            )
+            child_listing["candidate_directory_count"] = len(candidates)
+            child_listing["attempted_directory_count"] = attempted
+            child_listing["attempted_child_directory_count"] = attempted_child
+            if child_listing.get("status") != "ok" or int(child_listing.get("entry_count") or 0) == 0:
+                continue
+            if int(child_listing.get("file_count") or 0) > 0:
+                return {
+                    "listing": child_listing,
+                    "readiness": _navigation_readiness_artifact(
+                        listing=child_listing,
+                        root_listing=root_listing,
+                        candidate_directory_count=len(candidates),
+                        attempted_directory_count=attempted,
+                        attempted_child_directory_count=attempted_child,
+                    ),
+                }
+
+    if first_nonempty is not None:
+        first_nonempty["attempted_directory_count"] = attempted
+        first_nonempty["attempted_child_directory_count"] = attempted_child
+        return {
+            "listing": first_nonempty,
+            "readiness": _navigation_readiness_artifact(
+                listing=first_nonempty,
+                root_listing=root_listing,
+                candidate_directory_count=len(candidates),
+                attempted_directory_count=attempted,
+                attempted_child_directory_count=attempted_child,
+            ),
+        }
+
+    listing = _directory_listing_status_artifact(
+        case_id=case_id,
+        evidence_id=evidence_id,
+        selected_path=selected_path,
+        intake_result=intake_result,
+        selector=selector,
+        status="no_readable_directory",
+        parser_backing="real_parser_backed",
+        entries=[],
+        requested_path=None,
+        resolved_path=None,
+        warnings=[
+            {
+                "source": "first_testing_directory_navigation",
+                "code": "no_readable_directory",
+                "message": "Demo mode did not find a nonempty directory candidate within the bounded probe set.",
+                "candidate_directory_count": len(candidates),
+                "attempted_directory_count": attempted,
+                "attempted_child_directory_count": attempted_child,
+            }
+        ],
+        candidate_directory_count=len(candidates),
+        attempted_directory_count=attempted,
+        attempted_child_directory_count=attempted_child,
+    )
+    return {
+        "listing": listing,
+        "readiness": _navigation_readiness_artifact(
+            listing=listing,
+            root_listing=root_listing,
+            candidate_directory_count=len(candidates),
+            attempted_directory_count=attempted,
+            attempted_child_directory_count=attempted_child,
+        ),
+    }
+
+
+def _directory_listing_from_result(
+    *,
+    case_id: str,
+    evidence_id: str,
+    selected_path: Path,
+    intake_result: Mapping[str, object],
+    selector: Mapping[str, object],
+    requested_path: str,
+    result: Mapping[str, object],
+    parser_backing: str,
+    selected_depth: int | None = None,
+    candidate_directory_count: int | None = None,
+    attempted_directory_count: int = 0,
+    attempted_child_directory_count: int = 0,
+) -> dict[str, object]:
+    entries = [
+        _normalize_directory_listing_entry(
+            entry,
+            case_id=case_id,
+            evidence_id=evidence_id,
+        )
+        for entry in result.get("entries", [])
+        if isinstance(entry, Mapping)
+    ] if isinstance(result.get("entries"), list) else []
+    status_code = str(_as_mapping(result.get("status")).get("code") or "error")
+    warnings = [
+        dict(warning)
+        for warning in result.get("warnings", [])
+        if isinstance(warning, Mapping)
+    ] if isinstance(result.get("warnings"), list) else []
+    return _directory_listing_status_artifact(
+        case_id=case_id,
+        evidence_id=evidence_id,
+        selected_path=selected_path,
+        intake_result=intake_result,
+        selector=selector,
+        status=status_code,
+        parser_backing=parser_backing,
+        entries=entries,
+        requested_path=requested_path,
+        resolved_path=str(result.get("directory_path") or requested_path),
+        warnings=warnings,
+        directory_result=result,
+        selected_depth=selected_depth,
+        candidate_directory_count=candidate_directory_count,
+        attempted_directory_count=attempted_directory_count,
+        attempted_child_directory_count=attempted_child_directory_count,
+    )
+
+
+def _directory_listing_status_artifact(
+    *,
+    case_id: str,
+    evidence_id: str,
+    selected_path: Path,
+    intake_result: Mapping[str, object],
+    selector: Mapping[str, object],
+    status: str,
+    parser_backing: str,
+    entries: Sequence[Mapping[str, object]],
+    requested_path: str | None,
+    resolved_path: str | None,
+    warnings: Sequence[Mapping[str, object]],
+    directory_result: Mapping[str, object] | None = None,
+    selected_depth: int | None = None,
+    candidate_directory_count: int | None = None,
+    attempted_directory_count: int = 0,
+    attempted_child_directory_count: int = 0,
+) -> dict[str, object]:
+    counts = _directory_entry_counts(entries)
+    file_visible = status == "ok" and parser_backing == "real_parser_backed" and counts["file"] > 0
+    adapter = _as_mapping(_as_mapping(directory_result or {}).get("adapter"))
+    source_kind = _directory_navigation_source_kind(
+        requested=bool(selector.get("requested")),
+        parser_backing=parser_backing,
+    )
+    return {
+        "schema_version": DIRECTORY_LISTING_SCHEMA_VERSION,
+        "requested": bool(selector.get("requested")),
+        "selector_mode": selector.get("selector_mode"),
+        "status": status,
+        "source_kind": source_kind,
+        "parser_backing": parser_backing,
+        "case_id": case_id,
+        "evidence_id": evidence_id,
+        "volume_id": _first_present("volume_id", _as_mapping(directory_result or {}), entries),
+        "filesystem_id": None,
+        "requested_path": requested_path,
+        "requested_file_id": None,
+        "resolved_path": resolved_path,
+        "resolved_file_id": None,
+        "entry_count": len(entries),
+        "file_count": counts["file"],
+        "directory_count": counts["directory"],
+        "other_entry_count": counts["other"],
+        "selected_depth": selected_depth,
+        "file_visible": file_visible,
+        "candidate_directory_count": candidate_directory_count,
+        "attempted_directory_count": attempted_directory_count,
+        "attempted_child_directory_count": attempted_child_directory_count,
+        "entries": [dict(entry) for entry in entries],
+        "warnings": [dict(warning) for warning in warnings],
+        "directory_listing": dict(directory_result or {}),
+        "provenance": {
+            "source_path": str(intake_result.get("selected_path") or selected_path),
+            "segment_count": intake_result.get("segment_count"),
+            "selector_mode": selector.get("selector_mode"),
+            "adapter_name": adapter.get("name") or "pytsk3-filesystem-adapter",
+            "source_kind": source_kind,
+            "parser_backing": parser_backing,
+            "recursive": False,
+            "content_extraction": False,
+        },
+        "read_only_asserted": bool(_as_mapping(directory_result or {}).get("read_only", True)),
+        "source_modified": False,
+    }
+
+
+def _directory_navigation_source_kind(
+    *,
+    requested: bool,
+    parser_backing: str,
+) -> str:
+    if not requested:
+        return "not_run"
+    if parser_backing == "real_parser_backed":
+        return "ewf_logical_image"
+    return "unavailable"
+
+
+def _directory_result_parser_backing(result: Mapping[str, object]) -> str:
+    status_code = str(_as_mapping(result.get("status")).get("code") or "")
+    adapter = _as_mapping(result.get("adapter"))
+    if (
+        adapter.get("name") == "pytsk3-filesystem-adapter"
+        and adapter.get("available") is True
+        and status_code in {"ok", "path_not_directory", "path_not_found"}
+    ):
+        return "real_parser_backed"
+    return "unavailable"
+
+
+def _navigation_readiness_artifact(
+    *,
+    listing: Mapping[str, object],
+    root_listing: Mapping[str, object],
+    candidate_directory_count: int,
+    attempted_directory_count: int,
+    attempted_child_directory_count: int,
+) -> dict[str, object]:
+    entry_count = int(listing.get("entry_count") or 0)
+    file_count = int(listing.get("file_count") or 0)
+    real_parser_backed = listing.get("parser_backing") == "real_parser_backed"
+    file_visible = (
+        listing.get("status") == "ok"
+        and entry_count > 0
+        and file_count > 0
+        and real_parser_backed
+    )
+    if listing.get("requested") is False:
+        status = "not_run"
+        message = "Nested directory navigation was not requested."
+    elif file_visible:
+        status = "nested_directory_files_visible"
+        message = "A bounded parser-backed nested directory listing with regular files is available."
+    elif listing.get("status") == "ok" and entry_count > 0 and real_parser_backed:
+        status = "nested_directory_listing_available"
+        message = "A bounded parser-backed nested directory listing is available, but no regular files were visible in the bounded probe."
+    elif listing.get("status") == "ok":
+        status = "empty_directory_listing"
+        message = "Requested directory was listed but contained no direct child entries."
+    else:
+        status = str(listing.get("status") or "not_available")
+        message = "Nested directory navigation did not produce a nonempty parser-backed listing."
+    return {
+        "schema_version": NAVIGATION_READINESS_SCHEMA_VERSION,
+        "status": status,
+        "message": message,
+        "root_listing_parser_backing": root_listing.get("parser_backing"),
+        "root_entry_count": root_listing.get("entry_count"),
+        "candidate_directory_count": candidate_directory_count,
+        "attempted_directory_count": attempted_directory_count,
+        "attempted_child_directory_count": attempted_child_directory_count,
+        "selected_depth": listing.get("selected_depth"),
+        "file_visible": file_visible,
+        "selected_directory_entry_count": entry_count,
+        "selected_directory_file_count": file_count,
+        "selected_directory_directory_count": int(listing.get("directory_count") or 0),
+        "real_parser_backed": real_parser_backed,
+        "read_only_asserted": listing.get("read_only_asserted"),
+        "source_modified": listing.get("source_modified"),
+    }
+
+
+def _normalize_directory_listing_entry(
+    entry: Mapping[str, object],
+    *,
+    case_id: str,
+    evidence_id: str,
+) -> dict[str, object]:
+    status = _as_mapping(entry.get("status"))
+    warnings = [
+        dict(warning)
+        for warning in entry.get("warnings", [])
+        if isinstance(warning, Mapping)
+    ] if isinstance(entry.get("warnings"), list) else []
+    normalized = dict(entry)
+    normalized["case_id"] = case_id
+    normalized["evidence_id"] = evidence_id
+    normalized["status"] = dict(status) if status else _entry_default_status(entry)
+    normalized["warnings"] = warnings
+    normalized["warning_codes"] = _warning_codes(warnings)
+    return normalized
+
+
+def _directory_entry_counts(entries: Sequence[Mapping[str, object]]) -> dict[str, int]:
+    counts = {"file": 0, "directory": 0, "other": 0}
+    for entry in entries:
+        entry_type = str(entry.get("entry_type") or "unknown")
+        if entry_type == "file":
+            counts["file"] += 1
+        elif entry_type == "directory":
+            counts["directory"] += 1
+        else:
+            counts["other"] += 1
+    return counts
+
+
+def _root_directory_candidates(entries: Sequence[object]) -> list[Mapping[str, object]]:
+    candidates = []
+    for entry in entries:
+        if not isinstance(entry, Mapping):
+            continue
+        if entry.get("entry_type") != "directory":
+            continue
+        if entry.get("allocated") is False or entry.get("deleted") is True:
+            continue
+        if not _optional_str(entry.get("path")):
+            continue
+        candidates.append(entry)
+    return candidates
+
+
+def _directory_path_depth(path: str | None) -> int | None:
+    normalized = _normalize_file_path(path)
+    if normalized is None:
+        return None
+    if normalized == "/":
+        return 0
+    return len([part for part in normalized.strip("/").split("/") if part])
+
+
+def _volume_for_navigation(
+    demo_artifacts: Mapping[str, Mapping[str, object]],
+) -> VolumeInfo | None:
+    root_listing = _as_mapping(demo_artifacts.get("root_listing"))
+    directory_listing = _as_mapping(root_listing.get("directory_listing"))
+    volume_id = directory_listing.get("volume_id")
+    if volume_id is not None:
+        return _volume_for_entry(
+            demo_artifacts,
+            {
+                "volume_id": volume_id,
+                "source_path": directory_listing.get("source_path"),
+            },
+        )
+    entries = root_listing.get("entries")
+    if isinstance(entries, list):
+        for entry in entries:
+            if isinstance(entry, Mapping) and entry.get("volume_id"):
+                return _volume_for_entry(demo_artifacts, entry)
+    return None
+
+
 def _selection_request(
     *,
     selected_file_id: str | None,
@@ -2138,6 +2797,7 @@ def _run_manifest(
     demo_artifacts: Mapping[str, Mapping[str, object]],
     image_hash_artifact: Mapping[str, object],
     file_list_artifact: Mapping[str, object],
+    directory_navigation_artifacts: Mapping[str, Mapping[str, object]],
     selected_file_artifacts: Mapping[str, Mapping[str, object]],
     audit_artifact: Mapping[str, object],
     artifact_paths: Mapping[str, Path],
@@ -2154,6 +2814,9 @@ def _run_manifest(
     selected_export = _as_mapping(selected_file_artifacts.get("export"))
     file_list_status = _as_mapping(file_list_artifact.get("status"))
     file_list_warnings = file_list_artifact.get("warnings", [])
+    directory_listing_artifact = _as_mapping(directory_navigation_artifacts.get("listing"))
+    navigation_readiness = _as_mapping(directory_navigation_artifacts.get("readiness"))
+    directory_warnings = directory_listing_artifact.get("warnings", [])
     image_hash_warnings = image_hash_artifact.get("warnings", [])
     sections = unsupported_sections.get("sections", [])
     warnings = intake_result.get("warnings", [])
@@ -2178,6 +2841,8 @@ def _run_manifest(
             "hash_image": bool(image_hash_artifact.get("requested")),
             "image_hash_algorithm": image_hash_artifact.get("algorithm"),
             "image_hash_chunk_size": image_hash_artifact.get("chunk_size"),
+            "list_directory_selector_mode": directory_listing_artifact.get("selector_mode"),
+            "list_directory_requested": bool(directory_listing_artifact.get("requested")),
         },
         "tool_versions": {
             "run_schema_version": FIRST_TESTING_RUN_SCHEMA_VERSION,
@@ -2185,6 +2850,8 @@ def _run_manifest(
             "case_store_schema_version": CASE_STORE_SCHEMA_VERSION,
             "file_list_schema_version": FILE_LIST_SCHEMA_VERSION,
             "image_hash_schema_version": IMAGE_HASH_SCHEMA_VERSION,
+            "directory_listing_schema_version": DIRECTORY_LISTING_SCHEMA_VERSION,
+            "navigation_readiness_schema_version": NAVIGATION_READINESS_SCHEMA_VERSION,
         },
         "case": {
             "case_id": case_id,
@@ -2271,6 +2938,30 @@ def _run_manifest(
                 "redaction_applied_to_shared_outputs"
             ),
         },
+        "directory_navigation": {
+            "requested": bool(directory_listing_artifact.get("requested")),
+            "selector_mode": directory_listing_artifact.get("selector_mode"),
+            "status": directory_listing_artifact.get("status"),
+            "entry_count": directory_listing_artifact.get("entry_count"),
+            "file_count": directory_listing_artifact.get("file_count"),
+            "directory_count": directory_listing_artifact.get("directory_count"),
+            "other_entry_count": directory_listing_artifact.get("other_entry_count"),
+            "selected_depth": directory_listing_artifact.get("selected_depth"),
+            "file_visible": directory_listing_artifact.get("file_visible"),
+            "parser_backing": directory_listing_artifact.get("parser_backing"),
+            "source_kind": directory_listing_artifact.get("source_kind"),
+            "readiness_status": navigation_readiness.get("status"),
+            "candidate_directory_count": navigation_readiness.get("candidate_directory_count"),
+            "attempted_directory_count": navigation_readiness.get("attempted_directory_count"),
+            "attempted_child_directory_count": navigation_readiness.get("attempted_child_directory_count"),
+            "warning_count": len(directory_warnings) if isinstance(directory_warnings, list) else 0,
+            "warning_codes": _warning_codes(
+                directory_warnings if isinstance(directory_warnings, list) else []
+            ),
+            "json_path": str(artifact_paths["directory_listing_json"]),
+            "csv_path": str(artifact_paths["directory_listing_csv"]),
+            "readiness_path": str(artifact_paths["navigation_readiness"]),
+        },
         "selected_file": {
             "requested": bool(_as_mapping(selected_readiness.get("selection")).get("requested")),
             "selection_status": _as_mapping(selected_readiness.get("status")).get("code")
@@ -2336,6 +3027,17 @@ def _write_file_list_csv(path: Path, file_list_artifact: Mapping[str, object]) -
     entries = file_list_artifact.get("entries")
     with path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=FILE_LIST_CSV_HEADERS)
+        writer.writeheader()
+        for entry in entries if isinstance(entries, list) else []:
+            if isinstance(entry, Mapping):
+                writer.writerow(_file_list_csv_row(entry))
+
+
+def _write_directory_listing_csv(path: Path, directory_listing_artifact: Mapping[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    entries = directory_listing_artifact.get("entries")
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=DIRECTORY_LISTING_CSV_HEADERS)
         writer.writeheader()
         for entry in entries if isinstance(entries, list) else []:
             if isinstance(entry, Mapping):
@@ -2418,6 +3120,7 @@ def _html_summary_body(
     adapter = _as_mapping(manifest.get("adapter"))
     image_hash = _as_mapping(manifest.get("image_hash"))
     file_list = _as_mapping(manifest.get("file_list"))
+    directory_navigation = _as_mapping(manifest.get("directory_navigation"))
     selected_file = _as_mapping(manifest.get("selected_file"))
     artifact_paths = _as_mapping(manifest.get("artifact_paths"))
     unsupported = unsupported_sections.get("sections", [])
@@ -2438,6 +3141,13 @@ def _html_summary_body(
         ("File-list status", file_list.get("status")),
         ("File-list entries", file_list.get("entry_count")),
         ("File-list parser backing", file_list.get("parser_backing")),
+        ("Directory navigation status", directory_navigation.get("status")),
+        ("Directory navigation entries", directory_navigation.get("entry_count")),
+        ("Directory navigation type counts", _directory_navigation_html_value(directory_navigation)),
+        ("Directory navigation selected depth", directory_navigation.get("selected_depth")),
+        ("Directory navigation file visible", directory_navigation.get("file_visible")),
+        ("Directory navigation attempts", _directory_navigation_attempts_html_value(directory_navigation)),
+        ("Directory navigation parser backing", directory_navigation.get("parser_backing")),
         ("Selected-file operations", selected_file.get("selection_status")),
         ("Source modified", manifest.get("source_modified")),
         ("Read-only asserted", manifest.get("read_only_asserted")),
@@ -2529,6 +3239,21 @@ def _html_value(value: object) -> str:
 def _root_listing_html_value(manifest: Mapping[str, object]) -> str:
     root_listing = _as_mapping(manifest.get("root_listing"))
     return f"{root_listing.get('parser_backing')} entries={root_listing.get('entry_count')}"
+
+
+def _directory_navigation_html_value(directory_navigation: Mapping[str, object]) -> str:
+    return (
+        f"files={directory_navigation.get('file_count')} "
+        f"directories={directory_navigation.get('directory_count')} "
+        f"other={directory_navigation.get('other_entry_count')}"
+    )
+
+
+def _directory_navigation_attempts_html_value(directory_navigation: Mapping[str, object]) -> str:
+    return (
+        f"root={directory_navigation.get('attempted_directory_count')} "
+        f"child={directory_navigation.get('attempted_child_directory_count')}"
+    )
 
 
 def _entry_type_counts(file_list_artifact: Mapping[str, object]) -> str:

@@ -13,10 +13,10 @@ Current handoff:
 
 - S3-T01 through S3-T06 are reviewed and done.
 - S4-T01 through S4-T07 are reviewed and done.
-- Stage 4.5 planning prompts S4.5-T01 through S4.5-T08 are present; S4.5-IMP01 through S4.5-IMP07 have been implemented, reviewed, and marked done. Hands-on demo feedback added S4.5-IMP08 through S4.5-IMP10; S4.5-IMP08 is ready for review.
+- Stage 4.5 planning prompts S4.5-T01 through S4.5-T08 are present; S4.5-IMP01 through S4.5-IMP09A have been implemented, reviewed, and marked done. S4.5-IMP10 remains drafted.
 - `2026-07-15-stage-4.5-first-testing-familiarization.md` is the added Stage 4.5 coding-agent onboarding prompt.
 - `2026-07-15-s5-t00-documentation-organization-cleanup.md` is the Stage 5 S5-T00 documentation cleanup prompt; S5-T00 is done.
-- S5-T01 is done with an older failed-gate/blocker result. Do not rerun S5-T01 or feed S5-T02 until S4.5-IMP08 through S4.5-IMP10 are reviewed.
+- S5-T01 is done with an older failed-gate/blocker result. Do not rerun S5-T01 or feed S5-T02 until S4.5-IMP10 is reviewed.
 - S5-T01A is done after documentation hardening. Do not feed S5-T02 or later until the extended Stage 4.5 runway is complete and S5-T01 is rerun/accepted.
 - Keep this coding-agent handoff separate from the Stage 4 research/review-agent packet in `prompts/stage-4-onboarding/`.
 - The coding-agent reflection may focus on implementation mechanics; the review-agent reflection focuses on review risk, forensic soundness, and future-stage guardrails.
@@ -46,6 +46,7 @@ Current major onboarding prompts:
 - `2026-07-16-s4.5-imp07-command-line-testing-guide.md`: Stage 4.5 S4.5-IMP07 command-line testing guide prompt.
 - `2026-07-22-s4.5-imp08-image-level-verification-hash.md`: Stage 4.5 S4.5-IMP08 image-level verification hash prompt.
 - `2026-07-22-s4.5-imp09-nested-directory-navigation.md`: Stage 4.5 S4.5-IMP09 nested directory navigation prompt.
+- `2026-07-23-s4.5-imp09a-file-visible-navigation-correction.md`: Stage 4.5 S4.5-IMP09A file-visible navigation correction prompt.
 - `2026-07-22-s4.5-imp10-demo-guide-and-stage-5-gate-refresh.md`: Stage 4.5 S4.5-IMP10 demo guide and Stage 5 gate refresh prompt.
 - `2026-07-15-s5-t00-documentation-organization-cleanup.md`: Stage 5 S5-T00 documentation organization cleanup prompt.
 - `2026-07-15-s5-t01-readiness-and-stage-4.5-completion-gate.md`: Stage 5 S5-T01 readiness and Stage 4.5 completion gate prompt.

@@ -8,6 +8,10 @@ from app.backend.api.directory_listing import (
     list_directory,
 )
 from app.backend.forensic_core import (
+    FilesystemDependencyStatus,
+    FilesystemEntry,
+    FilesystemResult,
+    FilesystemStatus,
     Pytsk3FilesystemAdapter,
     StubFilesystemAdapter,
     VolumeDiscoveryStatus,
@@ -32,6 +36,98 @@ def _sample_volume() -> VolumeInfo:
             message="Whole-image volume discovered.",
         ),
     )
+
+
+class FakeParserBackedNestedAdapter:
+    name = "pytsk3-filesystem-adapter"
+    read_only = True
+
+    @property
+    def is_available(self):
+        return True
+
+    def dependency_status(self):
+        return FilesystemDependencyStatus(
+            name="pytsk3",
+            available=True,
+            message="fake parser available",
+        )
+
+    def inspect_volume(self, volume):
+        return self._result(
+            volume,
+            root_path="/",
+            entries=(
+                self._entry(volume, file_id="volume-0:2", path="/Users", name="Users", entry_type="directory"),
+                self._entry(volume, file_id="volume-0:3", path="/note.txt", name="note.txt", entry_type="file"),
+            ),
+        )
+
+    def list_directory(self, volume, directory_path):
+        if directory_path == "/Users/nested.txt":
+            return self._result(
+                volume,
+                root_path=directory_path,
+                status=FilesystemStatus("path_not_directory", "fake path is a file"),
+                entries=(),
+            )
+        if directory_path != "/Users":
+            return self._result(
+                volume,
+                root_path=directory_path,
+                status=FilesystemStatus("path_not_found", "fake path not found"),
+                entries=(),
+            )
+        return self._result(
+            volume,
+            root_path="/Users",
+            entries=(
+                self._entry(volume, file_id="volume-0:4", path="/Users/Profile", name="Profile", entry_type="directory"),
+                self._entry(volume, file_id="volume-0:5", path="/Users/nested.txt", name="nested.txt", entry_type="file"),
+            ),
+        )
+
+    def _result(self, volume, *, root_path, entries, status=None):
+        return FilesystemResult(
+            schema_version="stage2.filesystem_adapter.v1",
+            adapter_name=self.name,
+            adapter_available=True,
+            dependency=self.dependency_status(),
+            source_path=volume.source_path,
+            volume_id=volume.volume_id,
+            volume_offset=volume.offset,
+            volume_length=volume.length,
+            filesystem_type="ntfs",
+            read_only=True,
+            status=status or FilesystemStatus("ok", "fake listing ok"),
+            root_path=root_path,
+            entries=entries,
+        )
+
+    def _entry(self, volume, *, file_id, path, name, entry_type):
+        return FilesystemEntry(
+            file_id=file_id,
+            path=path,
+            name=name,
+            entry_type=entry_type,
+            size=10 if entry_type == "file" else 0,
+            allocated=True,
+            deleted=False,
+            source_path=volume.source_path,
+            volume_id=volume.volume_id,
+            volume_offset=volume.offset,
+            volume_length=volume.length,
+            filesystem_type="ntfs",
+            adapter_name=self.name,
+            read_only=True,
+            status=FilesystemStatus("ok", "fake entry ok"),
+            timestamps={
+                "created": None,
+                "modified": None,
+                "accessed": None,
+                "metadata_changed": None,
+            },
+        )
 
 
 def test_stub_root_listing_returns_deterministic_entries():
@@ -139,6 +235,36 @@ def test_directory_path_normalization_is_deterministic():
     assert empty_result["directory_path"] == "/"
     assert no_slash_result["status"]["code"] == "path_unsupported"
     assert no_slash_result["directory_path"] == "/Documents"
+
+
+def test_parser_backed_adapter_lists_nested_directory_path():
+    result = list_directory(
+        _sample_volume(),
+        "Users/",
+        FakeParserBackedNestedAdapter(),
+    )
+
+    assert result["status"]["code"] == "ok"
+    assert result["directory_path"] == "/Users"
+    assert result["entry_count"] == 2
+    assert [entry["path"] for entry in result["entries"]] == [
+        "/Users/Profile",
+        "/Users/nested.txt",
+    ]
+    assert [entry["entry_type"] for entry in result["entries"]] == ["directory", "file"]
+
+
+def test_parser_backed_adapter_reports_nested_file_path_not_directory():
+    result = list_directory(
+        _sample_volume(),
+        "/Users/nested.txt",
+        FakeParserBackedNestedAdapter(),
+    )
+
+    assert result["status"]["code"] == "path_not_directory"
+    assert result["entry_count"] == 0
+    assert result["entries"] == []
+    assert result["filesystem_status"]["code"] == "path_not_directory"
 
 
 def test_pytsk3_dependency_unavailable_is_not_successful_listing():

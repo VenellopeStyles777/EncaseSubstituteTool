@@ -62,11 +62,26 @@ class FakeFs:
         self._module = module
 
     def open_dir(self, path="/"):
-        return [
-            FakeEntry(".", self._module.TSK_FS_META_TYPE_DIR, 1, 0),
-            FakeEntry("Users", self._module.TSK_FS_META_TYPE_DIR, 2, 0),
-            FakeEntry("note.txt", self._module.TSK_FS_META_TYPE_REG, 3, 12),
-        ]
+        if path == "/":
+            return [
+                FakeEntry(".", self._module.TSK_FS_META_TYPE_DIR, 1, 0),
+                FakeEntry("Users", self._module.TSK_FS_META_TYPE_DIR, 2, 0),
+                FakeEntry("note.txt", self._module.TSK_FS_META_TYPE_REG, 3, 12),
+            ]
+        if path == "/Users":
+            return [
+                FakeEntry(".", self._module.TSK_FS_META_TYPE_DIR, 2, 0),
+                FakeEntry("Profile", self._module.TSK_FS_META_TYPE_DIR, 4, 0),
+                FakeEntry("nested.txt", self._module.TSK_FS_META_TYPE_REG, 5, 20),
+            ]
+        raise OSError("path not found")
+
+    def open(self, path="/"):
+        if path == "/Users":
+            return FakeEntry("Users", self._module.TSK_FS_META_TYPE_DIR, 2, 0)
+        if path == "/Users/nested.txt":
+            return FakeEntry("nested.txt", self._module.TSK_FS_META_TYPE_REG, 5, 20)
+        raise OSError("path not found")
 
 
 class FakePytsk3:
@@ -231,3 +246,45 @@ def test_pytsk3_fake_parser_maps_root_entries():
     assert result.entries[1].adapter_name == "pytsk3-filesystem-adapter"
     assert result.entries[1].read_only is True
     assert result.warnings[0].code == "real_parser_backed"
+
+
+def test_pytsk3_fake_parser_lists_nested_directory_entries():
+    directory = _filesystem_fixture_directory("fake-parser-nested")
+    try:
+        source = directory / "tiny.raw"
+        source.write_bytes(b"\0" * 4096)
+        volume = _sample_volume()
+
+        result = Pytsk3FilesystemAdapter(
+            pytsk3_module=FakePytsk3,
+            image_stream=LocalFileImageStream(source),
+        ).list_directory(volume, "/Users")
+    finally:
+        shutil.rmtree(directory, ignore_errors=True)
+
+    assert result.status.code == "ok"
+    assert result.root_path == "/Users"
+    assert [entry.path for entry in result.entries] == ["/Users/Profile", "/Users/nested.txt"]
+    assert [entry.entry_type for entry in result.entries] == ["directory", "file"]
+    assert result.entries[1].size == 20
+    assert result.warnings[0].code == "real_parser_backed"
+
+
+def test_pytsk3_fake_parser_reports_nested_file_path_not_directory():
+    directory = _filesystem_fixture_directory("fake-parser-file-path")
+    try:
+        source = directory / "tiny.raw"
+        source.write_bytes(b"\0" * 4096)
+        volume = _sample_volume()
+
+        result = Pytsk3FilesystemAdapter(
+            pytsk3_module=FakePytsk3,
+            image_stream=LocalFileImageStream(source),
+        ).list_directory(volume, "/Users/nested.txt")
+    finally:
+        shutil.rmtree(directory, ignore_errors=True)
+
+    assert result.status.code == "path_not_directory"
+    assert result.entries == ()
+    assert result.root_path == "/Users/nested.txt"
+    assert result.warnings[0].code == "path_not_directory"

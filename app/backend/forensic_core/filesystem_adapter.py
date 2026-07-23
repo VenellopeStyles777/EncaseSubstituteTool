@@ -164,6 +164,9 @@ class FilesystemAdapter(Protocol):
     def inspect_volume(self, volume: VolumeInfo) -> FilesystemResult:
         """Return filesystem metadata and root entries for a volume."""
 
+    def list_directory(self, volume: VolumeInfo, directory_path: str) -> FilesystemResult:
+        """Return direct child metadata for one directory path."""
+
 
 class StubFilesystemAdapter:
     """Dependency-free deterministic filesystem adapter for tests."""
@@ -319,6 +322,18 @@ class Pytsk3FilesystemAdapter:
         )
 
     def inspect_volume(self, volume: VolumeInfo) -> FilesystemResult:
+        return self._inspect_directory(volume, directory_path="/")
+
+    def list_directory(self, volume: VolumeInfo, directory_path: str) -> FilesystemResult:
+        return self._inspect_directory(volume, directory_path=directory_path)
+
+    def _inspect_directory(
+        self,
+        volume: VolumeInfo,
+        *,
+        directory_path: str,
+    ) -> FilesystemResult:
+        normalized_directory_path = _normalize_filesystem_path(directory_path)
         dependency = self.dependency_status()
         if not dependency.available:
             return FilesystemResult(
@@ -336,7 +351,7 @@ class Pytsk3FilesystemAdapter:
                     code="dependency_unavailable",
                     message="pytsk3/The Sleuth Kit dependency is unavailable; filesystem was not parsed.",
                 ),
-                root_path="/",
+                root_path=normalized_directory_path,
                 warnings=(
                     FilesystemWarning(
                         code="dependency_unavailable",
@@ -361,7 +376,7 @@ class Pytsk3FilesystemAdapter:
                     code="real_parser_not_implemented",
                     message="pytsk3 is importable, but no image stream was supplied for filesystem parsing.",
                 ),
-                root_path="/",
+                root_path=normalized_directory_path,
                 warnings=(
                     FilesystemWarning(
                         code="real_parser_not_implemented",
@@ -371,19 +386,39 @@ class Pytsk3FilesystemAdapter:
             )
 
         image_info = _Pytsk3ImageInfo(self._image_stream, self._pytsk3)
+        filesystem = None
         try:
             try:
                 filesystem = self._pytsk3.FS_Info(image_info, offset=volume.offset)
-                root_directory = filesystem.open_dir(path="/")
+                directory = filesystem.open_dir(path=normalized_directory_path)
                 entries = tuple(
                     entry
                     for entry in (
-                        _filesystem_entry(self._pytsk3, filesystem, volume, raw_entry)
-                        for raw_entry in root_directory
+                        _filesystem_entry(
+                            self._pytsk3,
+                            filesystem,
+                            volume,
+                            raw_entry,
+                            parent_path=normalized_directory_path,
+                        )
+                        for raw_entry in directory
                     )
                     if entry is not None
                 )
             except Exception as error:
+                if normalized_directory_path == "/":
+                    status_code = "filesystem_parse_error"
+                    warning_message = "pytsk3 could not parse filesystem root entries."
+                elif filesystem is not None and _path_exists_as_non_directory(
+                    self._pytsk3,
+                    filesystem,
+                    normalized_directory_path,
+                ):
+                    status_code = "path_not_directory"
+                    warning_message = "pytsk3 found the requested path, but it is not a directory."
+                else:
+                    status_code = "path_not_found"
+                    warning_message = "pytsk3 could not open the requested directory."
                 return FilesystemResult(
                     schema_version=FILESYSTEM_ADAPTER_SCHEMA_VERSION,
                     adapter_name=self.name,
@@ -396,14 +431,15 @@ class Pytsk3FilesystemAdapter:
                     filesystem_type="unknown",
                     read_only=self.read_only and volume.read_only,
                     status=FilesystemStatus(
-                        code="filesystem_parse_error",
-                        message=f"pytsk3 could not parse filesystem root entries: {error}",
+                        code=status_code,
+                        message=f"{warning_message} {error}",
                     ),
-                    root_path="/",
+                    root_path=normalized_directory_path,
                     warnings=(
                         FilesystemWarning(
-                            code="filesystem_parse_error",
-                            message="pytsk3 could not parse filesystem root entries.",
+                            code=status_code,
+                            message=warning_message,
+                            path=normalized_directory_path,
                         ),
                     ),
                 )
@@ -411,6 +447,11 @@ class Pytsk3FilesystemAdapter:
             image_info.close()
 
         filesystem_type = _filesystem_type(self._pytsk3, filesystem)
+        message = (
+            "pytsk3 parsed root filesystem entries."
+            if normalized_directory_path == "/"
+            else "pytsk3 parsed requested directory entries."
+        )
         return FilesystemResult(
             schema_version=FILESYSTEM_ADAPTER_SCHEMA_VERSION,
             adapter_name=self.name,
@@ -424,14 +465,15 @@ class Pytsk3FilesystemAdapter:
             read_only=self.read_only and volume.read_only,
             status=FilesystemStatus(
                 code="ok",
-                message="pytsk3 parsed root filesystem entries.",
+                message=message,
             ),
-            root_path="/",
+            root_path=normalized_directory_path,
             entries=entries,
             warnings=(
                 FilesystemWarning(
                     code="real_parser_backed",
-                    message="Root entries were parsed from the supplied image stream with pytsk3.",
+                    message="Directory entries were parsed from the supplied image stream with pytsk3.",
+                    path=normalized_directory_path,
                 ),
             ),
         )
@@ -482,11 +524,36 @@ def _open_native_handle(image_stream: ImageByteStream) -> object | None:
     return None
 
 
+def _path_exists_as_non_directory(
+    pytsk3_module: object,
+    filesystem: object,
+    path: str,
+) -> bool:
+    open_path = getattr(filesystem, "open", None)
+    if not callable(open_path):
+        return False
+    try:
+        raw_entry = open_path(path=path)
+    except TypeError:
+        try:
+            raw_entry = open_path(path)
+        except Exception:
+            return False
+    except Exception:
+        return False
+
+    info = getattr(raw_entry, "info", None)
+    meta = getattr(info, "meta", None)
+    return _entry_type(pytsk3_module, meta) != "directory"
+
+
 def _filesystem_entry(
     pytsk3_module: object,
     filesystem: object,
     volume: VolumeInfo,
     raw_entry: object,
+    *,
+    parent_path: str = "/",
 ) -> FilesystemEntry | None:
     info = getattr(raw_entry, "info", None)
     name_info = getattr(info, "name", None)
@@ -506,7 +573,7 @@ def _filesystem_entry(
     if deleted is not None and allocated is None:
         allocated = not deleted
 
-    path = f"/{name}".replace("//", "/")
+    path = _join_filesystem_path(parent_path, name)
     file_id = _file_id(volume, meta, name_info, path)
     status = FilesystemStatus(
         code="ok",
@@ -530,6 +597,24 @@ def _filesystem_entry(
         status=status,
         timestamps=_timestamps(meta),
     )
+
+
+def _normalize_filesystem_path(value: str | None) -> str:
+    text = (value or "/").strip().replace("\\", "/")
+    if not text:
+        return "/"
+    if not text.startswith("/"):
+        text = f"/{text}"
+    while "//" in text:
+        text = text.replace("//", "/")
+    return text.rstrip("/") if len(text) > 1 else text
+
+
+def _join_filesystem_path(parent_path: str, name: str) -> str:
+    parent = _normalize_filesystem_path(parent_path)
+    if parent == "/":
+        return f"/{name}".replace("//", "/")
+    return f"{parent}/{name}".replace("//", "/")
 
 
 def _decode_name(value: object) -> str:

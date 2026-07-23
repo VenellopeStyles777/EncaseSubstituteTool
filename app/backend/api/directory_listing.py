@@ -25,8 +25,10 @@ def list_directory(
 ) -> dict[str, object]:
     """List file metadata for a directory through a filesystem adapter.
 
-    S2-T05 supports root listing over adapter-provided entries. Nested
-    directory traversal and file-content reads are intentionally deferred.
+    S2-T05 supports root listing over adapter-provided entries. S4.5-IMP09
+    adds one explicit nested directory listing path for adapters that expose a
+    read-only list_directory method. Recursive traversal and file-content reads
+    remain deferred.
     """
 
     filesystem_adapter = adapter or Pytsk3FilesystemAdapter()
@@ -72,8 +74,16 @@ def list_directory(
             entries=filesystem_result.entries,
         )
 
+    nested_lister = getattr(filesystem_adapter, "list_directory", None)
     matching_entry = _find_entry(filesystem_result.entries, normalized_path)
     if matching_entry is None:
+        if callable(nested_lister):
+            return _nested_listing_response(
+                nested_lister,
+                volume=volume,
+                directory_path=normalized_path,
+                fallback_result=filesystem_result,
+            )
         return _from_filesystem_result(
             filesystem_result,
             directory_path=normalized_path,
@@ -107,20 +117,63 @@ def list_directory(
             ),
         )
 
+    if callable(nested_lister):
+        return _nested_listing_response(
+            nested_lister,
+            volume=volume,
+            directory_path=normalized_path,
+            fallback_result=filesystem_result,
+        )
+
     return _from_filesystem_result(
         filesystem_result,
         directory_path=normalized_path,
         status_code="path_unsupported",
-        status_message="Nested directory listing is not implemented in S2-T05.",
+        status_message="Nested directory listing is not implemented for this adapter.",
         entries=(),
         extra_warnings=(
             {
                 "source": "directory_listing",
                 "code": "nested_listing_deferred",
-                "message": "Only root directory listing is supported in S2-T05.",
+                "message": "Only root directory listing is supported for this adapter.",
                 "path": normalized_path,
             },
         ),
+    )
+
+
+def _nested_listing_response(
+    nested_lister,
+    *,
+    volume: VolumeInfo,
+    directory_path: str,
+    fallback_result: FilesystemResult,
+) -> dict[str, object]:
+    try:
+        nested_result = nested_lister(volume, directory_path)
+    except Exception as error:  # pragma: no cover - defensive API boundary
+        return _from_filesystem_result(
+            fallback_result,
+            directory_path=directory_path,
+            status_code="filesystem_error",
+            status_message=f"Filesystem adapter raised an unexpected error during nested listing: {error}",
+            entries=(),
+            extra_warnings=(
+                {
+                    "source": "directory_listing",
+                    "code": "filesystem_error",
+                    "message": "Filesystem adapter raised an unexpected error during nested listing.",
+                    "path": directory_path,
+                },
+            ),
+        )
+
+    return _from_filesystem_result(
+        nested_result,
+        directory_path=directory_path,
+        status_code=nested_result.status.code,
+        status_message=nested_result.status.message,
+        entries=nested_result.entries,
     )
 
 

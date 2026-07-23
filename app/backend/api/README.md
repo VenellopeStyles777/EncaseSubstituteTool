@@ -13,7 +13,7 @@ These callables are backend-only and JSON-friendly. They do not provide UI, exec
 
 Stage 3 note: S3-T04 can optionally record export attempts in the case-store audit log when the caller supplies explicit audit context. It does not recover deleted files, parse real filesystems, run broader hash/signature analysis, or use preview-rendered text/hex as export bytes.
 
-Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. S4.5-IMP01 adds a first-testing command shell and case-workspace bundle. S4.5-IMP02 adds best-effort `pyewf` metadata and separate verification status when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 adds the first EWF stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts and is reviewed done. S4.5-IMP04 adds selected-file E01 content providers for preview/export/hash/signature only when an explicit parser-backed root entry is selected. S4.5-IMP05 adds root-listing-derived file-list JSON/CSV and static local HTML summary output without adding search/timeline, recursion, or UI/reporting system behavior. S4.5-IMP06 is documentation/status handoff work and adds no API behavior. S4.5-IMP08 adds an explicit `--hash-image` path that writes a full logical-image hash artifact when requested. Preview-rendered text/hex, written export artifacts, stored EWF hash metadata, segment-container hashes, and external known-file lists remain disallowed as implicit source analysis content.
+Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. S4.5-IMP01 adds a first-testing command shell and case-workspace bundle. S4.5-IMP02 adds best-effort `pyewf` metadata and separate verification status when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 adds the first EWF stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts and is reviewed done. S4.5-IMP04 adds selected-file E01 content providers for preview/export/hash/signature only when an explicit parser-backed root entry is selected. S4.5-IMP05 adds root-listing-derived file-list JSON/CSV and static local HTML summary output without adding search/timeline, recursion, or UI/reporting system behavior. S4.5-IMP06 is documentation/status handoff work and adds no API behavior. S4.5-IMP08 adds an explicit `--hash-image` path that writes a full logical-image hash artifact when requested. S4.5-IMP09 adds explicit one-directory nested navigation through `--list-directory-path` or `--demo-list-first-directory`, with JSON/CSV/readiness artifacts and no broad crawl. Preview-rendered text/hex, written export artifacts, stored EWF hash metadata, segment-container hashes, and external known-file lists remain disallowed as implicit source analysis content.
 
 ## S1-T04 Intake Command
 
@@ -91,6 +91,8 @@ Useful options:
 - `--hash-image`: explicitly compute an independent SHA-256 over the full EWF logical image stream and write `image-hash.json`.
 - `--image-hash-algorithm`: full logical-image hash algorithm; currently supports `sha256`.
 - `--image-hash-chunk-size`: chunk size in bytes for full logical-image hashing.
+- `--list-directory-path`: explicitly list one directory path below root through the real parser-backed filesystem path.
+- `--demo-list-first-directory`: bounded demo mode that probes allocated root-directory candidates until it finds a nonempty nested listing, preferring a listing with at least one regular file when available.
 
 S4.5-IMP01 and S4.5-IMP02 create:
 
@@ -115,6 +117,9 @@ S4.5-IMP01 and S4.5-IMP02 create:
 <output>\selected-file-export.json
 <output>\file-list.json
 <output>\file-list.csv
+<output>\directory-listing.json
+<output>\directory-listing.csv
+<output>\navigation-readiness.json
 <output>\reports\summary.html
 <output>\audit.json
 <output>\unsupported-sections.json
@@ -167,7 +172,17 @@ S4.5-IMP08 image-level hash behavior:
 - missing dependency and stream failures remain structured statuses;
 - stored EWF hash metadata, segment container files, selected-file hashes, and stub bytes are not treated as the independent full-image hash.
 
-The command still does not create nested directory navigation, recursive file lists, broad crawls, search/timeline indexes, dynamic UI, report-system/PDF output, deleted recovery, or carving behavior.
+S4.5-IMP09/S4.5-IMP09A nested directory listing behavior:
+
+- default runs write `directory-listing.json`, `directory-listing.csv`, and `navigation-readiness.json` with status `not_run`;
+- `--list-directory-path` lists one requested directory below root through the EWF stream plus `pytsk3` parser APIs;
+- `--demo-list-first-directory` probes bounded root-directory candidates and can inspect their direct child directories to prefer a listing with regular files when available;
+- status, selector mode, requested/resolved path, entry count, file/directory/other counts, selected depth, file-visible status, root/child attempt counts, parser backing, provenance, warnings, read-only assertion, and source-modified assertion are recorded;
+- explicit file paths discovered through the parser return `path_not_directory` rather than `path_not_found`;
+- `--list-directory-id` remains deferred because the current file-id shape is not yet a safe stable directory resolver;
+- no file content is read and no selected-file preview/export/hash/signature is auto-run.
+
+The command still does not provide an interactive `cd`/`dir` style navigation shell, create recursive file lists, broad crawls, search/timeline indexes, dynamic UI, report-system/PDF output, deleted recovery, or carving behavior.
 
 ## S2-T05 Directory Listing Callable
 
@@ -192,7 +207,8 @@ Current S2-T05 behavior:
 
 - root listing with `StubFilesystemAdapter` returns deterministic entries for `/Documents` and `/hello.txt`;
 - empty path normalizes to `/`, and paths without a leading slash are normalized with one;
-- nested directory paths such as `/Documents` return `path_unsupported`;
+- nested directory paths return `path_unsupported` for root-only adapters such as `StubFilesystemAdapter`;
+- parser-backed adapters that expose `list_directory()` can list one requested nested directory path without recursing;
 - file paths such as `/hello.txt` return `path_not_directory`;
 - missing paths return `path_not_found`;
 - dependency-unavailable or not-implemented adapters return `filesystem_unavailable`.

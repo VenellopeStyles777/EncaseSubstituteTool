@@ -12,16 +12,46 @@ YYYY-MM-DD
 - Next:
 ```
 
+2026-07-23
+- Completed: reviewed and accepted S4.5-IMP09 and S4.5-IMP09A as done.
+- Learned: the corrected demo now reaches a bounded parser-backed nested listing from the real E01 with regular files visible, while explicit nested file paths report `path_not_directory` without reading file content.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP10 still needs implementation/review, and S5-T01 must be rerun after that.
+- Next: prepare/feed S4.5-IMP10 for the final command-line guide and Stage 5 gate refresh. Reviewer verification: focused portable-runtime tests reported 42 passed in 52.20s; full portable-runtime tests reported 199 passed in 40.70s; reviewer real-image demo smoke exited 0 with `ok_with_unsupported_sections`, root listing `real_parser_backed`, directory navigation `ok` / `real_parser_backed`, 19 nested entries, files=19, directories=0, other=0, selected depth 2, root/child attempts 1/2, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`; explicit nested file-path smoke returned `path_not_directory`.
+
+2026-07-23
+- Completed: implemented S4.5-IMP09A and marked it ready for review.
+- Learned: the first-testing demo can now keep its bounded root-directory probe, inspect direct child directories when needed, and stop on a real parser-backed nested listing that contains regular files. Explicit nested file paths now return `path_not_directory` without reading file content.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP09A still needs research/review acceptance, S4.5-IMP10 still needs implementation/review, and S5-T01 must be rerun after that.
+- Next: review S4.5-IMP09A, then add/prepare a separate ticket for an interactive command-line navigator if the desired experience is a shell-like `dir`, `cd <folder>`, and back/up workflow. Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py` reported 42 passed in 62.18s. Full verification: `.\.python312-embed\python.exe -m pytest` reported 199 passed in 46.10s. Corrected real-image smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, root listing `real_parser_backed` with 11 entries, directory navigation `ok` / `real_parser_backed` with 19 nested entries, type counts files=19 directories=0 other=0, selected depth 2, root/child attempts 1/2, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`. Explicit nested file-path smoke exited 0 with `path_not_directory`, parser backing `real_parser_backed`, entry count 0, selected depth 3, `source_modified: false`, and `read_only_asserted: true`.
+
+2026-07-23
+- Completed: reviewed S4.5-IMP09 and created S4.5-IMP09A as a targeted file-visible navigation correction.
+- Learned: S4.5-IMP09 can list a real parser-backed nested directory, and an explicit deeper path can show regular files, but the default demo mode still stops at a directory-only listing. A known nested file path also currently reports `path_not_found` instead of `path_not_directory`.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP09 cannot be accepted until S4.5-IMP09A makes the default demo file-visible and fixes the file-path status.
+- Next at that point: feed S4.5-IMP09A to the existing coding-agent task; this has been superseded by the implementation entry above.
+
+2026-07-23
+- Completed: implemented S4.5-IMP09 nested directory navigation and marked it ready for review.
+- Learned: the first-testing command now writes explicit nested navigation artifacts and can list one parser-backed nested directory from the real E01 path without adding recursive crawl or content extraction. The real smoke tried both bounded root-directory candidates; it found a nonempty parser-backed nested listing with 4 entries, all directories, and no regular files in that bounded candidate set.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP09 still needs research/review acceptance, S4.5-IMP10 still needs implementation/review, and S5-T01 must be rerun after that.
+- Next: review S4.5-IMP09, then proceed to S4.5-IMP10. Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py` reported 38 passed in 48.60s. Full verification: `.\.python312-embed\python.exe -m pytest` reported 195 passed in 69.93s. Real-image smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, root listing `real_parser_backed` with 11 entries, directory navigation `ok` / `real_parser_backed` with 4 nested entries, type counts files=0 directories=4 other=0, candidate/attempted counts 2/2, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+
+2026-07-23
+- Completed: accepted S4.5-IMP08 as the reviewed image-hash capability slice, promoted S4.5-IMP09 to `Ready`, and tightened the nested-directory navigation ticket/prompt around the real E01 demo gap.
+- Learned: the next proof point must show entries inside an actual directory from the E01-backed filesystem, not only partition/root status; shared handoffs should report only counts/type counts and avoid real internal names or paths.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP09 and S4.5-IMP10 still need implementation/review, and the real full-image hash remains a long-running reviewer/user artifact unless separately completed.
+- Next: feed S4.5-IMP09 to the existing coding-agent task, then review the nested-directory smoke and artifacts.
+
 2026-07-22
-- Completed: implemented S4.5-IMP08 image-level verification hash support and marked the ticket ready for review.
+- Completed: implemented S4.5-IMP08 image-level verification hash support; it was later accepted as the reviewed capability slice.
 - Learned: the command can now write `image-hash.json` as `not_run` by default or compute SHA-256 over the full EWF logical image stream when `--hash-image` is explicitly requested; stored EWF hash metadata, segment container files, selected-file hashes, and stub bytes remain excluded from that proof.
-- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP08 still needs review acceptance, S4.5-IMP09/S4.5-IMP10 remain pending, and the real full-image hash is a long-running reviewer/user command unless separately completed. Existing reviewed smoke reports a logical media size of 1,024,209,543,168 bytes.
-- Next: review S4.5-IMP08, then proceed to S4.5-IMP09 for nested directory navigation before S5-T01 is rerun. Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_first_testing_command.py` reported 31 passed in 32.90s. Full verification: `.\.python312-embed\python.exe -m pytest` reported 189 passed in 87.61s.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP09/S4.5-IMP10 remain pending, and the real full-image hash is a long-running reviewer/user command unless separately completed. Existing reviewed smoke reports a logical media size of 1,024,209,543,168 bytes.
+- Next: proceed to S4.5-IMP09 for nested directory navigation before S5-T01 is rerun. Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_first_testing_command.py` reported 31 passed in 32.90s. Full verification: `.\.python312-embed\python.exe -m pytest` reported 189 passed in 87.61s.
 
 2026-07-22
 - Completed: added S4.5-IMP08, S4.5-IMP09, and S4.5-IMP10 after hands-on demo feedback.
 - Learned: the no-selection demo is useful but still short of the user's bar without an independent full logical-image hash and visible navigation into actual directories inside the image.
-- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP08 through S4.5-IMP10 must be implemented/reviewed before S5-T01 rerun.
+- Blocked by: Stage 5 search/timeline remains blocked; S4.5-IMP09 and S4.5-IMP10 must be implemented/reviewed before S5-T01 rerun.
 - Next: feed S4.5-IMP08 to the existing Stage 4.5 coding-agent task when the user is ready.
 
 2026-07-22

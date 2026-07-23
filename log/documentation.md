@@ -2,21 +2,68 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-23 - S4.5-IMP09A Review Acceptance
+
+- Marked S4.5-IMP09 and S4.5-IMP09A as `Done` after independent review.
+- Updated active Stage 4.5 and Stage 5 status docs so Stage 5 remains blocked on S4.5-IMP10 and the later S5-T01 rerun.
+- Recorded reviewer verification: focused portable-runtime tests reported 42 passed in 52.20s, full portable-runtime tests reported 199 passed in 40.70s, corrected real-image demo smoke showed 19 regular files in a bounded parser-backed nested listing, and explicit nested file-path smoke returned `path_not_directory`.
+- Preserved the boundary that IMP09/IMP09A produce bounded command artifacts rather than an interactive `cd`/`dir` navigator.
+
+## 2026-07-23 - S4.5-IMP09A File-Visible Navigation Implementation
+
+- Marked `tickets/stage-4.5/S4.5-IMP09A-file-visible-navigation-correction.md` as `Review`.
+- Updated first-testing documentation for corrected bounded demo probing: root-directory candidates plus direct child directories only, no recursive crawl.
+- Recorded new directory navigation fields: `selected_depth`, `file_visible`, `candidate_directory_count`, `attempted_directory_count`, and `attempted_child_directory_count`.
+- Recorded the explicit status correction: known nested file paths now return `path_not_directory` rather than `path_not_found` without reading file content.
+- Clarified that S4.5-IMP09A does not implement an interactive `cd`/`dir` style command-line navigator; a separate future ticket should own that shell-like browsing experience.
+- Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py` reported 42 passed in 62.18s.
+- Full verification: `.\.python312-embed\python.exe -m pytest` reported 199 passed in 46.10s.
+- Corrected real-image smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, root listing `real_parser_backed` with 11 entries, directory navigation `ok` / `real_parser_backed` with 19 nested entries, files=19, directories=0, other=0, selected depth 2, root/child attempts 1/2, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+- Explicit nested file-path smoke exited 0 with `path_not_directory`, parser backing `real_parser_backed`, entry count 0, selected depth 3, `source_modified: false`, and `read_only_asserted: true`.
+- Stage 5 search/timeline remains blocked until S4.5-IMP09A and S4.5-IMP10 are reviewed and S5-T01 is rerun.
+
+## 2026-07-23 - S4.5-IMP09 Review Correction
+
+- Reviewed S4.5-IMP09 and kept it in review instead of accepting it as done.
+- Recorded that the real-image demo mode produced parser-backed nested directory entries but `file_count = 0`, while a reviewer explicit deeper path produced regular files.
+- Recorded that a known nested file path returned `path_not_found` instead of `path_not_directory`.
+- Added `tickets/stage-4.5/S4.5-IMP09A-file-visible-navigation-correction.md` as `Ready`.
+- Added `prompts/vscode-agent/2026-07-23-s4.5-imp09a-file-visible-navigation-correction.md`.
+- Updated active Stage 4.5 and Stage 5 status docs so Stage 5 remains blocked until S4.5-IMP09A and S4.5-IMP10 are reviewed and S5-T01 is rerun.
+
+## 2026-07-23 - S4.5-IMP09 Nested Navigation Handoff
+
+- Marked `tickets/stage-4.5/S4.5-IMP09-nested-directory-navigation.md` as `Review`.
+- Added first-testing documentation for `--list-directory-path`, `--demo-list-first-directory`, `outputs/directory-listing.json`, `outputs/directory-listing.csv`, and `outputs/navigation-readiness.json`.
+- Updated active Stage 4.5, Stage 5, README, goal, plan, functionality, prompt, backend/API/core, manual-testing, progression, and review docs for the S4.5-IMP09 review handoff.
+- Recorded that nested directory navigation is explicit and narrow: default runs write status `not_run`; requested runs list one parser-backed directory; broad recursive crawl, content extraction, selected-file auto-selection, search/timeline, UI/reporting, deleted recovery, carving, packaging, and S4.5-IMP10 remain deferred.
+- Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py` reported 38 passed in 48.60s.
+- Full verification: `.\.python312-embed\python.exe -m pytest` reported 195 passed in 69.93s.
+- Real-image nested-navigation smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, root listing `real_parser_backed` with 11 entries, directory navigation `ok` / `real_parser_backed` with 4 nested entries, files=0, directories=4, other=0, candidate/attempted root-directory counts 2/2, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+- Stage 5 search/timeline remains blocked until S4.5-IMP09A and S4.5-IMP10 are reviewed and S5-T01 is rerun.
+
+## 2026-07-23 - S4.5-IMP09 Ready Ticket
+
+- Accepted S4.5-IMP08 as reviewed/done for the explicit image-hash capability, with the real full-image hash still noted as a long-running reviewer/user artifact unless separately completed.
+- Promoted `tickets/stage-4.5/S4.5-IMP09-nested-directory-navigation.md` to `Ready`.
+- Tightened the S4.5-IMP09 ticket and VS Code prompt to require parser-backed nested directory listing from the real E01, `directory-listing.json`, `directory-listing.csv`, `navigation-readiness.json`, manifest/summary updates, nonzero nested entry count, type counts, and privacy-preserving handoff wording.
+- Updated active Stage 4.5, Stage 5, README, goal, plan, functionality, onboarding, manual-testing, prompt, progression, and review docs so S4.5-IMP09 was the next implementation slice while S4.5-IMP10 and S5-T01 rerun remained blocked.
+
 ## 2026-07-22 - S4.5-IMP08 Image-Level Hash Implementation
 
-- Marked `tickets/stage-4.5/S4.5-IMP08-image-level-verification-hash.md` as `Review`.
+- Marked `tickets/stage-4.5/S4.5-IMP08-image-level-verification-hash.md` as `Review`; it was later accepted as the reviewed capability slice.
 - Added first-testing documentation for `--hash-image`, `--image-hash-algorithm`, `--image-hash-chunk-size`, and `outputs/image-hash.json`.
-- Updated active Stage 4.5, Stage 5, README, goal, plan, functionality, prompt, backend/API/core, manual-testing, progression, and review docs so S4.5-IMP08 is ready for review while S4.5-IMP09 and S4.5-IMP10 remain pending.
+- Updated active Stage 4.5, Stage 5, README, goal, plan, functionality, prompt, backend/API/core, manual-testing, progression, and review docs for the S4.5-IMP08 review handoff.
 - Recorded that full logical-image hashing is explicit and opt-in: default runs write image hash status `not_run`; requested runs compute SHA-256 over the EWF logical image stream, not stored EWF hash metadata, segment container files, selected-file hashes, or stub bytes.
 - Recorded that the full local real-image hash was not run to completion in this coding-agent session because the existing reviewed real-image smoke reports a logical media size of 1,024,209,543,168 bytes; reviewer/user can run the documented `--hash-image` command when ready.
 - Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_first_testing_command.py` reported 31 passed in 32.90s.
 - Full verification: `.\.python312-embed\python.exe -m pytest` reported 189 passed in 87.61s.
-- Stage 5 search/timeline remains blocked until S4.5-IMP08 through S4.5-IMP10 are reviewed and S5-T01 is rerun.
+- Stage 5 search/timeline remains blocked until S4.5-IMP09A and S4.5-IMP10 are reviewed and S5-T01 is rerun.
 
 ## 2026-07-22 - S4.5 Demo Feedback Extension
 
 - Added `tickets/stage-4.5/S4.5-IMP08-image-level-verification-hash.md` as `Ready`.
-- Added `tickets/stage-4.5/S4.5-IMP09-nested-directory-navigation.md` as `Draft`.
+- Added `tickets/stage-4.5/S4.5-IMP09-nested-directory-navigation.md` for nested directory navigation; it was later promoted to `Ready`.
 - Added `tickets/stage-4.5/S4.5-IMP10-demo-guide-and-stage-5-gate-refresh.md` as `Draft`.
 - Added matching VS Code coding-agent prompts for S4.5-IMP08 through S4.5-IMP10.
 - Updated active Stage 4.5, Stage 5, README, goal, plan, functionality, prompt, manual-testing, progression, and review docs so Stage 5 remains blocked until the new image-hash and nested-navigation proof points are reviewed.

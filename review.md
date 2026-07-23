@@ -12,9 +12,113 @@ Review priorities for this project:
 
 ## Current Review Queue
 
-## 2026-07-22 - S4.5-IMP08 Implementation Handoff
+## 2026-07-23 - S4.5-IMP09A Review Acceptance
+
+Result: accepted. S4.5-IMP09 and S4.5-IMP09A are done.
+
+Findings:
+
+- No blocking findings.
+- The corrected demo satisfies the user's Stage 4.5 proof bar for seeing actual files inside the real E01-backed filesystem through bounded parser-backed directory navigation.
+- The implementation remains a command/artifact demo, not an interactive `cd`/`dir` browser.
+
+Verification:
+
+- Focused reviewer run: `.\.python312-embed\python.exe -m pytest app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py`: 42 passed in 52.20s.
+- Full reviewer run: `.\.python312-embed\python.exe -m pytest`: 199 passed in 40.70s.
+- Reviewer real-image corrected demo smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, root listing `real_parser_backed` with 11 entries, directory navigation `ok` / `real_parser_backed`, 19 nested entries, files=19, directories=0, other=0, selected depth 2, root/child attempts 1/2, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+- Reviewer explicit nested file-path smoke exited 0 with `path_not_directory`, parser backing `real_parser_backed`, entry count 0, selected depth 3, `source_modified: false`, and `read_only_asserted: true`.
+- `git diff --check` found no whitespace errors, only normal line-ending notices.
+- No lingering Python or pytest process was found after verification.
+
+Residual scope:
+
+- S4.5-IMP10 remains required before S5-T01 rerun.
+- A separate future ticket should own an interactive command-line navigator if the desired experience is shell-like `dir`, `cd <folder>`, and back/up browsing.
+
+## 2026-07-23 - S4.5-IMP09A Implementation Handoff
 
 Result: ready for research/review agent review.
+
+Completed:
+
+- Updated `--demo-list-first-directory` to keep the S4.5-IMP09 bounded root-candidate behavior and probe direct child directories only when needed to find a file-visible listing.
+- Added `selected_depth`, `file_visible`, `candidate_directory_count`, `attempted_directory_count`, and `attempted_child_directory_count` to directory listing artifacts, navigation readiness, manifest, command summary, and static HTML summary.
+- Fixed parser-backed explicit nested file paths so they return `path_not_directory`, not `path_not_found`, without reading file content.
+- Added dependency-free fake-parser tests for file-visible child probing and nested file-path status.
+
+Verification:
+
+- Focused portable-runtime run: `.\.python312-embed\python.exe -m pytest app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py`: 42 passed in 62.18s.
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 199 passed in 46.10s.
+- Corrected real-image demo smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, root listing `real_parser_backed` with 11 entries, directory navigation `ok` / `real_parser_backed` with 19 nested entries, type counts files=19 directories=0 other=0, selected depth 2, root/child attempts 1/2, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+- Explicit nested file-path smoke exited 0 with directory status `path_not_directory`, parser backing `real_parser_backed`, entry count 0, selected depth 3, `source_modified: false`, and `read_only_asserted: true`.
+
+Scope intentionally not implemented:
+
+- No interactive `cd`/`dir` style command-line navigator, recursive traversal, broad crawl, content extraction, selected-file auto-selection, selected-file preview/export/hash/signature, search/timeline, UI/reporting system, deleted recovery, carving, packaging, dependency installation, commit, or push.
+- A separate future ticket should own the interactive command-line navigation experience if the user wants shell-like go-in/go-out browsing.
+
+## 2026-07-23 - S4.5-IMP09 Review Findings
+
+Result: not accepted as done yet; S4.5-IMP09A is required.
+
+Findings:
+
+- The S4.5-IMP09 real-image demo mode produced a real parser-backed nested listing, but it reported `file_count = 0`, `directory_count = 4`. That proves nested directory navigation, but it still falls short of the user's hands-on demo requirement to see actual files within the image.
+- A reviewer-run explicit deeper directory path produced a parser-backed listing with regular files, proving the implementation can reach files when pointed at the right nested path. The default demo path should use a bounded correction to get there without broad crawling.
+- A reviewer-run explicit nested file path returned `path_not_found`; known file paths should return `path_not_directory`.
+
+Verification:
+
+- Focused reviewer run: `.\.python312-embed\python.exe -m pytest app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py`: 38 passed in 53.37s.
+- Full reviewer run: `.\.python312-embed\python.exe -m pytest`: 195 passed in 47.23s.
+- Reviewer real-image demo smoke exited 0 with directory navigation `ok` / `real_parser_backed`, 4 entries, files=0, directories=4, other=0.
+- Reviewer explicit deeper path smoke exited 0 with directory navigation `ok` / `real_parser_backed`, 19 entries, files=19, directories=0, other=0.
+
+Correction:
+
+- Added `tickets/stage-4.5/S4.5-IMP09A-file-visible-navigation-correction.md`.
+- Added `prompts/vscode-agent/2026-07-23-s4.5-imp09a-file-visible-navigation-correction.md`.
+- Stage 5 remains blocked; do not proceed to S4.5-IMP10 or S5-T01 until S4.5-IMP09A is reviewed.
+
+## 2026-07-23 - S4.5-IMP09 Implementation Handoff
+
+Result: ready for research/review agent review.
+
+Completed:
+
+- Added explicit nested directory navigation to the first-testing command with `--list-directory-path` and `--demo-list-first-directory`.
+- Added `outputs/directory-listing.json`, `outputs/directory-listing.csv`, and `outputs/navigation-readiness.json`.
+- Updated `Pytsk3FilesystemAdapter` and `list_directory()` so parser-backed adapters can list one requested directory below root while root-only adapters keep structured unsupported states.
+- Updated run manifest, command summary, static local HTML summary, unsupported sections, tests, and active status docs.
+- Deferred `--list-directory-id` because the current parser-backed file-id shape is not yet a safe stable directory resolver.
+
+Verification:
+
+- Focused portable-runtime run: `.\.python312-embed\python.exe -m pytest app\tests\test_filesystem_adapter.py app\tests\test_directory_listing.py app\tests\test_first_testing_command.py`: 38 passed in 48.60s.
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 195 passed in 69.93s.
+- Real-image nested-navigation smoke exited 0 with `ok_with_unsupported_sections`, 53 segments, root listing `real_parser_backed` with 11 entries, directory navigation `ok` / `real_parser_backed` with 4 nested entries, type counts files=0 directories=4 other=0, candidate/attempted root-directory counts 2/2, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+- The smoke found no regular file among the bounded root-directory candidate set; it did try both candidates before using the nonempty parser-backed directory listing.
+
+Scope intentionally not implemented:
+
+- No S4.5-IMP10 guide/gate refresh, S5-T01 rerun, S5-T02+ work, recursive traversal, broad crawl, content extraction, selected-file auto-selection, search/timeline, UI/reporting system, deleted recovery, carving, packaging, dependency installation, commit, or push.
+
+## 2026-07-23 - S4.5-IMP09 Ticket Promotion
+
+Result: S4.5-IMP09 is ready to feed to the coding agent.
+
+Ticket decisions:
+
+- Accepted S4.5-IMP08 as the reviewed image-hash capability slice after focused/full tests and a real-image no-hash smoke; the completed full-image hash remains a long-running reviewer/user artifact unless separately produced.
+- Promoted S4.5-IMP09 from draft to ready.
+- Tightened S4.5-IMP09 so the coding agent must produce parser-backed nested directory-listing artifacts from the real E01, not only partition/root status.
+- Required a real-image smoke with nonzero nested entry count, type counts, read-only/source-modified assertions, and no real internal names/paths quoted in the handoff.
+
+## 2026-07-22 - S4.5-IMP08 Review Acceptance
+
+Result: accepted as implementation/capability; S4.5-IMP08 is done.
 
 Completed:
 
@@ -46,9 +150,9 @@ User feedback:
 Ticket decisions:
 
 - Added S4.5-IMP08 as `Ready` for an independent full logical-image hash artifact over the EWF stream.
-- Added S4.5-IMP09 as `Draft` for nested directory navigation into actual filesystem entries.
+- Added S4.5-IMP09 for nested directory navigation into actual filesystem entries; it was later promoted to `Ready`.
 - Added S4.5-IMP10 as `Draft` for final command-line guide and Stage 5 gate refresh after hash/navigation.
-- Stage 5 S5-T01 rerun and S5-T02+ remain blocked until S4.5-IMP08 through S4.5-IMP10 are reviewed.
+- At that time, Stage 5 S5-T01 rerun and S5-T02+ remained blocked on the added Stage 4.5 demo-feedback tickets. This was later narrowed to S4.5-IMP10 after S4.5-IMP09A acceptance.
 
 ## 2026-07-22 - S4.5-IMP07 Review Acceptance
 
