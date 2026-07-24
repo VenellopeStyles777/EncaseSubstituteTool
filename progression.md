@@ -12,6 +12,30 @@ YYYY-MM-DD
 - Next:
 ```
 
+2026-07-24
+- Completed: reviewed and accepted S4.5-IMP11 and S4.5-IMP12 as done, then updated the Stage 4.5 demo showcase to include project/inspector/custodian identity, logical-image browser labels, and hash progress/interrupted-status behavior.
+- Learned: the demo now has enough presentation polish for the basic real-E01 command-line showcase: named project artifacts, parser-backed root/nested navigation, live browser labels, static HTML summary, and optional long-running full logical-image hashing with progress. A completed 1 TB digest still requires the hash command to finish; bounded progress smoke is not completed hash proof.
+- Blocked by: no Stage 4.5 demo-follow-up blocker remains. Stage 5 search/timeline implementation has not started.
+- Next: prepare S5-T02 as the next Stage 5 ticket. Reviewer verification: focused run `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_first_testing_command.py app\tests\test_directory_browser.py` reported 53 passed in 19.72s; full run `.\.python312-embed\python.exe -m pytest` reported 215 passed in 52.64s.
+
+2026-07-24
+- Completed: implemented S4.5-IMP12 image-hash progress and interrupted-status behavior. Added logical-image hash progress callbacks, terminal progress output on stderr, `outputs/image-hash-progress.json`, manifest/summary/HTML progress fields, and interrupted hash status without a digest.
+- Learned: the long-running hash path can stay honest without inventing completion proof: progress is based on bytes hashed over logical media size, `--json-only` stdout remains parseable, and local JSON keeps examiner-owned detail while shared status text can be redacted.
+- Blocked by: S4.5-IMP11 and S4.5-IMP12 are both in Review; S5-T02 remains paused unless the user explicitly resumes Stage 5.
+- Next: review S4.5-IMP12, then decide whether to accept the S4.5-IMP11/S4.5-IMP12 follow-up lane or explicitly resume Stage 5. Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_first_testing_command.py` reported 43 passed in 66.17s. Full verification: `.\.python312-embed\python.exe -m pytest` reported 215 passed in 78.24s. Bounded real-image hash-progress smoke was stopped by script after 35 seconds without completing the hash; it wrote `image-hash-progress.json` and `image-hash.json` with status `failed`, 322,961,408 bytes hashed, logical media size 1,024,209,543,168, percent about 0.031533, digest unavailable, `source_modified: false`, and `read_only_asserted: true`. `git diff --check` passed with line-ending warnings only, and no lingering Python/pytest process remained.
+
+2026-07-24
+- Completed: implemented S4.5-IMP11 demo identity and navigation labels. Added `--project-name`, `--inspector`, and `--custodian` to first-testing while preserving `--case-name`, `--case-description`, and `--actor`; added normalized identity output to first-testing artifacts; updated the live directory browser header/prompt to use a project/logical-image label.
+- Learned: the existing command flow could carry identity without changing parser behavior because the new fields are presentation/case labels, not evidence provenance. The browser only needed display-label plumbing around the existing `list_directory()` loop.
+- Blocked by: S4.5-IMP12 remains Draft for hash progress/loading-bar and interrupted-status behavior; S5-T02 remains paused unless the user explicitly resumes Stage 5.
+- Next: review S4.5-IMP11, then promote or implement S4.5-IMP12 unless the user chooses to resume Stage 5. Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_first_testing_command.py app\tests\test_directory_browser.py` reported 34 passed in 79.52s. Full verification: `.\.python312-embed\python.exe -m pytest` reported 211 passed in 83.05s. Privacy-safe real-image smoke exited 0 with identity present, 53 segments, metadata `metadata_available`, verification `not_supported`, EWF stream `ok`, 5 volumes, filesystem `ok`, root listing `real_parser_backed` with 11 entries, nested listing `real_parser_backed` with 19 entries and files=19/directories=0/other=0, browser setup `ok` with display label `Stage 4.5 Demo`, image hash `not_run`, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+
+2026-07-24
+- Completed: checked after the user interrupted the long `--hash-image` demo command, found no lingering Python/pytest process, and cleared the generated `.test-artifacts\first-testing` output folder so the user can regenerate fresh artifacts. Added S4.5-IMP11 as a Ready ticket/prompt for project/inspector/custodian identity and logical-image navigation labels, and added S4.5-IMP12 as a Draft ticket for hash progress/loading-bar and interrupted-status behavior.
+- Learned: the hash operation likely appeared stuck because it was hashing a roughly 1 TB logical image without a visible progress signal, and the demo navigation is currently too evidence-segment-oriented for presentation. The demo needs to feel like a named project/logical image while still preserving the real EWF/E01 source in provenance.
+- Blocked by: S4.5-IMP11 is ready but not implemented/reviewed; S4.5-IMP12 is drafted but not yet promoted; S5-T02 remains paused unless the user explicitly resumes Stage 5.
+- Next: feed S4.5-IMP11 to the existing VS Code coding-agent task, review its identity/navigation-label implementation, then promote S4.5-IMP12 for hash progress.
+
 2026-07-23
 - Completed: reviewed and accepted the S5-T01 rerun as done with a passed-gate result.
 - Learned: S4.5-IMP01 through S4.5-IMP10 satisfy the substantial-test runway for the Stage 5 gate, while future Stage 5 work must still preserve provenance/status boundaries and cannot treat `not_run` image hashes, static HTML summaries, browser output, recursive crawl assumptions, or auto-selected content as stronger evidence than they are.
@@ -27,7 +51,7 @@ YYYY-MM-DD
 2026-07-23
 - Completed: promoted S5-T01 rerun to `Ready` after S4.5-IMP10 acceptance and created a fresh coding-agent prompt for the current Stage 4.5-complete state.
 - Learned: the rerun must evaluate S4.5-IMP01 through S4.5-IMP10, preserve the July 16 failed gate as historical only, and stop at review without starting S5-T02.
-- Blocked by: at ticket-promotion time, S5-T02 and later search/timeline work still depended on S5-T01 rerun implementation, review, and acceptance. Current state is superseded by the acceptance entry above: S5-T01 rerun is done, and S5-T02 is the next ticket to prepare.
+- Blocked by: at ticket-promotion time, S5-T02 and later search/timeline work still depended on S5-T01 rerun implementation, review, and acceptance. This was later superseded by the 2026-07-24 manual-demo follow-up: S5-T02 is paused behind S4.5-IMP11/S4.5-IMP12 unless explicitly resumed.
 - Next: feed the S5-T01 rerun prompt to the existing VS Code coding-agent task. Expected result if the gate passes: S5-T01 moves to `Review`, S5-T02 remains `Draft`, and S5-T02 can be recommended only after research/review-agent acceptance.
 
 2026-07-23

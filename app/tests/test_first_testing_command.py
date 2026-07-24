@@ -93,6 +93,15 @@ class FakeHashEwfImageByteStream:
         )
 
 
+class InterruptingHashEwfImageByteStream(FakeHashEwfImageByteStream):
+    DATA = b"logical image bytes for interrupted hashing"
+
+    def read_at(self, offset: int, length: int):
+        if offset >= 7:
+            raise KeyboardInterrupt
+        return super().read_at(offset, length)
+
+
 SELECTED_BYTES = b"%PDF-1.7\nselected bytes"
 
 
@@ -224,6 +233,7 @@ def _required_artifacts(case_dir: Path, output_dir: Path) -> list[Path]:
         output_dir / "root-listing.json",
         output_dir / "demo-readiness.json",
         output_dir / "image-hash.json",
+        output_dir / "image-hash-progress.json",
         output_dir / "selected-file-readiness.json",
         output_dir / "selected-file-preview.json",
         output_dir / "selected-file-analysis.json",
@@ -758,6 +768,9 @@ def test_direct_e01_with_stub_creates_case_artifacts_and_persistence():
             (output_dir / "directory-listing.json").read_text(encoding="utf-8")
         )
         image_hash = json.loads((output_dir / "image-hash.json").read_text(encoding="utf-8"))
+        image_hash_progress = json.loads(
+            (output_dir / "image-hash-progress.json").read_text(encoding="utf-8")
+        )
         csv_header = (output_dir / "file-list.csv").read_text(encoding="utf-8").splitlines()[0]
         html_summary = (output_dir / "reports" / "summary.html").read_text(encoding="utf-8")
         artifact_exists = all(path.exists() for path in _required_artifacts(case_dir, output_dir))
@@ -777,6 +790,9 @@ def test_direct_e01_with_stub_creates_case_artifacts_and_persistence():
     assert result["image_hash"]["hexdigest_available"] is False
     assert image_hash["status"] == "not_run"
     assert image_hash["hexdigest"] is None
+    assert image_hash_progress["status"] == "not_run"
+    assert image_hash_progress["digest_available"] is False
+    assert result["image_hash"]["progress_artifact_path"].endswith("image-hash-progress.json")
     assert selected_readiness["status"]["code"] == "not_run"
     assert selected_preview["status"] == "not_run"
     assert result["file_list"]["status"] == "not_run"
@@ -804,6 +820,96 @@ def test_direct_e01_with_stub_creates_case_artifacts_and_persistence():
         "first_testing.run_completed",
     }
     assert audit_actions == actions
+
+
+def test_first_testing_identity_new_options_are_written_to_artifacts():
+    with _dummy_first_testing_directory("identity-new-options") as directory:
+        evidence_dir = directory / "evidence & root"
+        _touch_files(evidence_dir, "sample.E01")
+        selected_path = evidence_dir / "sample.E01"
+        case_dir = directory / "case"
+        output_dir = directory / "output"
+
+        result = run_first_testing(
+            selected_path,
+            case_path=case_dir,
+            output_path=output_dir,
+            project_name="Demo Project",
+            case_name="Legacy Case",
+            case_description="Demo description",
+            inspector="Inspector Name",
+            custodian="Custodian Name",
+            actor="audit-actor",
+            adapter_name="stub",
+            redact_paths=True,
+        )
+
+        case_artifact = json.loads((output_dir / "case.json").read_text(encoding="utf-8"))
+        manifest = json.loads((case_dir / "run-manifest.json").read_text(encoding="utf-8"))
+        summary = (case_dir / "command-summary.txt").read_text(encoding="utf-8")
+        html_summary = (output_dir / "reports" / "summary.html").read_text(encoding="utf-8")
+        connection = connect(case_dir / "case.db")
+        try:
+            audit_actors = {
+                row["actor"]
+                for row in connection.execute("SELECT actor FROM audit_events").fetchall()
+            }
+        finally:
+            connection.close()
+
+    assert result["identity"]["project_name"] == "Demo Project"
+    assert result["identity"]["project_name_source"] == "project_name"
+    assert result["identity"]["legacy_case_name"] == "Legacy Case"
+    assert result["identity"]["inspector"] == "Inspector Name"
+    assert result["identity"]["inspector_source"] == "inspector"
+    assert result["identity"]["custodian"] == "Custodian Name"
+    assert result["identity"]["audit_actor"] == "audit-actor"
+    assert result["identity"]["legacy_actor"] == "audit-actor"
+    assert result["case"]["name"] == "Demo Project"
+    assert result["command"]["project_name"] == "Demo Project"
+    assert result["command"]["case_name"] == "Demo Project"
+    assert result["command"]["inspector"] == "Inspector Name"
+    assert result["command"]["custodian"] == "Custodian Name"
+    assert result["command"]["actor"] == "audit-actor"
+    assert case_artifact["identity"] == result["identity"]
+    assert manifest["identity"] == result["identity"]
+    assert "Project: Demo Project" in summary
+    assert "Inspector: Inspector Name" in summary
+    assert "Custodian: Custodian Name" in summary
+    assert str(evidence_dir.resolve()) not in summary
+    assert "Demo Project" in html_summary
+    assert "Inspector Name" in html_summary
+    assert "Custodian Name" in html_summary
+    assert str(evidence_dir.resolve()) not in html_summary
+    assert audit_actors == {"audit-actor"}
+
+
+def test_first_testing_identity_preserves_case_name_and_actor_compatibility():
+    with _dummy_first_testing_directory("identity-old-options") as directory:
+        evidence_dir = directory / "evidence"
+        _touch_files(evidence_dir, "sample.E01")
+        case_dir = directory / "case"
+        output_dir = directory / "output"
+
+        result = run_first_testing(
+            evidence_dir / "sample.E01",
+            case_path=case_dir,
+            output_path=output_dir,
+            case_name="Old Case",
+            actor="Old Actor",
+            adapter_name="stub",
+        )
+        case_artifact = json.loads((output_dir / "case.json").read_text(encoding="utf-8"))
+
+    assert result["identity"]["project_name"] == "Old Case"
+    assert result["identity"]["project_name_source"] == "case_name"
+    assert result["identity"]["legacy_case_name"] == "Old Case"
+    assert result["identity"]["inspector"] == "Old Actor"
+    assert result["identity"]["inspector_source"] == "actor"
+    assert result["identity"]["custodian"] is None
+    assert result["identity"]["audit_actor"] == "Old Actor"
+    assert result["case"]["name"] == "Old Case"
+    assert case_artifact["identity"] == result["identity"]
 
 
 def test_evidence_dir_and_first_segment_resolves_selected_e01():
@@ -964,9 +1070,13 @@ def test_hash_image_option_writes_logical_image_hash_artifact(monkeypatch):
         )
 
         image_hash = json.loads((output_dir / "image-hash.json").read_text(encoding="utf-8"))
+        image_hash_progress = json.loads(
+            (output_dir / "image-hash-progress.json").read_text(encoding="utf-8")
+        )
         metadata = json.loads((output_dir / "metadata.json").read_text(encoding="utf-8"))
         manifest = json.loads((case_dir / "run-manifest.json").read_text(encoding="utf-8"))
         summary = (case_dir / "command-summary.txt").read_text(encoding="utf-8")
+        html_summary = (output_dir / "reports" / "summary.html").read_text(encoding="utf-8")
 
     expected_digest = hashlib.sha256(FakeHashEwfImageByteStream.DATA).hexdigest()
     assert result["image_hash"]["requested"] is True
@@ -980,6 +1090,15 @@ def test_hash_image_option_writes_logical_image_hash_artifact(monkeypatch):
     assert metadata["metadata"]["hashes"]["md5"] == "stored-md5"
     assert image_hash["hexdigest"] != metadata["metadata"]["hashes"]["md5"]
     assert image_hash["byte_count_matches_media_size"] is True
+    assert image_hash["progress"]["status"] == "completed"
+    assert image_hash["progress"]["percent_complete"] == 100
+    assert image_hash["progress_artifact_path"].endswith("image-hash-progress.json")
+    assert image_hash_progress["schema_version"] == "stage4_5.image_hash_progress.v1"
+    assert image_hash_progress["status"] == "completed"
+    assert image_hash_progress["bytes_hashed"] == len(FakeHashEwfImageByteStream.DATA)
+    assert image_hash_progress["logical_media_size"] == len(FakeHashEwfImageByteStream.DATA)
+    assert image_hash_progress["percent_complete"] == 100
+    assert image_hash_progress["digest_available"] is True
     assert image_hash["source_kind"] == "ewf_logical_image"
     assert image_hash["adapter_name"] == "pyewf-reader"
     assert image_hash["segment_count"] == 2
@@ -990,7 +1109,13 @@ def test_hash_image_option_writes_logical_image_hash_artifact(monkeypatch):
     assert image_hash["source_modified"] is False
     assert manifest["image_hash"]["status"] == "completed"
     assert manifest["image_hash"]["artifact_path"].endswith("image-hash.json")
+    assert manifest["image_hash"]["progress_artifact_path"].endswith("image-hash-progress.json")
+    assert manifest["image_hash"]["percent_complete"] == 100
     assert "Image hash request: True (completed)" in summary
+    assert "Image hash percent: 100.00%" in summary
+    assert "Image hash progress artifact:" in summary
+    assert "Image hash percent" in html_summary
+    assert "Image hash progress artifact" in html_summary
     assert expected_digest not in summary
 
 
@@ -1026,6 +1151,88 @@ def test_hash_image_dependency_unavailable_is_structured(monkeypatch):
     assert "dependency_unavailable" in [warning["code"] for warning in image_hash["warnings"]]
 
 
+def test_hash_image_interrupted_writes_non_success_progress_without_digest(monkeypatch):
+    monkeypatch.setattr(first_testing_api, "EwfImageByteStream", InterruptingHashEwfImageByteStream)
+    handle = FakeHandle()
+    adapter = PyewfEwfReaderAdapter(pyewf_module=FakePyewf(handle))
+
+    with _dummy_first_testing_directory("image-hash-interrupted") as directory:
+        evidence_dir = directory / "evidence"
+        _touch_files(evidence_dir, "sample.E01", "sample.E02")
+        case_dir = directory / "case"
+        output_dir = directory / "output"
+
+        result = run_first_testing(
+            evidence_dir / "sample.E01",
+            case_path=case_dir,
+            output_path=output_dir,
+            adapter=adapter,
+            hash_image=True,
+            image_hash_chunk_size=7,
+        )
+
+        image_hash = json.loads((output_dir / "image-hash.json").read_text(encoding="utf-8"))
+        image_hash_progress = json.loads(
+            (output_dir / "image-hash-progress.json").read_text(encoding="utf-8")
+        )
+        summary = (case_dir / "command-summary.txt").read_text(encoding="utf-8")
+
+    assert result["image_hash"]["status"] == "interrupted"
+    assert result["image_hash"]["hexdigest_available"] is False
+    assert image_hash["status"] == "interrupted"
+    assert image_hash["hexdigest"] is None
+    assert image_hash["bytes_hashed"] == 7
+    assert image_hash["byte_count_matches_media_size"] is False
+    assert image_hash["progress"]["status"] == "interrupted"
+    assert image_hash["progress"]["digest_available"] is False
+    assert image_hash_progress["status"] == "interrupted"
+    assert image_hash_progress["bytes_hashed"] == 7
+    assert image_hash_progress["digest_available"] is False
+    assert "image_hash_interrupted" in [warning["code"] for warning in image_hash["warnings"]]
+    assert "Image hash request: True (interrupted)" in summary
+    assert "Image hash percent:" in summary
+
+
+def test_hash_image_json_only_keeps_stdout_parseable_and_progress_on_stderr(
+    monkeypatch, capsys
+):
+    def fake_pyewf_adapter():
+        return PyewfEwfReaderAdapter(pyewf_module=FakePyewf(FakeHandle()))
+
+    monkeypatch.setattr(first_testing_api, "PyewfEwfReaderAdapter", fake_pyewf_adapter)
+    monkeypatch.setattr(first_testing_api, "EwfImageByteStream", FakeHashEwfImageByteStream)
+
+    with _dummy_first_testing_directory("json-only-image-hash-progress") as directory:
+        evidence_dir = directory / "evidence root"
+        _touch_files(evidence_dir, "sample.E01")
+        case_dir = directory / "case"
+
+        exit_code = main(
+            [
+                str(evidence_dir / "sample.E01"),
+                "--case",
+                str(case_dir),
+                "--hash-image",
+                "--image-hash-chunk-size",
+                "7",
+                "--json-only",
+                "--redact-paths",
+            ]
+        )
+
+        captured = capsys.readouterr()
+        parsed = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert parsed["schema_version"] == FIRST_TESTING_RUN_SCHEMA_VERSION
+    assert parsed["image_hash"]["status"] == "completed"
+    assert parsed["image_hash"]["hexdigest_available"] is True
+    assert parsed["image_hash"]["percent_complete"] == 100
+    assert "Image hash:" in captured.err
+    assert "<EVIDENCE_ROOT>" in captured.err
+    assert str(evidence_dir.resolve()) not in captured.err
+
+
 def test_hash_image_with_stub_adapter_does_not_hash_stub_bytes():
     with _dummy_first_testing_directory("image-hash-stub-refusal") as directory:
         evidence_dir = directory / "evidence"
@@ -1042,10 +1249,15 @@ def test_hash_image_with_stub_adapter_does_not_hash_stub_bytes():
         image_hash = json.loads(
             (case_dir / "outputs" / "image-hash.json").read_text(encoding="utf-8")
         )
+        image_hash_progress = json.loads(
+            (case_dir / "outputs" / "image-hash-progress.json").read_text(encoding="utf-8")
+        )
 
     assert result["image_hash"]["status"] == "stream_unavailable"
     assert image_hash["status"] == "stream_unavailable"
     assert image_hash["hexdigest"] is None
+    assert image_hash_progress["status"] == "stream_unavailable"
+    assert image_hash_progress["digest_available"] is False
     assert "stub_adapter_image_hash_not_supported" in [
         warning["code"] for warning in image_hash["warnings"]
     ]
@@ -1631,6 +1843,12 @@ def test_json_only_prints_parseable_manifest(capsys):
                 str(case_dir),
                 "--adapter",
                 "stub",
+                "--project-name",
+                "CLI Project",
+                "--inspector",
+                "CLI Inspector",
+                "--custodian",
+                "CLI Custodian",
                 "--json-only",
             ]
         )
@@ -1640,6 +1858,9 @@ def test_json_only_prints_parseable_manifest(capsys):
     assert exit_code == 0
     assert parsed["status"] == "ok_with_unsupported_sections"
     assert parsed["schema_version"] == FIRST_TESTING_RUN_SCHEMA_VERSION
+    assert parsed["identity"]["project_name"] == "CLI Project"
+    assert parsed["identity"]["inspector"] == "CLI Inspector"
+    assert parsed["identity"]["custodian"] == "CLI Custodian"
 
 
 def test_default_pyewf_cli_dependency_unavailable_still_writes_artifacts(monkeypatch, capsys):

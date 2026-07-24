@@ -6,9 +6,9 @@ After that cleanup gate, Stage 5 must not turn synthetic/provider-backed data in
 
 ## Stage 5 Status
 
-Status: Deferred. Stage 5 search/timeline implementation has not started. S5-T00 documentation cleanup is done; S5-T01 rerun is accepted/done with a passed-gate result after the older historical failed-gate/blocker result, S5-T01A is done after hardening older active Stage 4.5 bypass/priority wording, and S5-T02 through S5-T16 remain detailed draft tickets with matching prompt files. Stage 4.5 has been extended after hands-on demo feedback; S4.5-IMP01 through S4.5-IMP10 are reviewed/done.
+Status: Deferred. Stage 5 search/timeline implementation has not started. S5-T00 documentation cleanup is done; S5-T01 rerun is accepted/done with a passed-gate result after the older historical failed-gate/blocker result, S5-T01A is done after hardening older active Stage 4.5 bypass/priority wording, and S5-T02 through S5-T16 remain detailed draft tickets with matching prompt files. Stage 4.5 has been extended again after 2026-07-24 hands-on demo feedback: S4.5-IMP01 through S4.5-IMP12 are reviewed/done.
 
-Current override: Stage 4.5 first testing has completed the extended prerequisite runway, and S5-T01 rerun is accepted. S5-T02 is the next ticket to prepare; S5-T03 and later remain draft until earlier Stage 5 tickets are reviewed.
+Current override: Stage 4.5 first testing passed the S5-T01 gate, and the later S4.5-IMP11/S4.5-IMP12 demo follow-ups are accepted. S5-T02 remains the next Stage 5 ticket to prepare.
 
 ## Hard Stage 4.5 Gate
 
@@ -28,8 +28,10 @@ S5-T01 must verify the Stage 4.5 runway before any search/timeline implementatio
 | S4.5-IMP09 | Nested directory navigation into actual filesystem entries reviewed, including S4.5-IMP09A file-visible correction |
 | S4.5-IMP09B | Live command-line directory browser reviewed |
 | S4.5-IMP10 | Command-line guide and Stage 5 gate refresh reviewed after hash/navigation/browser |
+| S4.5-IMP11 | Demo identity and logical-image navigation labels reviewed/done before S5-T02 |
+| S4.5-IMP12 | Full-image hash progress/loading-bar and interrupted-status behavior reviewed/done before S5-T02 |
 
-If S5-T01 finds any of these incomplete, it should record Stage 5 as blocked and name the exact Stage 4.5 ticket(s) still needed. It should not continue into S5-T02.
+If a later readiness refresh finds any required Stage 4.5 follow-up incomplete, it should record Stage 5 as blocked or paused and name the exact Stage 4.5 ticket(s) still needed. At the current handoff, S4.5-IMP01 through S4.5-IMP12 are reviewed/done.
 
 ## Detailed Ticket Order
 
@@ -38,7 +40,7 @@ If S5-T01 finds any of these incomplete, it should record Stage 5 as blocked and
 | S5-T00 | Done | Documentation organization, duplication cleanup, and unused/confusing structure review |
 | S5-T01 | Done | Readiness and Stage 4.5 completion gate rerun accepted; older failed gate remains historical |
 | S5-T01A | Done | Stage 4.5 gate language hardening for older active bypass/priority wording |
-| S5-T02 | Draft | Input inventory and provenance audit; next ticket to prepare |
+| S5-T02 | Draft | Input inventory and provenance audit; next Stage 5 ticket to prepare |
 | S5-T03 | Draft | Searchable record contracts |
 | S5-T04 | Draft | Search query, filter, and sort contracts |
 | S5-T05 | Draft | File metadata search engine |

@@ -6,14 +6,16 @@ This guide is for repository-local manual testing before Stage 5 search/timeline
 
 ## Current Stage 4.5 Demo Package
 
-S4.5-IMP10 is the final documentation/status refresh for the reviewed Stage 4.5 demo runway.
+S4.5-IMP10 is the reviewed documentation/status refresh for the Stage 4.5 demo runway. User hands-on testing on 2026-07-24 reopened two narrow demo follow-ups before major Stage 5 work.
 
 - S4.5-IMP08 adds an explicit independent full logical-image hash command path and is reviewed/done.
 - S4.5-IMP09 adds explicit nested directory navigation, and S4.5-IMP09A is reviewed/done after correcting the default demo to prefer regular-file-visible nested listings when available.
 - S4.5-IMP09B is reviewed/done with a live command-line browser over the same reviewed parser-backed directory listing path.
 - S4.5-IMP10 packages the final copyable guide and Stage 5 gate packet and is reviewed/done.
+- S4.5-IMP11 is reviewed/done for project/inspector/custodian identity fields and logical-image navigation labels.
+- S4.5-IMP12 is reviewed/done for accurate full-image hash progress/loading-bar and interrupted-status behavior.
 
-S5-T01 rerun is accepted with a passed-gate result. S5-T02 is the next Stage 5 ticket to prepare; S5-T03 and later stay draft until earlier Stage 5 tickets are reviewed.
+S5-T01 rerun is accepted with a passed-gate result. S5-T02 is the next Stage 5 ticket to prepare.
 
 ## Prerequisites
 
@@ -51,6 +53,9 @@ $noSelectionCase = "$demoRoot\s4-5-demo-no-selection"
 $navigationCase = "$demoRoot\s4-5-demo-navigation"
 $hashCase = "$demoRoot\s4-5-demo-image-hash"
 $selectedCase = "$demoRoot\s4-5-demo-selected-file"
+$projectName = "Stage 4.5 Demo"
+$inspector = "Demo Inspector"
+$custodian = "Demo Custodian"
 ```
 
 Optional fresh-output cleanup under `.test-artifacts\first-testing\`:
@@ -66,7 +71,7 @@ foreach ($path in @($noSelectionCase, $navigationCase, $hashCase, $selectedCase)
 Run the no-selection E01 workflow:
 
 ```powershell
-.\.python312-embed\python.exe -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case $noSelectionCase --output "$noSelectionCase\outputs" --redact-paths --json-only
+.\.python312-embed\python.exe -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case $noSelectionCase --output "$noSelectionCase\outputs" --project-name $projectName --inspector $inspector --custodian $custodian --redact-paths --json-only
 ```
 
 Inspect the no-selection artifacts without pasting private values:
@@ -76,6 +81,7 @@ $manifest = Get-Content "$noSelectionCase\run-manifest.json" | ConvertFrom-Json
 $root = Get-Content "$noSelectionCase\outputs\root-listing.json" | ConvertFrom-Json
 $fileList = Get-Content "$noSelectionCase\outputs\file-list.json" | ConvertFrom-Json
 $manifest | Select-Object status, source_modified, read_only_asserted
+$manifest.identity | Select-Object project_name, inspector, custodian
 $root | Select-Object status, parser_backing, entry_count
 $fileList | Select-Object @{Name="status";Expression={$_.status.code}}, entry_count, parser_backing
 Import-Csv "$noSelectionCase\outputs\file-list.csv" | Measure-Object
@@ -90,7 +96,7 @@ Invoke-Item "$noSelectionCase\outputs\reports\summary.html"
 Run the nested directory navigation demo:
 
 ```powershell
-.\.python312-embed\python.exe -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case $navigationCase --output "$navigationCase\outputs" --demo-list-first-directory --redact-paths --json-only
+.\.python312-embed\python.exe -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case $navigationCase --output "$navigationCase\outputs" --project-name $projectName --inspector $inspector --custodian $custodian --demo-list-first-directory --redact-paths --json-only
 ```
 
 Inspect the nested navigation artifacts:
@@ -103,25 +109,27 @@ $listing | Select-Object status, selector_mode, entry_count, file_count, directo
 Import-Csv "$navigationCase\outputs\directory-listing.csv" | Select-Object entry_type, size, allocated, deleted | Format-Table -AutoSize
 ```
 
-Optional full logical-image hash command. The local logical image is about 1 TB, so this can be long-running; do not claim the hash is complete unless this command actually finishes and `image-hash.json` reports `completed`.
+Optional full logical-image hash command. The local logical image is about 1 TB, so this can be long-running; do not claim the hash is complete unless this command actually finishes and `image-hash.json` reports `completed`. While hashing, the command writes a terminal progress line to stderr and updates `image-hash-progress.json` with bytes hashed, percent, elapsed time, throughput, ETA, and current status. With `--json-only`, stdout remains the final parseable run manifest.
 
 ```powershell
 .\.python312-embed\python.exe -m app.backend.api.first_testing --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --case $hashCase --output "$hashCase\outputs" --hash-image --redact-paths --json-only
 ```
 
-Inspect `image-hash.json` after a hash run:
+Inspect `image-hash.json` and `image-hash-progress.json` after a hash run:
 
 ```powershell
 $imageHash = Get-Content "$hashCase\outputs\image-hash.json" | ConvertFrom-Json
+$imageProgress = Get-Content "$hashCase\outputs\image-hash-progress.json" | ConvertFrom-Json
 $imageHash | Select-Object status, algorithm, bytes_hashed, logical_media_size, byte_count_matches_media_size, read_only_asserted, source_modified
+$imageProgress | Select-Object status, bytes_hashed, logical_media_size, percent_complete, throughput_bytes_per_second, eta_seconds, digest_available
 ```
 
-The independent image hash is computed over the EWF logical image stream. Stored EWF hash metadata, segment-container file hashes, selected-file hashes, and stub bytes are not this proof.
+The independent image hash is computed over the EWF logical image stream. Stored EWF hash metadata, segment-container file hashes, selected-file hashes, and stub bytes are not this proof. If the user stops hashing before completion, the status is `interrupted`, no digest is written, and the progress artifact preserves the last honest byte count/status.
 
 Run the live command-line browser:
 
 ```powershell
-.\.python312-embed\python.exe -m app.backend.api.directory_browser --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --redact-paths
+.\.python312-embed\python.exe -m app.backend.api.directory_browser --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --project-name $projectName --redact-paths
 ```
 
 Inside the browser:
@@ -136,7 +144,7 @@ help
 exit
 ```
 
-The browser lists actual parser-backed filesystem entries one current directory at a time. It is not a recursive crawl, search index, timeline index, content reader, export command, hash command, report generator, or transcript writer.
+The browser lists actual parser-backed filesystem entries one current directory at a time. Its header and prompt should show the project/logical-image label, not the selected `.E01` segment as the primary navigation root. It is not a recursive crawl, search index, timeline index, content reader, export command, hash command, report generator, or transcript writer.
 
 Selected-file preview/export/hash/signature template only. Replace one placeholder after the user approves a safe, regular, allocated root entry:
 
@@ -218,7 +226,7 @@ Use either `--list-directory-path` or `--demo-list-first-directory`, not both. T
 Interactive E01 directory browser with the local ignored test image:
 
 ```powershell
-.\.python312-embed\python.exe -m app.backend.api.directory_browser --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --redact-paths
+.\.python312-embed\python.exe -m app.backend.api.directory_browser --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --project-name "Stage 4.5 Demo" --redact-paths
 ```
 
 Inside the browser:
@@ -233,7 +241,7 @@ help
 exit
 ```
 
-The browser keeps a current in-image path, lists direct children only, supports quoted names with spaces, and reports `path_not_directory` if `cd` targets a file. It does not read file contents, export, hash, recurse, search, index, or write a transcript by default.
+The browser keeps a current in-image path, lists direct children only, supports quoted names with spaces, and reports `path_not_directory` if `cd` targets a file. With `--project-name`, its prompt/header uses that logical-image label; without it, the neutral fallback is `Logical Image`. It does not read file contents, export, hash, recurse, search, index, or write a transcript by default.
 
 Selected-file template only. Replace one placeholder after the user approves a safe, regular, allocated root entry:
 
@@ -284,6 +292,7 @@ The first-testing command writes a case workspace:
     root-listing.json
     demo-readiness.json
     image-hash.json
+    image-hash-progress.json
     directory-listing.json
     directory-listing.csv
     navigation-readiness.json
@@ -320,6 +329,7 @@ Inspect the manifest without exposing private paths in shared notes:
 ```powershell
 $manifest = Get-Content "$case\run-manifest.json" | ConvertFrom-Json
 $manifest | Select-Object status, source_modified, read_only_asserted
+$manifest.identity | Select-Object project_name, inspector, custodian
 ```
 
 Inspect metadata and verification statuses:
@@ -350,7 +360,9 @@ Inspect image-hash output:
 
 ```powershell
 $imageHash = Get-Content "$case\outputs\image-hash.json" | ConvertFrom-Json
+$imageProgress = Get-Content "$case\outputs\image-hash-progress.json" | ConvertFrom-Json
 $imageHash | Select-Object status, algorithm, bytes_hashed, logical_media_size, byte_count_matches_media_size
+$imageProgress | Select-Object status, bytes_hashed, logical_media_size, percent_complete, throughput_bytes_per_second, eta_seconds, digest_available
 ```
 
 Inspect nested directory navigation output:
@@ -399,6 +411,7 @@ For the local ` Test Image/` command, the reviewed expected shape is:
 
 - command exits 0;
 - run status is `ok_with_unsupported_sections`;
+- project, inspector, and custodian identity appear in `run-manifest.json`, `outputs/case.json`, `command-summary.txt`, and `outputs/reports/summary.html` when supplied;
 - segment count is 53;
 - metadata status is `metadata_available`;
 - verification status is `not_supported`;
@@ -441,6 +454,7 @@ Do not quote the selected real directory name, real child entry names, internal 
 For the local ` Test Image/` browser command, the expected S4.5-IMP09B review shape is:
 
 - browser setup exits cleanly when the scripted or manual session sends `exit` or `quit`;
+- browser header and prompt use the supplied project/logical-image label, or `Logical Image` when no project name is supplied;
 - startup segment discovery reports 53 segments for the local ignored image;
 - root listing is `real_parser_backed` and has a nonzero entry count;
 - `dir` or `ls` shows direct child entries for the current path;
@@ -460,10 +474,11 @@ The local terminal session may show in-image names so the examiner can browse, b
 - `metadata_available`: metadata was read through the reviewed adapter path.
 - `metadata_unavailable`: metadata could not be read, usually because the adapter dependency is unavailable.
 - `dependency_unavailable`: an optional parser dependency such as `pyewf` or `pytsk3` is not importable in the active runtime.
-- `not_run`: a section was intentionally not executed, such as selected-file operations without an explicit selection.
+- `not_run`: a section was intentionally not executed, such as selected-file operations without an explicit selection or the default no-hash image-hash path.
 - `completed`: requested image-level hashing completed and byte count matched logical media size.
 - `failed`: requested image-level hashing started but could not complete honestly.
 - `stream_unavailable`: requested image-level hashing could not open a usable EWF logical image stream.
+- `interrupted`: requested image-level hashing was stopped before completion; progress/byte count may be preserved, but no digest is available.
 - `nested_directory_files_visible`: requested or demo-selected nested directory listing produced nonzero parser-backed entries and at least one regular file.
 - `nested_directory_listing_available`: requested or demo-selected nested directory listing produced nonzero parser-backed entries but no regular files were visible in the bounded probe.
 - `empty_directory_listing`: requested directory was listed but contained no direct child entries.
@@ -518,6 +533,7 @@ The no-selection real-image command can prove:
 - a real-parser-backed root filesystem listing can be produced;
 - root-listing-derived file-list JSON/CSV can be written;
 - an independent full logical-image SHA-256 can be computed only when `--hash-image` is explicitly requested and the command completes;
+- image-hash progress can be shown and preserved while hashing, and interrupted runs remain non-success artifacts without a digest;
 - one explicit or bounded-demo nested directory can be listed only when `--list-directory-path` or `--demo-list-first-directory` is explicitly requested, and demo mode can probe one child-directory level to prefer a regular-file-visible listing when available;
 - live shell-like directory browsing can call the same reviewed parser-backed `list_directory()` path one current directory at a time;
 - a static local HTML summary can be created;
@@ -545,6 +561,8 @@ Future ownership:
 - S4.5-IMP09A owns the file-visible demo correction and nested file-path `path_not_directory` status, and is reviewed/done.
 - S4.5-IMP09B owns the interactive command-line navigator for a shell-like `dir`, `cd <folder>`, and back/up workflow, and is reviewed/done.
 - S4.5-IMP10 owns the final guide refresh after hash/navigation/browser and is reviewed/done.
+- S4.5-IMP11 owns project/inspector/custodian identity and logical-image navigation labels, and is reviewed/done.
+- S4.5-IMP12 owns hash progress/loading-bar and interrupted-status behavior, and is reviewed/done.
 - A later reviewed ticket must own broad recursive crawl or larger selected-file streaming if those become priorities.
 - S5-T01 rerun is accepted with a passed-gate result. S5-T02 is the next Stage 5 ticket to prepare; S5-T03 or later work must wait until earlier Stage 5 tickets are reviewed.
 

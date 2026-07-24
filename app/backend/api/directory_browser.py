@@ -50,6 +50,7 @@ class DirectoryBrowserSession:
         input_stream: TextIO | None = None,
         output_stream: TextIO | None = None,
         segment_count: int | None = None,
+        display_label: str | None = None,
         prompt: bool = False,
     ) -> None:
         self.volume = volume
@@ -58,6 +59,8 @@ class DirectoryBrowserSession:
         self.output_stream = output_stream or sys.stdout
         self.current_path = "/"
         self.segment_count = segment_count
+        self.display_label = _display_label(display_label)
+        self.volume_label = _volume_label(volume)
         self.prompt = prompt
         self.last_listing: dict[str, object] | None = None
         self.root_listing: dict[str, object] | None = None
@@ -78,7 +81,9 @@ class DirectoryBrowserSession:
         exit_code = 0
         while True:
             if self.prompt:
-                self.output_stream.write(f"e01:{self.current_path}> ")
+                self.output_stream.write(
+                    f"{self.display_label} [{self.volume_label}] {self.current_path}> "
+                )
                 self.output_stream.flush()
             line = self.input_stream.readline()
             if line == "":
@@ -141,6 +146,8 @@ class DirectoryBrowserSession:
             "exit_code": exit_code,
             "commands_run": self.commands_run,
             "current_path": self.current_path,
+            "display_label": self.display_label,
+            "volume_label": self.volume_label,
             "segment_count": self.segment_count,
             "root_status": _status_code(root_listing),
             "root_parser_backing": _parser_backing(root_listing),
@@ -203,7 +210,9 @@ class DirectoryBrowserSession:
                     )
 
     def _write_header(self) -> None:
-        self._write_line("Stage 4.5 interactive E01 directory browser")
+        self._write_line("Stage 4.5 interactive logical-image directory browser")
+        self._write_line(f"Image: {self.display_label}")
+        self._write_line(f"Volume: {self.volume_label}")
         self._write_line("Read-only browser; no file content, export, hash, search, or crawl.")
         if self.segment_count is not None:
             self._write_line(f"Segment count: {self.segment_count}")
@@ -263,6 +272,7 @@ def build_directory_browser_session(
     first_segment: str | Path | None = None,
     input_stream: TextIO | None = None,
     output_stream: TextIO | None = None,
+    project_name: str | None = None,
     redact_paths: bool = False,
     prompt: bool = False,
 ) -> DirectoryBrowserSetupResult:
@@ -322,12 +332,18 @@ def build_directory_browser_session(
         root_listing = list_directory(volume, "/", filesystem_adapter)
         last_listing = root_listing
         if _status_code(root_listing) == "ok":
+            display_label = (
+                _redact_evidence_root(project_name, str(evidence_root))
+                if redact_paths and project_name is not None
+                else project_name
+            )
             session = DirectoryBrowserSession(
                 volume=volume,
                 filesystem_adapter=filesystem_adapter,
                 input_stream=input_stream,
                 output_stream=output_stream,
                 segment_count=segment_count,
+                display_label=display_label,
                 prompt=prompt,
             )
             return DirectoryBrowserSetupResult(
@@ -360,6 +376,7 @@ def directory_browser_to_summary(
     evidence_dir: str | Path | None = None,
     first_segment: str | Path | None = None,
     commands: str,
+    project_name: str | None = None,
 ) -> dict[str, object]:
     """Run a scripted browser session and return its non-content summary."""
 
@@ -371,6 +388,7 @@ def directory_browser_to_summary(
         first_segment=first_segment,
         input_stream=StringIO(commands),
         output_stream=StringIO(),
+        project_name=project_name,
     )
     if not setup.ok:
         return {
@@ -398,6 +416,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument("--evidence-dir", help="Evidence directory containing the first segment.")
     parser.add_argument("--first-segment", help="First segment filename when --evidence-dir is used.")
+    parser.add_argument("--project-name", help="Project/logical image label for the browser header and prompt.")
     parser.add_argument(
         "--redact-paths",
         action="store_true",
@@ -409,6 +428,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.path,
         evidence_dir=args.evidence_dir,
         first_segment=args.first_segment,
+        project_name=args.project_name,
         redact_paths=args.redact_paths,
         prompt=sys.stdin.isatty(),
     )
@@ -603,6 +623,15 @@ def _parent_path(path: str) -> str:
     if parts:
         parts.pop()
     return "/" + "/".join(parts) if parts else "/"
+
+
+def _display_label(value: str | None) -> str:
+    text = (value or "").strip()
+    return text or "Logical Image"
+
+
+def _volume_label(volume: VolumeInfo) -> str:
+    return str(volume.volume_id or "selected-volume")
 
 
 def _bool_cell(value: object) -> str:

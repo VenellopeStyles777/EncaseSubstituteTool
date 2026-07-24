@@ -13,7 +13,7 @@ These callables are backend-only and JSON-friendly. They do not provide UI, exec
 
 Stage 3 note: S3-T04 can optionally record export attempts in the case-store audit log when the caller supplies explicit audit context. It does not recover deleted files, parse real filesystems, run broader hash/signature analysis, or use preview-rendered text/hex as export bytes.
 
-Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. S4.5-IMP01 adds a first-testing command shell and case-workspace bundle. S4.5-IMP02 adds best-effort `pyewf` metadata and separate verification status when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 adds the first EWF stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts and is reviewed done. S4.5-IMP04 adds selected-file E01 content providers for preview/export/hash/signature only when an explicit parser-backed root entry is selected. S4.5-IMP05 adds root-listing-derived file-list JSON/CSV and static local HTML summary output without adding search/timeline, recursion, or UI/reporting system behavior. S4.5-IMP06 is documentation/status handoff work and adds no API behavior. S4.5-IMP08 adds an explicit `--hash-image` path that writes a full logical-image hash artifact when requested. S4.5-IMP09 adds explicit one-directory nested navigation through `--list-directory-path` or `--demo-list-first-directory`, with JSON/CSV/readiness artifacts and no broad crawl. S4.5-IMP09B adds `app.backend.api.directory_browser`, a live terminal browser over the same `list_directory()` boundary. Preview-rendered text/hex, written export artifacts, stored EWF hash metadata, segment-container hashes, and external known-file lists remain disallowed as implicit source analysis content.
+Stage 4 note: S4-T01 adds hash/signature analysis contracts in `app.backend.forensic_core.content_analysis`, S4-T02 adds provider-backed hash calculation in that core module, S4-T03 adds bounded provider-backed file signature detection there, S4-T04 adds extension mismatch evaluation over reviewed signature results plus file metadata, and S4-T05 adds fixture-sized known-file matching over reviewed hash results plus caller-supplied in-memory records. S4-T06 documents that analysis-result persistence is deferred and must be explicit opt-in in a later workflow/API/job layer. S4-T07 is a documentation/review handoff only. S4.5-IMP01 adds a first-testing command shell and case-workspace bundle. S4.5-IMP02 adds best-effort `pyewf` metadata and separate verification status when the optional dependency exposes safe APIs, and S4.5-IMP02A corrects metadata warning semantics. S4.5-IMP03 adds the first EWF stream, partition-table volume, filesystem, root-listing, and demo-readiness artifacts and is reviewed done. S4.5-IMP04 adds selected-file E01 content providers for preview/export/hash/signature only when an explicit parser-backed root entry is selected. S4.5-IMP05 adds root-listing-derived file-list JSON/CSV and static local HTML summary output without adding search/timeline, recursion, or UI/reporting system behavior. S4.5-IMP06 is documentation/status handoff work and adds no API behavior. S4.5-IMP08 adds an explicit `--hash-image` path that writes a full logical-image hash artifact when requested. S4.5-IMP12 adds full-image hash progress/status output and `image-hash-progress.json`, including interrupted non-success status without a digest. S4.5-IMP09 adds explicit one-directory nested navigation through `--list-directory-path` or `--demo-list-first-directory`, with JSON/CSV/readiness artifacts and no broad crawl. S4.5-IMP09B adds `app.backend.api.directory_browser`, a live terminal browser over the same `list_directory()` boundary. S4.5-IMP11 adds first-testing demo identity fields and logical-image/project labels for the browser. Preview-rendered text/hex, written export artifacts, stored EWF hash metadata, segment-container hashes, and external known-file lists remain disallowed as implicit source analysis content.
 
 ## S1-T04 Intake Command
 
@@ -79,8 +79,11 @@ python -m app.backend.api.first_testing --evidence-dir path\to\evidence --first-
 Useful options:
 
 - `--output`: artifact output directory; defaults to `<case>\outputs`.
-- `--case-name` / `--case-description`: saved case metadata.
-- `--actor`: optional audit actor.
+- `--project-name`: preferred project/case display name for demo artifacts.
+- `--case-name` / `--case-description`: saved case metadata; `--case-name` remains the older project-name fallback.
+- `--inspector`: preferred examiner/inspector identity for demo artifacts.
+- `--custodian`: optional custodian identity for demo artifacts.
+- `--actor`: optional audit actor; when `--inspector` and `--actor` are both supplied, inspector is used for display identity and actor remains the audit actor.
 - `--adapter pyewf|stub`: defaults to dependency-safe `pyewf`; use `stub` for dependency-free smoke checks.
 - `--json-only`: prints the JSON run manifest instead of a text summary.
 - `--redact-paths`: redacts the evidence root as `<EVIDENCE_ROOT>` in console and `command-summary.txt`; local JSON artifacts keep original paths.
@@ -88,7 +91,7 @@ Useful options:
 - `--selected-file-export-dir` / `--selected-file-export-name`: opt in to selected-file export and choose a safe output location/name.
 - `--selected-file-preview-mode raw|text|hex`: preview rendering mode for an explicit selection.
 - `--selected-file-max-bytes`: first-testing in-memory limit for selected-file hash/export.
-- `--hash-image`: explicitly compute an independent SHA-256 over the full EWF logical image stream and write `image-hash.json`.
+- `--hash-image`: explicitly compute an independent SHA-256 over the full EWF logical image stream, write `image-hash.json`, and update `image-hash-progress.json`.
 - `--image-hash-algorithm`: full logical-image hash algorithm; currently supports `sha256`.
 - `--image-hash-chunk-size`: chunk size in bytes for full logical-image hashing.
 - `--list-directory-path`: explicitly list one directory path below root through the real parser-backed filesystem path.
@@ -111,6 +114,7 @@ S4.5-IMP01 and S4.5-IMP02 create:
 <output>\root-listing.json
 <output>\demo-readiness.json
 <output>\image-hash.json
+<output>\image-hash-progress.json
 <output>\selected-file-readiness.json
 <output>\selected-file-preview.json
 <output>\selected-file-analysis.json
@@ -172,6 +176,14 @@ S4.5-IMP08 image-level hash behavior:
 - missing dependency and stream failures remain structured statuses;
 - stored EWF hash metadata, segment container files, selected-file hashes, and stub bytes are not treated as the independent full-image hash.
 
+S4.5-IMP12 image-hash progress behavior:
+
+- default runs write `image-hash-progress.json` with status `not_run`;
+- when `--hash-image` is active, progress is based on bytes hashed over the EWF logical media size and includes percent, elapsed seconds, throughput, and ETA when known;
+- progress text is written to stderr so `--json-only` stdout remains final parseable JSON;
+- with `--redact-paths`, progress/status text redacts the evidence root, while local JSON artifacts remain examiner-owned;
+- interrupted hashing records non-success status `interrupted`, bytes hashed, logical size, warnings, read-only assertion, and source-modified assertion, and omits the digest.
+
 S4.5-IMP09/S4.5-IMP09A nested directory listing behavior:
 
 - default runs write `directory-listing.json`, `directory-listing.csv`, and `navigation-readiness.json` with status `not_run`;
@@ -184,15 +196,23 @@ S4.5-IMP09/S4.5-IMP09A nested directory listing behavior:
 
 The command still does not create recursive file lists, broad crawls, search/timeline indexes, dynamic UI, report-system/PDF output, deleted recovery, or carving behavior. The interactive browser is a separate S4.5-IMP09B CLI that does not write transcripts or artifact bundles by default.
 
+S4.5-IMP11 demo identity behavior:
+
+- `--project-name` is the preferred user-facing project/case label; `--case-name` remains supported as the older fallback.
+- `--inspector` is the preferred examiner/inspector display field; `--actor` remains supported for audit rows and as an inspector fallback when no inspector is supplied.
+- `--custodian` is optional and is left null when omitted.
+- `outputs/case.json`, `run-manifest.json`, `command-summary.txt`, and `outputs/reports/summary.html` include the normalized identity section.
+- Identity fields are not evidence source paths and are kept separate from selected segment, evidence root, parser, and provider provenance.
+
 ## S4.5-IMP09B Interactive Directory Browser
 
 Command-line usage from the repository root:
 
 ```powershell
-.\.python312-embed\python.exe -m app.backend.api.directory_browser --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --redact-paths
+.\.python312-embed\python.exe -m app.backend.api.directory_browser --evidence-dir ".\ Test Image" --first-segment "C16242-1-RL1-E003.E01" --project-name "Stage 4.5 Demo" --redact-paths
 ```
 
-The browser supports `help` / `?`, `pwd`, `ls` / `dir`, `cd <path-or-name>`, `cd ..`, `cd /`, `root`, `exit`, and `quit`. It keeps one current in-image path, calls `list_directory()` for each listing or directory change, supports quoted names with spaces, and reports `path_not_directory` without moving when a user tries to `cd` into a file.
+The browser supports `help` / `?`, `pwd`, `ls` / `dir`, `cd <path-or-name>`, `cd ..`, `cd /`, `root`, `exit`, and `quit`. It keeps one current in-image path, calls `list_directory()` for each listing or directory change, supports quoted names with spaces, and reports `path_not_directory` without moving when a user tries to `cd` into a file. Its header and prompt use `--project-name` when supplied; otherwise they use the neutral fallback `Logical Image`, not an `.E01` segment as the primary navigation label.
 
 The browser does not read file contents, preview, export, hash, run signature analysis, recurse, crawl broadly, search, index, create reports, or write transcripts by default. Local interactive output may show in-image entry names for the examiner, but shared handoffs should report only statuses/counts.
 

@@ -156,7 +156,7 @@ class FakeBrowserAdapter:
         )
 
 
-def _run_browser(commands: str, adapter=None):
+def _run_browser(commands: str, adapter=None, *, display_label=None, prompt=False):
     output = StringIO()
     session = DirectoryBrowserSession(
         volume=_sample_volume(),
@@ -164,6 +164,8 @@ def _run_browser(commands: str, adapter=None):
         input_stream=StringIO(commands),
         output_stream=output,
         segment_count=2,
+        display_label=display_label,
+        prompt=prompt,
     )
     summary = session.run()
     return summary, output.getvalue()
@@ -173,12 +175,36 @@ def test_browser_accepts_core_commands_and_exits_cleanly():
     summary, output = _run_browser("pwd\nhelp\nls\ndir\nexit\n")
 
     assert summary["exit_code"] == 0
+    assert summary["display_label"] == "Logical Image"
     assert summary["root_parser_backing"] == "real_parser_backed"
     assert summary["root_entry_count"] == 3
+    assert "Stage 4.5 interactive logical-image directory browser" in output
+    assert "Image: Logical Image" in output
     assert "Current path: /" in output
     assert "Commands:" in output
     assert output.count("Status: ok parser_backing=real_parser_backed") >= 3
     assert "Source modified: false" in output
+
+
+def test_browser_uses_project_label_in_header_and_prompt():
+    summary, output = _run_browser("pwd\nexit\n", display_label="Demo Project", prompt=True)
+
+    assert summary["exit_code"] == 0
+    assert summary["display_label"] == "Demo Project"
+    assert summary["volume_label"] == "volume-0"
+    assert "Image: Demo Project" in output
+    assert "Volume: volume-0" in output
+    assert "Demo Project [volume-0] /> " in output
+    assert "e01:/" not in output.lower()
+
+
+def test_browser_fallback_label_is_neutral_not_e01_root():
+    summary, output = _run_browser("exit\n", display_label="  ", prompt=True)
+
+    assert summary["display_label"] == "Logical Image"
+    assert "Image: Logical Image" in output
+    assert ".E01" not in output
+    assert "e01:/" not in output.lower()
 
 
 def test_browser_cd_child_directory_updates_current_path_only_after_ok():

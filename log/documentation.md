@@ -2,10 +2,51 @@
 
 Purpose: record documentation changes, important source references, and decisions that should later be reflected in the README or user guide.
 
+## 2026-07-24 - S4.5-IMP11/S4.5-IMP12 Review Acceptance
+
+- Marked `tickets/stage-4.5/S4.5-IMP11-demo-identity-and-navigation-labels.md` as `Done`.
+- Marked `tickets/stage-4.5/S4.5-IMP12-image-hash-progress-and-interrupt-status.md` as `Done`.
+- Updated `app/docs/manual-testing/stage-4.5-demo-showcase.md` so the presentable demo includes project/inspector/custodian identity, logical-image browser labels, parser-backed navigation proof points, static HTML output, and optional hash progress/interrupted-status behavior.
+- Updated active Stage 4.5, Stage 5, prompt, README, goal, plan, functionality, progression, and review docs so S4.5-IMP01 through S4.5-IMP12 are reviewed/done and S5-T02 is the next Stage 5 ticket to prepare.
+- Reviewer verification: focused portable-runtime run reported 53 passed in 19.72s; full portable-runtime run reported 215 passed in 52.64s.
+- Kept the review acceptance scoped: no Stage 5 search/timeline, recursive crawl, broad enumeration, selected-file auto-analysis, UI/reporting, dependency install, full 1 TB hash completion, real evidence commit, commit, or push was added.
+
+## 2026-07-24 - S4.5-IMP12 Image Hash Progress And Interrupt Status
+
+- Marked `tickets/stage-4.5/S4.5-IMP12-image-hash-progress-and-interrupt-status.md` as `Review`.
+- Documented `outputs/image-hash-progress.json`, terminal hash progress on stderr, `--json-only` stdout preservation, redacted progress/status text, and interrupted no-digest hash status.
+- Updated active Stage 4.5, Stage 5, ticket, prompt, backend/API/core, manual-testing, README, goal, plan, functionality, progression, and review docs so S4.5-IMP12 is in review, S4.5-IMP11 remains in review, and S5-T02 remains paused unless explicitly resumed.
+- Kept the completed full-image hash proof boundary: a digest exists only when `--hash-image` finishes; `not_run`, `interrupted`, dependency-blocked, and failed states are not completed verification proof.
+- Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_first_testing_command.py` reported 43 passed in 66.17s.
+- Full verification: `.\.python312-embed\python.exe -m pytest` reported 215 passed in 78.24s.
+- Bounded real-image hash-progress smoke was force-stopped by script after 35 seconds; `image-hash-progress.json` and `image-hash.json` showed status `failed`, 322,961,408 bytes hashed, logical media size 1,024,209,543,168, digest unavailable, `source_modified: false`, and `read_only_asserted: true`; no full-image hash completion was attempted.
+- `git diff --check` passed with line-ending normalization warnings only, and no lingering Python/pytest process remained.
+
+## 2026-07-24 - S4.5-IMP11 Demo Identity And Navigation Labels
+
+- Marked `tickets/stage-4.5/S4.5-IMP11-demo-identity-and-navigation-labels.md` as `Review`.
+- Documented first-testing `--project-name`, `--inspector`, and `--custodian` options, with `--case-name` and `--actor` compatibility/precedence.
+- Documented the normalized first-testing identity fields in `outputs/case.json`, `run-manifest.json`, `command-summary.txt`, and `outputs/reports/summary.html`.
+- Documented the directory browser project/logical-image header and prompt label, including the neutral `Logical Image` fallback.
+- Kept S4.5-IMP12 as `Draft` and kept S5-T02/search/timeline paused unless the user explicitly resumes Stage 5.
+- Focused verification: `.\.python312-embed\python.exe -m pytest app\tests\test_first_testing_command.py app\tests\test_directory_browser.py` reported 34 passed in 79.52s.
+- Full verification: `.\.python312-embed\python.exe -m pytest` reported 211 passed in 83.05s.
+- Privacy-safe real-image smoke recorded project/inspector/custodian identity presence, 53 segments, parser-backed root and nested listing counts, browser display label behavior, `source_modified: false`, and `read_only_asserted: true` without adding selected-file extraction or private evidence content to shared docs.
+
+## 2026-07-24 - Manual Demo Feedback Follow-Up
+
+- Checked after the user's interrupted `--hash-image` run and recorded that no Python/pytest process remained.
+- Cleared generated `.test-artifacts\first-testing` demo outputs so the user can regenerate fresh artifacts.
+- Added `tickets/stage-4.5/S4.5-IMP11-demo-identity-and-navigation-labels.md` as the next Ready Stage 4.5 implementation ticket.
+- Added `tickets/stage-4.5/S4.5-IMP12-image-hash-progress-and-interrupt-status.md` as the follow-up Draft ticket.
+- Added `prompts/vscode-agent/2026-07-24-s4.5-imp11-demo-identity-and-navigation-labels.md`.
+- Updated active Stage 4.5, Stage 5, ticket, prompt, goal, README, plan, functionality, progression, and review docs so S5-T02 is paused behind these manual-demo follow-ups unless the user explicitly resumes Stage 5.
+- Kept this pass documentation/ticketing-only: no app source behavior, tests, parser behavior, hash behavior, navigation behavior, UI/reporting, dependency setup, evidence handling, commit, or push was added.
+
 ## 2026-07-23 - S5-T01 Rerun Review Acceptance
 
 - Marked `tickets/stage-5/S5-T01-readiness-and-stage-4.5-completion-gate.md` as `Done` after accepting the passed-gate rerun.
-- Updated active Stage 5 status docs so S5-T01 is accepted/done, S5-T02 remains `Draft` as the next ticket to prepare, and S5-T03 through S5-T16 remain draft.
+- Updated active Stage 5 status docs so S5-T01 was accepted/done, S5-T02 remained `Draft` as the next Stage 5 ticket at that time, and S5-T03 through S5-T16 remained draft. This was later superseded by the 2026-07-24 manual-demo follow-up pause.
 - Recorded reviewer verification: full portable-runtime tests reported 207 passed in 41.53s, and reviewer real-image no-selection/navigation smoke produced the privacy-safe parser-backed status/count shape with image hash `not_run`, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
 - Kept the acceptance documentation-only: no app source behavior, tests, schema, parser behavior, dependency setup, evidence handling, search/timeline implementation, UI/reporting, commit, or push was added.
 

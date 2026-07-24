@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 import hashlib
 from pathlib import Path
+import time
 from typing import Protocol, Sequence
 
 from app.backend.forensic_core.segment_discovery import discover_e01_segments
@@ -12,6 +14,7 @@ from app.backend.forensic_core.segment_discovery import discover_e01_segments
 
 DEFAULT_IMAGE_HASH_CHUNK_SIZE = 4 * 1024 * 1024
 SUPPORTED_IMAGE_HASH_ALGORITHMS = ("sha256",)
+ImageHashProgressCallback = Callable[[dict[str, object]], None]
 
 
 @dataclass(frozen=True)
@@ -711,9 +714,11 @@ def hash_image_stream(
     *,
     algorithm: str = "sha256",
     chunk_size: int = DEFAULT_IMAGE_HASH_CHUNK_SIZE,
+    progress_callback: ImageHashProgressCallback | None = None,
 ) -> ImageHashResult:
     """Hash a full read-only logical image stream in bounded chunks."""
 
+    started_monotonic = time.monotonic()
     normalized_algorithm = _normalize_image_hash_algorithm(algorithm)
     source_path = str(getattr(stream, "source_path", ""))
     stream_type = str(getattr(stream, "stream_type", "unknown"))
@@ -776,6 +781,17 @@ def hash_image_stream(
             else "stream_unavailable"
         )
         warnings.append(_image_hash_warning_from_stream_status(info.status))
+        _emit_image_hash_progress(
+            progress_callback,
+            status=status_code,
+            message="Logical image stream is unavailable for full-image hashing.",
+            source_path=info.source_path,
+            stream_type=info.stream_type,
+            algorithm=normalized_algorithm,
+            bytes_hashed=0,
+            logical_media_size=info.size,
+            started_monotonic=started_monotonic,
+        )
         return ImageHashResult(
             source_path=info.source_path,
             stream_type=info.stream_type,
@@ -794,6 +810,17 @@ def hash_image_stream(
         )
 
     if info.size is None:
+        _emit_image_hash_progress(
+            progress_callback,
+            status="stream_unavailable",
+            message="Logical image media size is unavailable for full-image hashing.",
+            source_path=info.source_path,
+            stream_type=info.stream_type,
+            algorithm=normalized_algorithm,
+            bytes_hashed=0,
+            logical_media_size=None,
+            started_monotonic=started_monotonic,
+        )
         return ImageHashResult(
             source_path=info.source_path,
             stream_type=info.stream_type,
@@ -819,12 +846,26 @@ def hash_image_stream(
         )
 
     digest = hashlib.new(normalized_algorithm)
+    _emit_image_hash_progress(
+        progress_callback,
+        status="hashing",
+        message="Full logical-image hashing started.",
+        source_path=info.source_path,
+        stream_type=info.stream_type,
+        algorithm=normalized_algorithm,
+        bytes_hashed=0,
+        logical_media_size=info.size,
+        started_monotonic=started_monotonic,
+    )
     if isinstance(stream, EwfImageByteStream):
         bytes_hashed, read_warnings, failure = _hash_ewf_stream_native(
             stream,
             digest,
             media_size=info.size,
             chunk_size=chunk_size,
+            progress_callback=progress_callback,
+            algorithm=normalized_algorithm,
+            started_monotonic=started_monotonic,
         )
     else:
         bytes_hashed, read_warnings, failure = _hash_generic_stream(
@@ -832,10 +873,24 @@ def hash_image_stream(
             digest,
             media_size=info.size,
             chunk_size=chunk_size,
+            progress_callback=progress_callback,
+            algorithm=normalized_algorithm,
+            started_monotonic=started_monotonic,
         )
     warnings.extend(read_warnings)
 
     if failure is not None:
+        _emit_image_hash_progress(
+            progress_callback,
+            status=failure.code,
+            message=failure.message,
+            source_path=info.source_path,
+            stream_type=info.stream_type,
+            algorithm=normalized_algorithm,
+            bytes_hashed=bytes_hashed,
+            logical_media_size=info.size,
+            started_monotonic=started_monotonic,
+        )
         return ImageHashResult(
             source_path=info.source_path,
             stream_type=info.stream_type,
@@ -867,6 +922,17 @@ def hash_image_stream(
                 path=info.source_path,
             )
         )
+    _emit_image_hash_progress(
+        progress_callback,
+        status=status.code,
+        message=status.message,
+        source_path=info.source_path,
+        stream_type=info.stream_type,
+        algorithm=normalized_algorithm,
+        bytes_hashed=bytes_hashed,
+        logical_media_size=info.size,
+        started_monotonic=started_monotonic,
+    )
     return ImageHashResult(
         source_path=info.source_path,
         stream_type=info.stream_type,
@@ -887,12 +953,33 @@ def _hash_generic_stream(
     *,
     media_size: int,
     chunk_size: int,
+    progress_callback: ImageHashProgressCallback | None,
+    algorithm: str,
+    started_monotonic: float,
 ) -> tuple[int, list[ImageStreamWarning], ImageHashStatus | None]:
     offset = 0
     warnings: list[ImageStreamWarning] = []
     while offset < media_size:
         length = min(chunk_size, media_size - offset)
-        read_result = stream.read_at(offset, length)
+        try:
+            read_result = stream.read_at(offset, length)
+        except KeyboardInterrupt:
+            warnings.append(
+                ImageStreamWarning(
+                    code="image_hash_interrupted",
+                    message="Logical image hashing was interrupted by the user.",
+                    path=str(getattr(stream, "source_path", "")),
+                )
+            )
+            return (
+                offset,
+                warnings,
+                ImageHashStatus(
+                    code="interrupted",
+                    message="Full logical-image hashing was interrupted before completion.",
+                    path=str(getattr(stream, "source_path", "")),
+                ),
+            )
         warnings.extend(read_result.warnings)
         if not read_result.status.ok:
             warnings.append(_image_hash_warning_from_stream_status(read_result.status))
@@ -928,8 +1015,37 @@ def _hash_generic_stream(
                 ),
             )
 
-        digest.update(read_result.data)
+        try:
+            digest.update(read_result.data)
+        except KeyboardInterrupt:
+            warnings.append(
+                ImageStreamWarning(
+                    code="image_hash_interrupted",
+                    message="Logical image hashing was interrupted by the user.",
+                    path=read_result.source_path,
+                )
+            )
+            return (
+                offset,
+                warnings,
+                ImageHashStatus(
+                    code="interrupted",
+                    message="Full logical-image hashing was interrupted before completion.",
+                    path=read_result.source_path,
+                ),
+            )
         offset += data_length
+        _emit_image_hash_progress(
+            progress_callback,
+            status="hashing",
+            message="Full logical-image hashing is in progress.",
+            source_path=read_result.source_path,
+            stream_type=read_result.stream_type,
+            algorithm=algorithm,
+            bytes_hashed=offset,
+            logical_media_size=media_size,
+            started_monotonic=started_monotonic,
+        )
         if data_length < length and offset < media_size:
             warning = ImageStreamWarning(
                 code="image_hash_short_read",
@@ -955,6 +1071,9 @@ def _hash_ewf_stream_native(
     *,
     media_size: int,
     chunk_size: int,
+    progress_callback: ImageHashProgressCallback | None,
+    algorithm: str,
+    started_monotonic: float,
 ) -> tuple[int, list[ImageStreamWarning], ImageHashStatus | None]:
     offset = 0
     warnings: list[ImageStreamWarning] = []
@@ -963,7 +1082,25 @@ def _hash_ewf_stream_native(
         handle = stream._open_native_handle()
         while offset < media_size:
             length = min(chunk_size, media_size - offset)
-            data = stream._read_from_handle(handle, offset, length)
+            try:
+                data = stream._read_from_handle(handle, offset, length)
+            except KeyboardInterrupt:
+                warnings.append(
+                    ImageStreamWarning(
+                        code="image_hash_interrupted",
+                        message="Logical image hashing was interrupted by the user.",
+                        path=stream.source_path,
+                    )
+                )
+                return (
+                    offset,
+                    warnings,
+                    ImageHashStatus(
+                        code="interrupted",
+                        message="Full logical-image hashing was interrupted before completion.",
+                        path=stream.source_path,
+                    ),
+                )
             data_length = len(data)
             if data_length == 0 and length > 0:
                 warnings.append(
@@ -983,8 +1120,37 @@ def _hash_ewf_stream_native(
                     ),
                 )
 
-            digest.update(data)
+            try:
+                digest.update(data)
+            except KeyboardInterrupt:
+                warnings.append(
+                    ImageStreamWarning(
+                        code="image_hash_interrupted",
+                        message="Logical image hashing was interrupted by the user.",
+                        path=stream.source_path,
+                    )
+                )
+                return (
+                    offset,
+                    warnings,
+                    ImageHashStatus(
+                        code="interrupted",
+                        message="Full logical-image hashing was interrupted before completion.",
+                        path=stream.source_path,
+                    ),
+                )
             offset += data_length
+            _emit_image_hash_progress(
+                progress_callback,
+                status="hashing",
+                message="Full logical-image hashing is in progress.",
+                source_path=stream.source_path,
+                stream_type=stream.stream_type,
+                algorithm=algorithm,
+                bytes_hashed=offset,
+                logical_media_size=media_size,
+                started_monotonic=started_monotonic,
+            )
             if data_length < length and offset < media_size:
                 warnings.append(
                     ImageStreamWarning(
@@ -1022,6 +1188,56 @@ def _hash_ewf_stream_native(
     finally:
         stream._close_handle(handle)
     return offset, warnings, None
+
+
+def _emit_image_hash_progress(
+    callback: ImageHashProgressCallback | None,
+    *,
+    status: str,
+    message: str,
+    source_path: str,
+    stream_type: str,
+    algorithm: str,
+    bytes_hashed: int,
+    logical_media_size: int | None,
+    started_monotonic: float,
+) -> None:
+    if callback is None:
+        return
+    elapsed_seconds = max(0.0, time.monotonic() - started_monotonic)
+    throughput = (
+        bytes_hashed / elapsed_seconds
+        if elapsed_seconds > 0 and bytes_hashed > 0
+        else None
+    )
+    percent_complete = (
+        (bytes_hashed / logical_media_size) * 100
+        if logical_media_size and logical_media_size > 0
+        else None
+    )
+    eta_seconds = (
+        (logical_media_size - bytes_hashed) / throughput
+        if throughput and logical_media_size and bytes_hashed < logical_media_size
+        else None
+    )
+    callback(
+        {
+            "status": status,
+            "message": message,
+            "source_path": source_path,
+            "stream_type": stream_type,
+            "source_kind": "ewf_logical_image"
+            if stream_type == "ewf"
+            else f"{stream_type}_image",
+            "algorithm": algorithm,
+            "bytes_hashed": bytes_hashed,
+            "logical_media_size": logical_media_size,
+            "percent_complete": percent_complete,
+            "elapsed_seconds": elapsed_seconds,
+            "throughput_bytes_per_second": throughput,
+            "eta_seconds": eta_seconds,
+        }
+    )
 
 
 def _normalize_image_hash_algorithm(algorithm: str) -> str:

@@ -6,7 +6,7 @@ Stage 4.5 is not search/timeline. It should not implement broad new forensic fea
 
 ## Stage 4.5 Status
 
-Status: S4.5-IMP01 through S4.5-IMP10 are reviewed and done. S4.5-IMP09/S4.5-IMP09A prove bounded parser-backed nested directory navigation with regular files visible from the local real E01 smoke, S4.5-IMP09B adds the live command-line browser over that same listing path, and S4.5-IMP10 provides the final demo guide/gate refresh. Stage 5 now resumes only through an S5-T01 gate rerun.
+Status: S4.5-IMP01 through S4.5-IMP12 are reviewed and done, and the S5-T01 gate rerun is accepted. The 2026-07-24 hands-on demo follow-ups added project/inspector/custodian identity, logical-image navigation labels, and image-hash progress/interrupted-status behavior. S5-T02 is the next Stage 5 ticket to prepare.
 
 ## Current Implemented Functionality Summary
 
@@ -51,6 +51,7 @@ Current real-E01 truth:
 - The current backend can extract bytes only for an explicitly selected parser-backed root file through the S4.5-IMP04 provider path; it does not crawl, auto-select, or export arbitrary evidence files.
 - S4.5-IMP05 can turn the current root listing into `file-list.json`, `file-list.csv`, and a static local `outputs/reports/summary.html`; S4.5-IMP09 adds explicit one-directory nested navigation artifacts, S4.5-IMP09A makes the bounded demo prefer regular-file-visible nested listings when available, and S4.5-IMP09B adds a live terminal browser over the same listing path. These tickets do not add recursive traversal, broad crawl, indexing, search/timeline, UI, or a report system.
 - Stage 4 hash/signature behavior operates on explicit provider bytes, not E01-extracted filesystem bytes.
+- Hands-on demo feedback from 2026-07-24 identified two UX/proof gaps: S4.5-IMP11 adds project, inspector, and custodian identity plus logical-image navigation labels; S4.5-IMP12 adds an accurate progress bar/status artifact and interrupted non-success status for full logical-image hashing.
 
 ## Current Code Utilization Plan
 
@@ -76,7 +77,7 @@ This is the working map from the desired bare-minimum command-line workflow to t
 
 ## Updated Ticket Direction
 
-The old Stage 5 search/timeline path is deferred. The next tickets should move toward the first-testing command-line E01 workflow.
+The old Stage 5 search/timeline path is deferred until S5-T02 is prepared. The Stage 4.5 first-testing demo runway is now complete again after the 2026-07-24 hands-on demo feedback follow-ups.
 
 Recommended Stage 4.5 ticket sequence:
 
@@ -104,6 +105,8 @@ Recommended Stage 4.5 ticket sequence:
 | S4.5-IMP09A | Done | File-visible nested navigation correction |
 | S4.5-IMP09B | Done | Interactive E01 directory browser |
 | S4.5-IMP10 | Done | Demo guide and Stage 5 gate refresh after hash/navigation/browser |
+| S4.5-IMP11 | Done | Demo project/inspector/custodian identity fields and logical-image navigation labels |
+| S4.5-IMP12 | Done | Accurate full-image hash progress/loading bar and interrupted-status artifact |
 
 ## Implementation Runway
 
@@ -124,12 +127,14 @@ These planning tickets line up into implementation slices that must be completed
 | S4.5-IMP09A | S4.5-IMP09 review | Ensure demo mode reaches regular files and known nested file paths return `path_not_directory`; reviewed and done |
 | S4.5-IMP09B | User hands-on demo feedback | Live command-line browser over reviewed parser-backed directory listing; reviewed and done |
 | S4.5-IMP10 | User hands-on demo feedback | Final guide and Stage 5 gate refresh after hash/navigation/browser; reviewed and done |
+| S4.5-IMP11 | 2026-07-24 hands-on demo feedback | Let the tester name project, inspector, and custodian, and make navigation display the project/logical-image label instead of an `.E01` segment label; reviewed and done |
+| S4.5-IMP12 | 2026-07-24 hands-on demo feedback | Add accurate full logical-image hash progress/loading bar and interrupted-status artifacts; reviewed and done |
 
-S4.5-IMP09A is done as the Stage 4.5 slice after S4.5-IMP09 review findings. S4.5-IMP09B is done with the live `cd`/`dir` style navigator over the same reviewed parser-backed directory listing path. S4.5-IMP10 is done with the final guide/gate refresh. S5-T01 rerun is in review with a passed-gate result, and Stage 5 search/timeline remains blocked until S5-T01 is accepted.
+S4.5-IMP09A is done as the Stage 4.5 slice after S4.5-IMP09 review findings. S4.5-IMP09B is done with the live `cd`/`dir` style navigator over the same reviewed parser-backed directory listing path. S4.5-IMP10 is done with the final guide/gate refresh, S4.5-IMP11/S4.5-IMP12 are done with the manual-demo follow-ups, and S5-T01 rerun is accepted. S5-T02 is the next Stage 5 ticket to prepare.
 
 ## Stage 5 Gate Handoff
 
-S4.5-IMP06 prepared the later S5-T01 rerun, S4.5-IMP07 completed the first command-line testing guide, S4.5-IMP08 added the explicit image-level hash path, S4.5-IMP09/S4.5-IMP09A are done for explicit nested directory navigation with regular files visible in the corrected demo, S4.5-IMP09B is done with a live terminal browser, and S4.5-IMP10 is done with the final guide/gate refresh. S5-T02 and later search/timeline work must wait for S5-T01 to be accepted.
+S4.5-IMP06 prepared the later S5-T01 rerun, S4.5-IMP07 completed the first command-line testing guide, S4.5-IMP08 added the explicit image-level hash path, S4.5-IMP09/S4.5-IMP09A are done for explicit nested directory navigation with regular files visible in the corrected demo, S4.5-IMP09B is done with a live terminal browser, S4.5-IMP10 is done with the final guide/gate refresh, and S4.5-IMP11/S4.5-IMP12 are done with the final manual-demo polish. S5-T01 rerun is accepted. S5-T02 is the next Stage 5 ticket to prepare.
 
 Allowed future Stage 5 input records should be limited to reviewed, provenance-rich artifacts: intake and segment discovery, case/evidence/audit rows, metadata and verification status, EWF stream status, partition/volume records, filesystem/root-listing entries, root-listing-derived file-list JSON/CSV, reviewed image-level hash records, reviewed nested directory-listing records, browser status/count proof, and selected-file readiness/preview/analysis/export records only for explicit parser-backed selections. The static HTML summary is a local human-readable review artifact, not an indexing source.
 
@@ -151,6 +156,8 @@ Matching implementation prompts now live under `prompts/vscode-agent/`:
 - `2026-07-23-s4.5-imp09a-file-visible-navigation-correction.md`
 - `2026-07-23-s4.5-imp09b-interactive-e01-directory-browser.md`
 - `2026-07-22-s4.5-imp10-demo-guide-and-stage-5-gate-refresh.md`
+- `2026-07-24-s4.5-imp11-demo-identity-and-navigation-labels.md`
+- `2026-07-24-s4.5-imp12-image-hash-progress-and-interrupt-status.md`
 
 ## Stage 4.5 Guardrails
 

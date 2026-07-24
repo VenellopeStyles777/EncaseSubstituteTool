@@ -56,8 +56,8 @@ Current ticket folders:
 - `stage-2/`: volume/filesystem browsing MVP. Status: complete at Stage 2 handoff.
 - `stage-3/`: export/recovery foundation. Status: complete; S3-T01 through S3-T06 done.
 - `stage-4/`: hash/signature foundations. Status: complete; S4-T00 through S4-T07 done.
-- `stage-4.5/`: first testing with user-provided E01 files. Status: S4.5-IMP01 through S4.5-IMP10 are reviewed and done, including the live command-line browser and final demo guide/gate refresh.
-- `stage-5/`: documentation organization cleanup first, then search/timeline foundations. Status: deferred; S5-T00 is done, S5-T01 rerun is accepted/done with a passed-gate result after the older failed-gate/blocker result, S5-T01A is done, S5-T02 remains Draft as the next ticket to prepare, and S5-T03 through S5-T16 remain drafts.
+- `stage-4.5/`: first testing with user-provided E01 files. Status: S4.5-IMP01 through S4.5-IMP12 are reviewed and done, including the 2026-07-24 project/inspector/custodian navigation-label follow-up and hash progress/interrupted-status follow-up.
+- `stage-5/`: documentation organization cleanup first, then search/timeline foundations. Status: deferred; S5-T00 is done, S5-T01 rerun is accepted/done with a passed-gate result after the older failed-gate/blocker result, S5-T01A is done, S5-T02 remains Draft as the next Stage 5 ticket to prepare, and S5-T03 through S5-T16 remain drafts.
 - `future/`: cross-stage roadmap and weakest-point carryover notes.
 
 ## Approval Buffer

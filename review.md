@@ -12,6 +12,99 @@ Review priorities for this project:
 
 ## Current Review Queue
 
+## 2026-07-24 - S4.5-IMP11/S4.5-IMP12 Review Acceptance
+
+Result: accepted. S4.5-IMP11 and S4.5-IMP12 are done.
+
+Findings:
+
+- No blocking findings.
+- S4.5-IMP11 satisfies the demo identity/navigation-label request: first-testing accepts project, inspector, and custodian fields; artifacts preserve those labels separately from evidence provenance; and the live browser displays a project/logical-image label rather than an `.E01` prompt root.
+- S4.5-IMP12 satisfies the hash-progress request: full logical-image hashing reports progress based on bytes hashed over logical media size, writes `outputs/image-hash-progress.json`, keeps `--json-only` stdout parseable, and omits a digest for interrupted/non-success states.
+- The bounded real-image smoke is accepted only as progress evidence, not as a completed full-image hash. The local logical image is about 1 TB, and completed digest proof still requires the full command to finish.
+- Updated `app/docs/manual-testing/stage-4.5-demo-showcase.md` into the current presentable demo guide.
+
+Verification:
+
+- Focused reviewer run: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_first_testing_command.py app\tests\test_directory_browser.py`: 53 passed in 19.72s.
+- Full reviewer run: `.\.python312-embed\python.exe -m pytest`: 215 passed in 52.64s.
+
+Scope confirmation:
+
+- No Stage 5 search/timeline, recursive crawl, broad enumeration, selected-file auto-analysis, UI/reporting, dependency install, full 1 TB hash completion, real evidence commit, commit, or push was done.
+
+## 2026-07-24 - S4.5-IMP12 Implementation Handoff
+
+Result: ready for review. S4.5-IMP12 is marked `Review`.
+
+Findings:
+
+- No blocking findings from the coding-agent pass.
+- `--hash-image` now emits progress based on actual bytes hashed over logical media size.
+- Progress is written to stderr and to `outputs/image-hash-progress.json`; `--json-only` stdout remains final parseable JSON.
+- `--redact-paths` redacts evidence-root paths in progress/status text while local JSON artifacts remain examiner-owned.
+- Interrupted hashing records non-success status `interrupted`, preserves bytes hashed/logical size/progress fields where available, adds `image_hash_interrupted`, and omits the digest.
+- Completed hash semantics remain unchanged: a digest is present only when the full logical-image hash completes and byte count matches.
+
+Verification:
+
+- Focused portable-runtime run: `.\.python312-embed\python.exe -m pytest app\tests\test_image_stream.py app\tests\test_first_testing_command.py`: 43 passed in 66.17s.
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 215 passed in 78.24s.
+- Bounded real-image hash-progress smoke used the local ignored image and was force-stopped by script after 35 seconds before completion. It wrote `image-hash-progress.json` and `image-hash.json` with status `failed`, 322,961,408 bytes hashed, logical media size 1,024,209,543,168, percent about 0.031533, digest unavailable, `source_modified: false`, and `read_only_asserted: true`; stderr showed redacted progress. This was not a completed full-image hash and not a graceful interrupted-artifact proof; automated fake-stream tests cover caught `KeyboardInterrupt` status.
+- `git diff --check` passed with line-ending normalization warnings only.
+- No lingering Python/pytest process remained after the bounded smoke.
+
+Scope confirmation:
+
+- S4.5-IMP11 was not reviewed or marked done in this ticket.
+- No S5-T02, search/timeline, recursive crawl, broad enumeration, selected-file auto-analysis, UI/reporting, deleted recovery, carving, packaging, dependency installation, full 1 TB hash completion, real evidence commit, commit, or push work was done.
+
+## 2026-07-24 - S4.5-IMP11 Implementation Handoff
+
+Result: ready for review. S4.5-IMP11 is marked `Review`.
+
+Findings:
+
+- No blocking findings from the coding-agent pass.
+- First-testing now accepts `--project-name`, `--inspector`, and `--custodian`.
+- Compatibility remains: `--project-name` is preferred over `--case-name` for project/display identity; `--case-name` remains the fallback. `--inspector` is preferred for inspector/examiner identity; `--actor` remains the audit actor when supplied and an inspector fallback when no inspector is supplied.
+- `outputs/case.json`, `run-manifest.json`, `command-summary.txt`, and `outputs/reports/summary.html` carry the normalized identity fields while keeping evidence path/provenance separate.
+- The live directory browser header and prompt now use the supplied project/logical-image label, or `Logical Image` when omitted, instead of using `.E01`/`E01` as the primary navigation root.
+
+Verification:
+
+- Focused portable-runtime run: `.\.python312-embed\python.exe -m pytest app\tests\test_first_testing_command.py app\tests\test_directory_browser.py`: 34 passed in 79.52s.
+- Full portable-runtime run: `.\.python312-embed\python.exe -m pytest`: 211 passed in 83.05s.
+- Privacy-safe real-image no-selection/navigation smoke exited 0 with project/inspector/custodian identity present, 53 segments, metadata `metadata_available`, verification `not_supported`, EWF stream `ok`, 5 volumes, filesystem `ok`, root listing `real_parser_backed` with 11 entries, nested listing `real_parser_backed` with 19 entries and files=19/directories=0/other=0, static HTML created, image hash `not_run`, selected-file operations `not_run`, `source_modified: false`, and `read_only_asserted: true`.
+- Privacy-safe scripted browser smoke returned setup `ok`, display label `Stage 4.5 Demo`, volume label present, 53 segments, root `ok` / `real_parser_backed` with 11 entries, last listing `ok` / `real_parser_backed` with 11 entries and files=5/directories=2/other=4, `source_modified: false`, and `read_only_asserted: true`.
+
+Scope confirmation:
+
+- No S4.5-IMP12, Stage 5 S5-T02, search/timeline, recursive crawl, broad enumeration, content extraction, selected-file auto-analysis, UI/reporting, deleted recovery, carving, packaging, dependency installation, commit, or push work was done.
+
+## 2026-07-24 - Manual Demo Feedback Follow-Up
+
+Result: Stage 4.5 reopened for two narrow demo follow-up tickets before major Stage 5 work.
+
+Findings:
+
+- No lingering Python/pytest process was found after the user stopped the long `--hash-image` command.
+- The first-testing artifact folder was cleared for a fresh user-run demo.
+- The interrupted hash run exposes a real demo issue: a roughly 1 TB logical-image hash can legitimately run for a long time, but the command needs accurate progress/loading feedback and an honest interrupted status.
+- User identity and presentation feedback is valid: the demo should accept project name, inspector, and custodian, and the browser's primary navigation label should read as a named project/logical image rather than an `.E01` segment.
+
+Ticket decisions:
+
+- Added `tickets/stage-4.5/S4.5-IMP11-demo-identity-and-navigation-labels.md` as `Ready`.
+- Added `tickets/stage-4.5/S4.5-IMP12-image-hash-progress-and-interrupt-status.md` as `Draft`.
+- Added `prompts/vscode-agent/2026-07-24-s4.5-imp11-demo-identity-and-navigation-labels.md`.
+- S5-T02 remains Draft and paused behind the demo follow-up lane unless the user explicitly resumes Stage 5.
+
+Verification:
+
+- Output cleanup verified `.test-artifacts\first-testing` was empty after cleanup.
+- No app source behavior or tests were changed in this review-agent ticketing pass.
+
 ## 2026-07-23 - S5-T01 Rerun Review Acceptance
 
 Result: accepted. S5-T01 rerun is done with a passed-gate result.
@@ -21,7 +114,7 @@ Findings:
 - No blocking findings.
 - The gate correctly treats the July 16 failed S5-T01 result as historical.
 - S4.5-IMP01 through S4.5-IMP10 satisfy the Stage 4.5 substantial-test runway for this gate.
-- Stage 5 search/timeline implementation has not started; S5-T02 remains Draft and is the next ticket to prepare.
+- Stage 5 search/timeline implementation had not started; at that acceptance point S5-T02 remained Draft as the next Stage 5 ticket, and it was later paused behind S4.5-IMP11/S4.5-IMP12 by 2026-07-24 manual-demo feedback.
 - Allowed and blocked Stage 5 inputs preserve the main proof boundaries: `not_run` image hashes are not digest proof, static HTML is not an authoritative index, browser/navigation is not recursive crawl, and selected-file content remains explicit-selection only.
 
 Verification:

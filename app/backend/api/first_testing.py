@@ -9,7 +9,9 @@ import html
 import json
 from pathlib import Path
 import re
-from typing import Any, Mapping, Sequence
+import sys
+import time
+from typing import Any, Mapping, Sequence, TextIO
 from uuid import uuid4
 
 from app.backend.api.intake import INTAKE_SCHEMA_VERSION, run_e01_intake
@@ -53,6 +55,7 @@ FIRST_TESTING_RUN_SCHEMA_VERSION = "stage4_5.first_testing_run.v1"
 UNSUPPORTED_SECTIONS_SCHEMA_VERSION = "stage4_5.unsupported_sections.v1"
 FILE_LIST_SCHEMA_VERSION = "stage4_5.file_list.v1"
 IMAGE_HASH_SCHEMA_VERSION = "stage4_5.image_hash.v1"
+IMAGE_HASH_PROGRESS_SCHEMA_VERSION = "stage4_5.image_hash_progress.v1"
 DIRECTORY_LISTING_SCHEMA_VERSION = "stage4_5.directory_listing.v1"
 NAVIGATION_READINESS_SCHEMA_VERSION = "stage4_5.navigation_readiness.v1"
 
@@ -118,8 +121,11 @@ def run_first_testing(
     first_segment: str | Path | None = None,
     case_path: str | Path | None = None,
     output_path: str | Path | None = None,
+    project_name: str | None = None,
     case_name: str | None = None,
     case_description: str | None = None,
+    inspector: str | None = None,
+    custodian: str | None = None,
     actor: str | None = None,
     adapter_name: str = "pyewf",
     redact_paths: bool = False,
@@ -133,6 +139,7 @@ def run_first_testing(
     hash_image: bool = False,
     image_hash_algorithm: str = "sha256",
     image_hash_chunk_size: int = DEFAULT_IMAGE_HASH_CHUNK_SIZE,
+    image_hash_progress_stream: TextIO | None = None,
     list_directory_path: str | None = None,
     demo_list_first_directory: bool = False,
 ) -> dict[str, object]:
@@ -178,6 +185,15 @@ def run_first_testing(
         list_directory_path=list_directory_path,
         demo_list_first_directory=demo_list_first_directory,
     )
+    identity = _identity_request(
+        project_name=project_name,
+        case_name=case_name,
+        case_description=case_description,
+        inspector=inspector,
+        custodian=custodian,
+        actor=actor,
+        fallback_name=case_dir.name or "First Testing Case",
+    )
     selection = _selection_request(
         selected_file_id=selected_file_id,
         selected_file_path=selected_file_path,
@@ -200,7 +216,8 @@ def run_first_testing(
     connection = connect(case_db_path)
     try:
         initialize_schema(connection)
-        resolved_case_name = case_name or case_dir.name or "First Testing Case"
+        resolved_case_name = str(identity["project_name"])
+        audit_actor = _optional_str(identity.get("audit_actor"))
         case_id = insert_case(
             connection,
             name=resolved_case_name,
@@ -210,11 +227,12 @@ def run_first_testing(
             connection,
             case_id=case_id,
             action="first_testing.case_created",
-            actor=actor,
+            actor=audit_actor,
             details={
                 "run_id": run_id,
                 "case_workspace": str(case_dir),
                 "case_database": str(case_db_path),
+                "identity": identity,
             },
         )
 
@@ -229,7 +247,7 @@ def run_first_testing(
             case_id=case_id,
             evidence_id=evidence_id,
             action="first_testing.evidence_intake_completed",
-            actor=actor,
+            actor=audit_actor,
             details={
                 "run_id": run_id,
                 "intake_status": intake_result.get("status"),
@@ -252,7 +270,8 @@ def run_first_testing(
             intake_result=intake_result,
             selected_path=selected_path,
             evidence_root=evidence_root,
-            actor=actor,
+            identity=identity,
+            actor=audit_actor,
         )
         metadata_artifact = _metadata_artifact(
             evidence_id=evidence_id,
@@ -279,6 +298,10 @@ def run_first_testing(
             requested=hash_image,
             algorithm=image_hash_algorithm,
             chunk_size=image_hash_chunk_size,
+            progress_path=artifact_paths["image_hash_progress"],
+            progress_stream=image_hash_progress_stream,
+            redact_paths=redact_paths,
+            evidence_root=evidence_root,
         )
         selected_file_artifacts = _selected_file_artifacts(
             selected_path=selected_path,
@@ -318,6 +341,10 @@ def run_first_testing(
         _write_json(artifact_paths["root_listing"], demo_artifacts["root_listing"])
         _write_json(artifact_paths["demo_readiness"], demo_artifacts["demo_readiness"])
         _write_json(artifact_paths["image_hash"], image_hash_artifact)
+        _write_json(
+            artifact_paths["image_hash_progress"],
+            _as_mapping(image_hash_artifact.get("progress")),
+        )
         _write_json(artifact_paths["selected_file_readiness"], selected_file_artifacts["readiness"])
         _write_json(artifact_paths["selected_file_preview"], selected_file_artifacts["preview"])
         _write_json(artifact_paths["selected_file_analysis"], selected_file_artifacts["analysis"])
@@ -337,7 +364,7 @@ def run_first_testing(
             case_id=case_id,
             evidence_id=evidence_id,
             action="first_testing.artifacts_written",
-            actor=actor,
+            actor=audit_actor,
             details={
                 "run_id": run_id,
                 "artifact_paths": {key: str(value) for key, value in artifact_paths.items()},
@@ -349,7 +376,7 @@ def run_first_testing(
             case_id=case_id,
             evidence_id=evidence_id,
             action="first_testing.run_completed",
-            actor=actor,
+            actor=audit_actor,
             details={
                 "run_id": run_id,
                 "status": overall_status,
@@ -389,7 +416,8 @@ def run_first_testing(
             audit_artifact=audit_artifact,
             artifact_paths=artifact_paths,
             adapter_name=adapter_name,
-            actor=actor,
+            identity=identity,
+            actor=audit_actor,
             redact_paths=redact_paths,
         )
         _write_json(artifact_paths["run_manifest"], manifest)
@@ -416,8 +444,11 @@ def first_testing_to_json(
     first_segment: str | Path | None = None,
     case_path: str | Path | None = None,
     output_path: str | Path | None = None,
+    project_name: str | None = None,
     case_name: str | None = None,
     case_description: str | None = None,
+    inspector: str | None = None,
+    custodian: str | None = None,
     actor: str | None = None,
     adapter_name: str = "pyewf",
     redact_paths: bool = False,
@@ -431,6 +462,7 @@ def first_testing_to_json(
     hash_image: bool = False,
     image_hash_algorithm: str = "sha256",
     image_hash_chunk_size: int = DEFAULT_IMAGE_HASH_CHUNK_SIZE,
+    image_hash_progress_stream: TextIO | None = None,
     list_directory_path: str | None = None,
     demo_list_first_directory: bool = False,
     indent: int | None = 2,
@@ -443,8 +475,11 @@ def first_testing_to_json(
         first_segment=first_segment,
         case_path=case_path,
         output_path=output_path,
+        project_name=project_name,
         case_name=case_name,
         case_description=case_description,
+        inspector=inspector,
+        custodian=custodian,
         actor=actor,
         adapter_name=adapter_name,
         redact_paths=redact_paths,
@@ -458,6 +493,7 @@ def first_testing_to_json(
         hash_image=hash_image,
         image_hash_algorithm=image_hash_algorithm,
         image_hash_chunk_size=image_hash_chunk_size,
+        image_hash_progress_stream=image_hash_progress_stream,
         list_directory_path=list_directory_path,
         demo_list_first_directory=demo_list_first_directory,
     )
@@ -486,6 +522,7 @@ def format_first_testing_summary(
 
     command = _as_mapping(result.get("command"))
     case = _as_mapping(result.get("case"))
+    identity = _as_mapping(result.get("identity"))
     evidence = _as_mapping(result.get("evidence"))
     adapter = _as_mapping(result.get("adapter"))
     dependency = _as_mapping(adapter.get("dependency"))
@@ -507,6 +544,9 @@ def format_first_testing_summary(
     lines = [
         "Stage 4.5 first-testing command",
         f"Status: {status}",
+        f"Project: {identity.get('project_name') or case.get('name')}",
+        f"Inspector: {identity.get('inspector') or ''}",
+        f"Custodian: {identity.get('custodian') or ''}",
         f"Case workspace: {case.get('workspace')}",
         f"Case database: {case.get('database_path')}",
         f"Output directory: {command.get('output_path')}",
@@ -526,6 +566,10 @@ def format_first_testing_summary(
         f"Image hash request: {image_hash.get('requested')} ({image_hash.get('status')})",
         f"Image hash algorithm: {image_hash.get('algorithm')}",
         f"Image hash bytes: {image_hash.get('bytes_hashed')} / {image_hash.get('logical_media_size')}",
+        f"Image hash percent: {_summary_percent(image_hash.get('percent_complete'))}",
+        f"Image hash throughput: {_format_rate(_optional_float(image_hash.get('throughput_bytes_per_second')))}",
+        f"Image hash ETA: {_format_duration(_optional_float(image_hash.get('eta_seconds')))}",
+        f"Image hash progress artifact: {_summary_artifact_path(image_hash.get('progress_artifact_path'), case.get('workspace'))}",
         f"Image hash byte-count match: {image_hash.get('byte_count_matches_media_size')}",
         f"File list status: {file_list.get('status')}",
         f"File list entries: {file_list.get('entry_count')}",
@@ -580,8 +624,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--first-segment", help="First segment filename when --evidence-dir is used.")
     parser.add_argument("--case", required=True, dest="case_path", help="Case workspace directory.")
     parser.add_argument("--output", dest="output_path", help="Artifact output directory. Defaults to <case>/outputs.")
+    parser.add_argument("--project-name", help="Preferred project/case display name.")
     parser.add_argument("--case-name", help="Case display name. Defaults to the case folder name.")
     parser.add_argument("--case-description", help="Optional case description.")
+    parser.add_argument("--inspector", help="Preferred inspector/examiner name for demo artifacts.")
+    parser.add_argument("--custodian", help="Optional evidence custodian name for demo artifacts.")
     parser.add_argument("--actor", help="Optional audit actor.")
     parser.add_argument(
         "--adapter",
@@ -648,8 +695,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         first_segment=args.first_segment,
         case_path=args.case_path,
         output_path=args.output_path,
+        project_name=args.project_name,
         case_name=args.case_name,
         case_description=args.case_description,
+        inspector=args.inspector,
+        custodian=args.custodian,
         actor=args.actor,
         adapter_name=args.adapter,
         redact_paths=args.redact_paths,
@@ -662,6 +712,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         hash_image=args.hash_image,
         image_hash_algorithm=args.image_hash_algorithm,
         image_hash_chunk_size=args.image_hash_chunk_size,
+        image_hash_progress_stream=sys.stderr if args.hash_image else None,
         list_directory_path=args.list_directory_path,
         demo_list_first_directory=args.demo_list_first_directory,
     )
@@ -952,6 +1003,7 @@ def _artifact_paths(case_dir: Path, output_dir: Path) -> dict[str, Path]:
         "root_listing": output_dir / "root-listing.json",
         "demo_readiness": output_dir / "demo-readiness.json",
         "image_hash": output_dir / "image-hash.json",
+        "image_hash_progress": output_dir / "image-hash-progress.json",
         "selected_file_readiness": output_dir / "selected-file-readiness.json",
         "selected_file_preview": output_dir / "selected-file-preview.json",
         "selected_file_analysis": output_dir / "selected-file-analysis.json",
@@ -1026,11 +1078,13 @@ def _case_artifact(
     intake_result: Mapping[str, object],
     selected_path: Path,
     evidence_root: Path,
+    identity: Mapping[str, object],
     actor: str | None,
 ) -> dict[str, object]:
     return {
         "schema_version": FIRST_TESTING_RUN_SCHEMA_VERSION,
         "case_store_schema_version": CASE_STORE_SCHEMA_VERSION,
+        "identity": dict(identity),
         "case": {
             "case_id": case_id,
             "name": case_name,
@@ -1146,6 +1200,82 @@ def _segment_discovery_artifact(
     }
 
 
+class _ImageHashProgressRecorder:
+    def __init__(
+        self,
+        *,
+        path: Path,
+        requested: bool,
+        algorithm: str,
+        chunk_size: int,
+        selected_path: Path,
+        segment_paths: Sequence[str],
+        started_at: str,
+        progress_stream: TextIO | None,
+        redact_paths: bool,
+        evidence_root: Path,
+        read_only_asserted: bool = True,
+    ) -> None:
+        self.path = path
+        self.requested = requested
+        self.algorithm = algorithm
+        self.chunk_size = chunk_size
+        self.selected_path = selected_path
+        self.segment_paths = tuple(segment_paths)
+        self.started_at = started_at
+        self.progress_stream = progress_stream
+        self.redact_paths = redact_paths
+        self.evidence_root = evidence_root
+        self.read_only_asserted = read_only_asserted
+        self.last_progress: dict[str, object] | None = None
+        self._last_terminal_write = 0.0
+
+    def __call__(self, snapshot: Mapping[str, object]) -> None:
+        status = str(snapshot.get("status") or "hashing")
+        progress = _image_hash_progress_artifact(
+            selected_path=self.selected_path,
+            segment_paths=self.segment_paths,
+            requested=self.requested,
+            status=status,
+            message=str(snapshot.get("message") or ""),
+            algorithm=str(snapshot.get("algorithm") or self.algorithm),
+            chunk_size=self.chunk_size,
+            bytes_hashed=int(snapshot.get("bytes_hashed") or 0),
+            logical_media_size=snapshot.get("logical_media_size"),
+            percent_complete=snapshot.get("percent_complete"),
+            elapsed_seconds=snapshot.get("elapsed_seconds"),
+            throughput_bytes_per_second=snapshot.get("throughput_bytes_per_second"),
+            eta_seconds=snapshot.get("eta_seconds"),
+            started_at=self.started_at,
+            completed_at=_utc_now() if status != "hashing" else None,
+            warnings=[],
+            read_only_asserted=self.read_only_asserted,
+            artifact_path=self.path,
+        )
+        self.last_progress = progress
+        _write_json_atomic(self.path, progress)
+        self._write_terminal_progress(progress)
+
+    def _write_terminal_progress(self, progress: Mapping[str, object]) -> None:
+        if self.progress_stream is None:
+            return
+        status = str(progress.get("status") or "")
+        now = time.monotonic()
+        if (
+            status == "hashing"
+            and progress.get("bytes_hashed") not in {0, progress.get("logical_media_size")}
+            and now - self._last_terminal_write < 1.0
+        ):
+            return
+        self._last_terminal_write = now
+        line = _format_image_hash_progress_line(progress)
+        if self.redact_paths:
+            line = _redact_evidence_root(line, str(self.evidence_root))
+        end = "\n" if status != "hashing" else ""
+        self.progress_stream.write(f"\r{line}{end}")
+        self.progress_stream.flush()
+
+
 def _image_hash_artifact(
     *,
     selected_path: Path,
@@ -1155,10 +1285,30 @@ def _image_hash_artifact(
     requested: bool,
     algorithm: str,
     chunk_size: int,
+    progress_path: Path,
+    progress_stream: TextIO | None,
+    redact_paths: bool,
+    evidence_root: Path,
 ) -> dict[str, object]:
     segment_paths = _segment_paths_from_intake(intake_result)
     logical_media_size = _as_mapping(demo_artifacts.get("ewf_stream")).get("logical_media_size")
     if not requested:
+        progress = _image_hash_progress_artifact(
+            selected_path=selected_path,
+            segment_paths=segment_paths,
+            requested=False,
+            status="not_run",
+            message="Full logical-image hashing was not requested.",
+            algorithm=algorithm,
+            chunk_size=chunk_size,
+            bytes_hashed=0,
+            logical_media_size=logical_media_size,
+            started_at=None,
+            completed_at=None,
+            warnings=[],
+            read_only_asserted=True,
+            artifact_path=progress_path,
+        )
         return _image_hash_status_artifact(
             selected_path=selected_path,
             intake_result=intake_result,
@@ -1175,11 +1325,36 @@ def _image_hash_artifact(
             completed_at=None,
             warnings=[],
             read_only_asserted=True,
+            progress=progress,
         )
 
     started_at = _utc_now()
     if adapter_name == "stub":
         completed_at = _utc_now()
+        warnings = [
+            {
+                "source": "first_testing_image_hash",
+                "code": "stub_adapter_image_hash_not_supported",
+                "message": "Full logical-image hashing requires the EWF stream path; stub adapter bytes are never hashed as image verification.",
+                "path": str(selected_path),
+            }
+        ]
+        progress = _image_hash_progress_artifact(
+            selected_path=selected_path,
+            segment_paths=segment_paths,
+            requested=True,
+            status="stream_unavailable",
+            message="Full logical-image hashing requires the EWF stream path; stub adapter bytes were not hashed.",
+            algorithm=algorithm,
+            chunk_size=chunk_size,
+            bytes_hashed=0,
+            logical_media_size=logical_media_size,
+            started_at=started_at,
+            completed_at=completed_at,
+            warnings=warnings,
+            read_only_asserted=True,
+            artifact_path=progress_path,
+        )
         return _image_hash_status_artifact(
             selected_path=selected_path,
             intake_result=intake_result,
@@ -1194,15 +1369,9 @@ def _image_hash_artifact(
             byte_count_matches_media_size=None,
             started_at=started_at,
             completed_at=completed_at,
-            warnings=[
-                {
-                    "source": "first_testing_image_hash",
-                    "code": "stub_adapter_image_hash_not_supported",
-                    "message": "Full logical-image hashing requires the EWF stream path; stub adapter bytes are never hashed as image verification.",
-                    "path": str(selected_path),
-                }
-            ],
+            warnings=warnings,
             read_only_asserted=True,
+            progress=progress,
         )
 
     stream = EwfImageByteStream(
@@ -1210,14 +1379,53 @@ def _image_hash_artifact(
         segment_paths=segment_paths,
         **_ewf_stream_kwargs_from_intake(intake_result),
     )
+    recorder = _ImageHashProgressRecorder(
+        path=progress_path,
+        requested=True,
+        algorithm=algorithm,
+        chunk_size=chunk_size,
+        selected_path=selected_path,
+        segment_paths=segment_paths,
+        started_at=started_at,
+        progress_stream=progress_stream,
+        redact_paths=redact_paths,
+        evidence_root=evidence_root,
+    )
     result = hash_image_stream(
         stream,
         algorithm=algorithm,
         chunk_size=chunk_size,
+        progress_callback=recorder,
     )
     result_dict = result.to_dict()
     status = _as_mapping(result_dict.get("status")).get("code") or result.status.code
     completed_at = _utc_now()
+    warnings = [
+        dict(warning)
+        for warning in result_dict.get("warnings", [])
+        if isinstance(warning, Mapping)
+    ]
+    progress_snapshot = _as_mapping(recorder.last_progress)
+    progress = _image_hash_progress_artifact(
+        selected_path=selected_path,
+        segment_paths=segment_paths,
+        requested=True,
+        status=str(status),
+        message=str(_as_mapping(result_dict.get("status")).get("message") or ""),
+        algorithm=str(result_dict.get("algorithm") or algorithm),
+        chunk_size=chunk_size,
+        bytes_hashed=int(result_dict.get("bytes_hashed") or 0),
+        logical_media_size=result_dict.get("logical_media_size"),
+        percent_complete=progress_snapshot.get("percent_complete"),
+        elapsed_seconds=progress_snapshot.get("elapsed_seconds"),
+        throughput_bytes_per_second=progress_snapshot.get("throughput_bytes_per_second"),
+        eta_seconds=progress_snapshot.get("eta_seconds"),
+        started_at=started_at,
+        completed_at=completed_at,
+        warnings=warnings,
+        read_only_asserted=bool(result_dict.get("read_only")),
+        artifact_path=progress_path,
+    )
     return _image_hash_status_artifact(
         selected_path=selected_path,
         intake_result=intake_result,
@@ -1232,14 +1440,140 @@ def _image_hash_artifact(
         byte_count_matches_media_size=result_dict.get("byte_count_matches_media_size"),
         started_at=started_at,
         completed_at=completed_at,
-        warnings=[
-            dict(warning)
-            for warning in result_dict.get("warnings", [])
-            if isinstance(warning, Mapping)
-        ],
+        warnings=warnings,
         read_only_asserted=bool(result_dict.get("read_only")),
         hash_result=result_dict,
+        progress=progress,
     )
+
+
+def _image_hash_progress_artifact(
+    *,
+    selected_path: Path,
+    segment_paths: Sequence[str],
+    requested: bool,
+    status: str,
+    message: str,
+    algorithm: str,
+    chunk_size: int,
+    bytes_hashed: int,
+    logical_media_size: object,
+    started_at: str | None,
+    completed_at: str | None,
+    warnings: Sequence[Mapping[str, object]],
+    read_only_asserted: bool,
+    artifact_path: Path,
+    percent_complete: object = None,
+    elapsed_seconds: object = None,
+    throughput_bytes_per_second: object = None,
+    eta_seconds: object = None,
+) -> dict[str, object]:
+    total_size = _optional_int(logical_media_size)
+    hashed = max(0, int(bytes_hashed))
+    percent = _optional_float(percent_complete)
+    if percent is None and total_size and total_size > 0:
+        percent = (hashed / total_size) * 100
+    elapsed = _optional_float(elapsed_seconds)
+    throughput = _optional_float(throughput_bytes_per_second)
+    eta = _optional_float(eta_seconds)
+    if eta is None and throughput and total_size and hashed < total_size:
+        eta = (total_size - hashed) / throughput
+    return {
+        "schema_version": IMAGE_HASH_PROGRESS_SCHEMA_VERSION,
+        "requested": requested,
+        "status": status,
+        "message": message,
+        "algorithm": algorithm,
+        "chunk_size": chunk_size,
+        "bytes_hashed": hashed,
+        "logical_media_size": total_size,
+        "percent_complete": percent,
+        "elapsed_seconds": elapsed,
+        "throughput_bytes_per_second": throughput,
+        "eta_seconds": eta,
+        "started_at": started_at,
+        "updated_at": _utc_now(),
+        "completed_at": completed_at,
+        "source_path": str(selected_path),
+        "source_kind": "ewf_logical_image",
+        "segment_count": len(segment_paths),
+        "artifact_path": str(artifact_path),
+        "digest_available": status == "completed",
+        "progress_basis": "bytes_hashed_over_logical_media_size",
+        "warnings": [dict(warning) for warning in warnings],
+        "read_only_asserted": read_only_asserted,
+        "source_modified": False,
+        "privacy_note": (
+            "Local progress artifact may contain evidence paths; share only with "
+            "reviewer-approved redaction/handling."
+        ),
+    }
+
+
+def _format_image_hash_progress_line(progress: Mapping[str, object]) -> str:
+    status = str(progress.get("status") or "unknown")
+    percent = _optional_float(progress.get("percent_complete"))
+    bytes_hashed = int(progress.get("bytes_hashed") or 0)
+    logical_media_size = _optional_int(progress.get("logical_media_size"))
+    bar = _progress_bar(percent)
+    percent_text = f"{percent:6.2f}%" if percent is not None else "  n/a "
+    size_text = f"{_format_bytes(bytes_hashed)} / {_format_bytes(logical_media_size)}"
+    throughput = _optional_float(progress.get("throughput_bytes_per_second"))
+    throughput_text = _format_rate(throughput)
+    eta = _optional_float(progress.get("eta_seconds"))
+    eta_text = _format_duration(eta) if eta is not None else "n/a"
+    source = str(progress.get("source_path") or "")
+    return (
+        f"Image hash: {bar} {percent_text} {size_text} "
+        f"rate={throughput_text} eta={eta_text} status={status} source={source}"
+    )
+
+
+def _progress_bar(percent: float | None, *, width: int = 24) -> str:
+    if percent is None:
+        return f"[{'?' * width}]"
+    clamped = max(0.0, min(100.0, percent))
+    filled = int(round((clamped / 100.0) * width))
+    return f"[{'#' * filled}{'-' * (width - filled)}]"
+
+
+def _format_rate(value: float | None) -> str:
+    if value is None:
+        return "n/a"
+    return f"{_format_bytes(value)}/s"
+
+
+def _summary_percent(value: object) -> str:
+    percent = _optional_float(value)
+    return "n/a" if percent is None else f"{percent:.2f}%"
+
+
+def _format_bytes(value: object) -> str:
+    number = _optional_float(value)
+    if number is None:
+        return "unknown"
+    units = ("B", "KiB", "MiB", "GiB", "TiB")
+    size = float(number)
+    for unit in units:
+        if abs(size) < 1024.0 or unit == units[-1]:
+            if unit == "B":
+                return f"{int(size)} {unit}"
+            return f"{size:.2f} {unit}"
+        size /= 1024.0
+    return f"{size:.2f} TiB"
+
+
+def _format_duration(value: float | None) -> str:
+    if value is None:
+        return "n/a"
+    seconds = max(0, int(value))
+    hours, remainder = divmod(seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    if hours:
+        return f"{hours}h {minutes}m {seconds}s"
+    if minutes:
+        return f"{minutes}m {seconds}s"
+    return f"{seconds}s"
 
 
 def _image_hash_status_artifact(
@@ -1260,9 +1594,11 @@ def _image_hash_status_artifact(
     warnings: Sequence[Mapping[str, object]],
     read_only_asserted: bool,
     hash_result: Mapping[str, object] | None = None,
+    progress: Mapping[str, object] | None = None,
 ) -> dict[str, object]:
     adapter = _as_mapping(intake_result.get("adapter"))
     dependency = _as_mapping(adapter.get("dependency"))
+    progress_artifact = _as_mapping(progress)
     return {
         "schema_version": IMAGE_HASH_SCHEMA_VERSION,
         "requested": requested,
@@ -1277,6 +1613,8 @@ def _image_hash_status_artifact(
         "requested_intake_adapter": adapter.get("name"),
         "segment_count": len(segment_paths),
         "chunk_size": chunk_size,
+        "progress": dict(progress_artifact),
+        "progress_artifact_path": progress_artifact.get("artifact_path"),
         "started_at": started_at,
         "completed_at": completed_at,
         "warnings": [dict(warning) for warning in warnings],
@@ -2775,6 +3113,24 @@ def _optional_str(value: object) -> str | None:
     return text or None
 
 
+def _optional_int(value: object) -> int | None:
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _optional_float(value: object) -> float | None:
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _run_manifest(
     *,
     run_id: str,
@@ -2802,6 +3158,7 @@ def _run_manifest(
     audit_artifact: Mapping[str, object],
     artifact_paths: Mapping[str, Path],
     adapter_name: str,
+    identity: Mapping[str, object],
     actor: str | None,
     redact_paths: bool,
 ) -> dict[str, object]:
@@ -2818,6 +3175,7 @@ def _run_manifest(
     navigation_readiness = _as_mapping(directory_navigation_artifacts.get("readiness"))
     directory_warnings = directory_listing_artifact.get("warnings", [])
     image_hash_warnings = image_hash_artifact.get("warnings", [])
+    image_hash_progress = _as_mapping(image_hash_artifact.get("progress"))
     sections = unsupported_sections.get("sections", [])
     warnings = intake_result.get("warnings", [])
 
@@ -2833,6 +3191,9 @@ def _run_manifest(
             "evidence_root": str(evidence_root),
             "case_path": str(case_dir),
             "output_path": str(output_dir),
+            "project_name": identity.get("project_name"),
+            "inspector": identity.get("inspector"),
+            "custodian": identity.get("custodian"),
             "case_name": case_name,
             "case_description": case_description,
             "actor": actor,
@@ -2850,9 +3211,11 @@ def _run_manifest(
             "case_store_schema_version": CASE_STORE_SCHEMA_VERSION,
             "file_list_schema_version": FILE_LIST_SCHEMA_VERSION,
             "image_hash_schema_version": IMAGE_HASH_SCHEMA_VERSION,
+            "image_hash_progress_schema_version": IMAGE_HASH_PROGRESS_SCHEMA_VERSION,
             "directory_listing_schema_version": DIRECTORY_LISTING_SCHEMA_VERSION,
             "navigation_readiness_schema_version": NAVIGATION_READINESS_SCHEMA_VERSION,
         },
+        "identity": dict(identity),
         "case": {
             "case_id": case_id,
             "name": case_name,
@@ -2887,6 +3250,12 @@ def _run_manifest(
             "byte_count_matches_media_size": image_hash_artifact.get(
                 "byte_count_matches_media_size"
             ),
+            "percent_complete": image_hash_progress.get("percent_complete"),
+            "elapsed_seconds": image_hash_progress.get("elapsed_seconds"),
+            "throughput_bytes_per_second": image_hash_progress.get(
+                "throughput_bytes_per_second"
+            ),
+            "eta_seconds": image_hash_progress.get("eta_seconds"),
             "source_kind": image_hash_artifact.get("source_kind"),
             "adapter_name": image_hash_artifact.get("adapter_name"),
             "segment_count": image_hash_artifact.get("segment_count"),
@@ -2895,6 +3264,7 @@ def _run_manifest(
                 image_hash_warnings if isinstance(image_hash_warnings, list) else []
             ),
             "artifact_path": str(artifact_paths["image_hash"]),
+            "progress_artifact_path": str(artifact_paths["image_hash_progress"]),
             "read_only_asserted": image_hash_artifact.get("read_only_asserted"),
             "source_modified": image_hash_artifact.get("source_modified"),
         },
@@ -3022,6 +3392,16 @@ def _write_json(path: Path, data: Mapping[str, object]) -> None:
     )
 
 
+def _write_json_atomic(path: Path, data: Mapping[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp_path = path.with_name(f".{path.name}.tmp")
+    temp_path.write_text(
+        json.dumps(data, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    temp_path.replace(path)
+
+
 def _write_file_list_csv(path: Path, file_list_artifact: Mapping[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     entries = file_list_artifact.get("entries")
@@ -3116,6 +3496,7 @@ def _html_summary_body(
     case_root: str | None,
 ) -> str:
     case = _as_mapping(manifest.get("case"))
+    identity = _as_mapping(manifest.get("identity"))
     evidence = _as_mapping(manifest.get("evidence"))
     adapter = _as_mapping(manifest.get("adapter"))
     image_hash = _as_mapping(manifest.get("image_hash"))
@@ -3126,6 +3507,9 @@ def _html_summary_body(
     unsupported = unsupported_sections.get("sections", [])
     rows = [
         ("Run status", manifest.get("status")),
+        ("Project", identity.get("project_name") or case.get("name")),
+        ("Inspector", identity.get("inspector")),
+        ("Custodian", identity.get("custodian")),
         ("Case", case.get("name")),
         ("Intake status", evidence.get("intake_status")),
         ("Segment count", evidence.get("segment_count")),
@@ -3137,6 +3521,10 @@ def _html_summary_body(
         ("Image hash status", image_hash.get("status")),
         ("Image hash algorithm", image_hash.get("algorithm")),
         ("Image hash bytes", f"{image_hash.get('bytes_hashed')} / {image_hash.get('logical_media_size')}"),
+        ("Image hash percent", _summary_percent(image_hash.get("percent_complete"))),
+        ("Image hash throughput", _format_rate(_optional_float(image_hash.get("throughput_bytes_per_second")))),
+        ("Image hash ETA", _format_duration(_optional_float(image_hash.get("eta_seconds")))),
+        ("Image hash progress artifact", _summary_artifact_path(image_hash.get("progress_artifact_path"), case_root)),
         ("Image hash byte-count match", image_hash.get("byte_count_matches_media_size")),
         ("File-list status", file_list.get("status")),
         ("File-list entries", file_list.get("entry_count")),
@@ -3254,6 +3642,55 @@ def _directory_navigation_attempts_html_value(directory_navigation: Mapping[str,
         f"root={directory_navigation.get('attempted_directory_count')} "
         f"child={directory_navigation.get('attempted_child_directory_count')}"
     )
+
+
+def _identity_request(
+    *,
+    project_name: str | None,
+    case_name: str | None,
+    case_description: str | None,
+    inspector: str | None,
+    custodian: str | None,
+    actor: str | None,
+    fallback_name: str,
+) -> dict[str, object]:
+    explicit_project_name = _optional_str(project_name)
+    legacy_case_name = _optional_str(case_name)
+    fallback_project_name = _optional_str(fallback_name) or "First Testing Case"
+    resolved_project_name = explicit_project_name or legacy_case_name or fallback_project_name
+    explicit_inspector = _optional_str(inspector)
+    legacy_actor = _optional_str(actor)
+    resolved_inspector = explicit_inspector or legacy_actor
+    return {
+        "schema_version": "stage4_5.demo_identity.v1",
+        "project_name": resolved_project_name,
+        "display_name": resolved_project_name,
+        "project_name_source": (
+            "project_name"
+            if explicit_project_name is not None
+            else "case_name"
+            if legacy_case_name is not None
+            else "case_workspace"
+        ),
+        "case_name": resolved_project_name,
+        "legacy_case_name": legacy_case_name,
+        "case_description": _optional_str(case_description),
+        "inspector": resolved_inspector,
+        "inspector_source": (
+            "inspector"
+            if explicit_inspector is not None
+            else "actor"
+            if legacy_actor is not None
+            else None
+        ),
+        "custodian": _optional_str(custodian),
+        "audit_actor": legacy_actor or explicit_inspector,
+        "legacy_actor": legacy_actor,
+        "provenance_note": (
+            "Demo identity labels are user-provided project/case fields and are "
+            "kept separate from evidence source paths and parser provenance."
+        ),
+    }
 
 
 def _entry_type_counts(file_list_artifact: Mapping[str, object]) -> str:

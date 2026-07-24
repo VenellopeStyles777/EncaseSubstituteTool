@@ -78,10 +78,10 @@ The adapter layer is intentionally separate from segment discovery. Stage 1 does
 - `ImageByteStream`: protocol for stream metadata and bounded byte-range reads.
 - `LocalFileImageStream`: local file-backed implementation for tiny generated fixtures and later raw-image experiments.
 - `EwfImageByteStream`: optional `pyewf`-backed implementation for segmented EWF images; it uses the discovered segment set, reports logical media size, and supports bounded read-only ranges for parser consumers.
-- `hash_image_stream()`: chunked full-stream hashing helper used by S4.5-IMP08 to compute SHA-256 over the logical image stream, not over stored EWF hash metadata, segment container files, selected-file content, or stub bytes.
+- `hash_image_stream()`: chunked full-stream hashing helper used by S4.5-IMP08/S4.5-IMP12 to compute SHA-256 over the logical image stream with progress callbacks and interrupted-status handling, not over stored EWF hash metadata, segment container files, selected-file content, or stub bytes.
 - `ImageStreamInfo`: source metadata and provenance, including source path, stream type, size, read-only assertion, status, and warnings.
 - `ImageReadResult`: bounded read result, including offset, requested length, source size, bytes read, read-only assertion, status, warnings, and raw `bytes` for backend callers.
-- `ImageHashResult` and `ImageHashStatus`: full logical-image hash result/status objects with byte count, logical media size, digest, byte-count match, and warning fields.
+- `ImageHashResult` and `ImageHashStatus`: full logical-image hash result/status objects with byte count, logical media size, digest, byte-count match, warning fields, and non-success interrupted status without a digest.
 - `ImageStreamStatus` and `ImageStreamWarning`: structured status/warning objects for normal and error paths.
 
 Current behavior:
@@ -90,10 +90,10 @@ Current behavior:
 - supports bounded reads by explicit offset and length;
 - reports missing paths, directory paths, unreadable files, invalid negative ranges, and reads beyond the end of the source as structured statuses;
 - truncates reads that extend past EOF and emits a `read_truncated_at_eof` warning;
-- hashes readable streams in bounded chunks only when the caller explicitly requests it;
+- hashes readable streams in bounded chunks only when the caller explicitly requests it, with optional progress snapshots based on bytes hashed over logical media size;
 - uses tiny generated files and fakes in default tests and does not require real evidence, `pyewf`, libewf, `pytsk3`, or The Sleuth Kit.
 
-S2-T02/S4.5-IMP03 stream code does not render previews or export files by itself. S4.5-IMP04 adds selected-file provider wrappers for explicit parser-backed root entries only. S4.5-IMP05 writes file-list output from the existing root-listing metadata. S4.5-IMP08 hashes the full logical image only through the explicit first-testing `--hash-image` option. S4.5-IMP09/S4.5-IMP09A can list one explicit or bounded-demo nested directory and prefer a file-visible listing when available. S4.5-IMP09B adds live terminal navigation over those listing calls, while broad crawls and recursive traversal remain later/out of scope.
+S2-T02/S4.5-IMP03 stream code does not render previews or export files by itself. S4.5-IMP04 adds selected-file provider wrappers for explicit parser-backed root entries only. S4.5-IMP05 writes file-list output from the existing root-listing metadata. S4.5-IMP08 hashes the full logical image only through the explicit first-testing `--hash-image` option, and S4.5-IMP12 adds progress plus interrupted-status reporting for that path. S4.5-IMP09/S4.5-IMP09A can list one explicit or bounded-demo nested directory and prefer a file-visible listing when available. S4.5-IMP09B adds live terminal navigation over those listing calls, while broad crawls and recursive traversal remain later/out of scope.
 
 ## S4.5-IMP04 Selected-File Content Providers
 

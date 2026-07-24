@@ -13,11 +13,11 @@ Current handoff:
 
 - S3-T01 through S3-T06 are reviewed and done.
 - S4-T01 through S4-T07 are reviewed and done.
-- Stage 4.5 planning prompts S4.5-T01 through S4.5-T08 are present; S4.5-IMP01 through S4.5-IMP10 have been implemented, reviewed, and marked done.
+- Stage 4.5 planning prompts S4.5-T01 through S4.5-T08 are present; S4.5-IMP01 through S4.5-IMP12 have been implemented, reviewed, and marked done. The 2026-07-24 hands-on demo feedback follow-ups added project/inspector/custodian navigation labels and hash progress/interrupted-status behavior.
 - `2026-07-15-stage-4.5-first-testing-familiarization.md` is the added Stage 4.5 coding-agent onboarding prompt.
 - `2026-07-15-s5-t00-documentation-organization-cleanup.md` is the Stage 5 S5-T00 documentation cleanup prompt; S5-T00 is done.
 - S5-T01 rerun is accepted/done with a passed-gate result after its older failed-gate/blocker result.
-- S5-T01A is done after documentation hardening. S5-T02 is the next ticket to prepare; do not feed S5-T02 until its ticket/prompt are populated and marked ready.
+- S5-T01A is done after documentation hardening. S5-T02 is the next Stage 5 ticket to prepare.
 - Keep this coding-agent handoff separate from the Stage 4 research/review-agent packet in `prompts/stage-4-onboarding/`.
 - The coding-agent reflection may focus on implementation mechanics; the review-agent reflection focuses on review risk, forensic soundness, and future-stage guardrails.
 
@@ -49,6 +49,8 @@ Current major onboarding prompts:
 - `2026-07-23-s4.5-imp09a-file-visible-navigation-correction.md`: Stage 4.5 S4.5-IMP09A file-visible navigation correction prompt.
 - `2026-07-23-s4.5-imp09b-interactive-e01-directory-browser.md`: Stage 4.5 S4.5-IMP09B interactive E01 directory browser prompt.
 - `2026-07-22-s4.5-imp10-demo-guide-and-stage-5-gate-refresh.md`: Stage 4.5 S4.5-IMP10 demo guide and Stage 5 gate refresh prompt.
+- `2026-07-24-s4.5-imp11-demo-identity-and-navigation-labels.md`: Stage 4.5 S4.5-IMP11 demo identity and navigation-label prompt.
+- `2026-07-24-s4.5-imp12-image-hash-progress-and-interrupt-status.md`: Stage 4.5 S4.5-IMP12 image hash progress and interrupt-status prompt.
 - `2026-07-15-s5-t00-documentation-organization-cleanup.md`: Stage 5 S5-T00 documentation organization cleanup prompt.
 - `2026-07-15-s5-t01-readiness-and-stage-4.5-completion-gate.md`: Stage 5 S5-T01 readiness and Stage 4.5 completion gate prompt.
 - `2026-07-23-s5-t01-rerun-readiness-and-stage-4.5-completion-gate.md`: Stage 5 S5-T01 rerun prompt after S4.5-IMP10 acceptance.

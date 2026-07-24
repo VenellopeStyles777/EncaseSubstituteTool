@@ -5,7 +5,14 @@ import hashlib
 from pathlib import Path
 import shutil
 
-from app.backend.forensic_core import EwfImageByteStream, LocalFileImageStream, hash_image_stream
+from app.backend.forensic_core import (
+    EwfImageByteStream,
+    ImageReadResult,
+    ImageStreamInfo,
+    ImageStreamStatus,
+    LocalFileImageStream,
+    hash_image_stream,
+)
 
 
 class FakePyewf:
@@ -62,6 +69,39 @@ def _stream_fixture_directory(name: str):
 
 def _write_bytes(path: Path, data: bytes) -> None:
     path.write_bytes(data)
+
+
+class InterruptingImageStream:
+    stream_type = "local-file"
+    read_only = True
+
+    def __init__(self, source_path: Path, data: bytes, *, interrupt_after_offset: int) -> None:
+        self.source_path = str(source_path)
+        self.data = data
+        self.interrupt_after_offset = interrupt_after_offset
+
+    def describe(self):
+        return ImageStreamInfo(
+            source_path=self.source_path,
+            stream_type=self.stream_type,
+            size=len(self.data),
+            read_only=True,
+            status=ImageStreamStatus("ok", "fake stream ok", self.source_path),
+        )
+
+    def read_at(self, offset: int, length: int):
+        if offset >= self.interrupt_after_offset:
+            raise KeyboardInterrupt
+        return ImageReadResult(
+            source_path=self.source_path,
+            stream_type=self.stream_type,
+            read_only=True,
+            offset=offset,
+            length=length,
+            source_size=len(self.data),
+            data=self.data[offset : offset + length],
+            status=ImageStreamStatus("ok", "fake read ok", self.source_path),
+        )
 
 
 def test_local_file_stream_reports_source_metadata_and_read_only_status():
@@ -285,6 +325,59 @@ def test_hash_image_stream_hashes_deterministic_tiny_stream_in_chunks():
     assert result.byte_count_matches_media_size is True
     assert result.read_only is True
     assert result.to_dict()["source_kind"] == "local-file_image"
+
+
+def test_hash_image_stream_progress_callback_reports_monotonic_bytes_and_percent():
+    progress = []
+    with _stream_fixture_directory("image-stream-hash-progress") as directory:
+        source_path = directory / "tiny.raw"
+        data = b"0123456789abcdef"
+        _write_bytes(source_path, data)
+
+        result = hash_image_stream(
+            LocalFileImageStream(source_path),
+            algorithm="sha256",
+            chunk_size=5,
+            progress_callback=lambda snapshot: progress.append(dict(snapshot)),
+        )
+
+    byte_counts = [int(snapshot["bytes_hashed"]) for snapshot in progress]
+    assert result.status.code == "completed"
+    assert byte_counts == sorted(byte_counts)
+    assert byte_counts[0] == 0
+    assert byte_counts[-1] == len(data)
+    assert progress[-1]["status"] == "completed"
+    assert progress[-1]["percent_complete"] == 100
+    for snapshot in progress:
+        logical_size = snapshot["logical_media_size"]
+        if logical_size:
+            expected = snapshot["bytes_hashed"] / logical_size * 100
+            assert snapshot["percent_complete"] == expected
+
+
+def test_hash_image_stream_interrupted_returns_no_digest_and_progress():
+    progress = []
+    with _stream_fixture_directory("image-stream-hash-interrupted") as directory:
+        source_path = directory / "tiny.raw"
+        data = b"0123456789abcdef"
+        stream = InterruptingImageStream(source_path, data, interrupt_after_offset=5)
+
+        result = hash_image_stream(
+            stream,
+            algorithm="sha256",
+            chunk_size=5,
+            progress_callback=lambda snapshot: progress.append(dict(snapshot)),
+        )
+
+    assert result.status.code == "interrupted"
+    assert result.status.ok is False
+    assert result.hexdigest is None
+    assert result.bytes_hashed == 5
+    assert result.byte_count_matches_media_size is False
+    assert "image_hash_interrupted" in [warning.code for warning in result.warnings]
+    assert progress[-1]["status"] == "interrupted"
+    assert progress[-1]["bytes_hashed"] == 5
+    assert progress[-1]["percent_complete"] == 31.25
 
 
 def test_hash_image_stream_reports_dependency_unavailable_without_digest():
